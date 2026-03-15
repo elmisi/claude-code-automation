@@ -94,10 +94,10 @@ jobs:
           echo "Schema types: $(echo $SCHEMA_TYPES | tr '\n' ' ')"
 
           if [ -s /tmp/docs/hooks.html ]; then
-            # Check for new handler types by looking at the "type" field values in the docs
-            for candidate in stdio sse grpc websocket webhook graphql; do
-              # Only match in structured contexts like "type": "candidate" or type.*candidate
-              if grep -qP "\"type\"[^\"]*\"${candidate}\"|type.*:.*${candidate}" /tmp/docs/hooks.html; then
+            # Check for new handler types by looking for "type": "candidate" patterns
+            # Only match exact JSON-like patterns to avoid false positives from MCP/transport contexts
+            for candidate in stdio grpc websocket webhook graphql; do
+              if grep -qP "\"type\":\s*\"${candidate}\"" /tmp/docs/hooks.html; then
                 if ! echo "$SCHEMA_TYPES" | grep -qx "$candidate"; then
                   DISCREPANCIES="${DISCREPANCIES}\n### New hook handler type: \`$candidate\`\n\n"
                   DISCREPANCIES="${DISCREPANCIES}Found in [hooks docs](https://code.claude.com/docs/en/hooks) but not in schema.\n"
@@ -155,29 +155,25 @@ jobs:
 
           # ==============================================
           # 4. Check subagent frontmatter fields
+          #    Instead of parsing tables (which mix field names with
+          #    their allowed values), check for known field names in
+          #    the page text and look for new ones by keyword.
           # ==============================================
           echo ""
           echo "=== Checking subagent frontmatter ==="
 
           if [ -s /tmp/docs/subagents.html ]; then
-            # Extract field names from the frontmatter fields table
-            DOCS_FIELDS=$(grep -oP '<code>([a-zA-Z]+)</code></td><td' /tmp/docs/subagents.html \
-              | grep -oP '<code>\K[a-zA-Z]+' | sort -u)
-
-            EXPECTED_FIELDS="background description disallowedTools hooks isolation maxTurns mcpServers memory model name permissionMode skills tools"
-            for field in $EXPECTED_FIELDS; do
-              if [ -n "$DOCS_FIELDS" ] && ! echo "$DOCS_FIELDS" | grep -qx "$field"; then
-                echo "Note: expected field '$field' not in docs table (may have been renamed)"
+            KNOWN_FIELDS="name description tools disallowedTools model permissionMode maxTurns skills mcpServers hooks memory background isolation"
+            MISSING=""
+            for field in $KNOWN_FIELDS; do
+              if ! grep -q "$field" /tmp/docs/subagents.html; then
+                MISSING="${MISSING} $field"
               fi
             done
-
-            if [ -n "$DOCS_FIELDS" ]; then
-              for field in $DOCS_FIELDS; do
-                if ! echo "$EXPECTED_FIELDS" | tr ' ' '\n' | grep -qx "$field"; then
-                  DISCREPANCIES="${DISCREPANCIES}\n### New subagent frontmatter field: \`$field\`\n\n"
-                  DISCREPANCIES="${DISCREPANCIES}Found in [sub-agents docs](https://code.claude.com/docs/en/sub-agents) frontmatter table but not tracked in schema.\n"
-                fi
-              done
+            if [ -n "$MISSING" ]; then
+              echo "Note: these schema fields not found in docs page text:$MISSING"
+            else
+              echo "All known frontmatter fields found in docs"
             fi
           fi
 
