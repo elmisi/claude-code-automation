@@ -8,15 +8,17 @@ cat <<'EOF'
 /automate — Expert advisor for Claude Code automations
 
 Usage:
-  /automate <description>      Create a new automation (interactive)
-  /automate list               List all automations
-  /automate edit <name>        Edit an existing automation
-  /automate delete <name>      Delete an automation
-  /automate export [file]      Export automations to JSON file
-  /automate import <file>      Import automations from JSON file
-  /automate verify             Health-check all automations
-  /automate cleanup            Remove all automations (pre-uninstall)
-  /automate help               Show this help
+  /automate <description>        Create a new automation (interactive)
+
+Management commands:
+  /automate-list                 List all automations
+  /automate-edit <name>          Edit an existing automation
+  /automate-delete <name>        Delete an automation
+  /automate-export [file]        Export automations to JSON file
+  /automate-import <file>        Import automations from JSON file
+  /automate-verify               Health-check all automations
+  /automate-cleanup              Remove all automations (pre-uninstall)
+  /automate-help                 Show this help
 
 Automation types:
   hook              Deterministic, guaranteed execution on events

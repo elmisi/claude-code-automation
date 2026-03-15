@@ -18,6 +18,8 @@ REGISTRY="$HOME/.claude/automations-registry.json"
 
 if [ ! -f "$REGISTRY" ]; then
   echo "No automations found. Create one with: /automate <description>"
+  echo ""
+  echo "Run /automate-help for all available commands."
   exit 0
 fi
 
@@ -89,10 +91,10 @@ printf "└─%-${MAX_NAME}s─┴─%-${MAX_TYPE}s─┴─%-${MAX_SCOPE}s─�
 
 echo ""
 echo "Commands:"
-echo "  /automate edit <name>        Edit an automation"
-echo "  /automate delete <name>      Delete an automation"
-echo "  /automate export [file]      Export all to JSON"
-echo "  /automate import <file>      Import from JSON"
-echo "  /automate verify             Health-check all"
-echo "  /automate cleanup            Remove all (pre-uninstall)"
+echo "  /automate-edit <name>        Edit an automation"
+echo "  /automate-delete <name>      Delete an automation"
+echo "  /automate-export [file]      Export all to JSON"
+echo "  /automate-import <file>      Import from JSON"
+echo "  /automate-verify             Health-check all"
+echo "  /automate-cleanup            Remove all (pre-uninstall)"
 echo "  /automate <description>      Create new automation"

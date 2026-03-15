@@ -34,7 +34,7 @@ Then restart Claude Code to activate the plugin.
 
 ```bash
 # 1. Clean up all automations created by the plugin (optional but recommended)
-/automate cleanup
+/automate-cleanup
 
 # 2. Uninstall the plugin
 /plugin uninstall automate
@@ -86,7 +86,7 @@ The plugin interviews you to understand exactly what you need:
 | `~/.claude/settings.json` | Hook: blocks `git commit` unless tests pass |
 | `~/.claude/skills/test-runner/SKILL.md` | Skill: analyzes changes, picks relevant tests |
 
-Both files are validated against schemas and registered for easy management (`/automate list`).
+Both files are validated against schemas and registered for easy management (`/automate-list`).
 
 **The twist:** had you answered *"just a guideline"* instead, the plugin would create a single `CLAUDE.md` rule — no hooks, no skills. Same topic, different needs, completely different automation.
 
@@ -94,26 +94,27 @@ Both files are validated against schemas and registered for easy management (`/a
 
 ## Managing Automations
 
-All automations created by this plugin are tracked in a registry (`~/.claude/automations-registry.json`). You can manage them with sub-commands:
+All automations created by this plugin are tracked in a registry (`~/.claude/automations-registry.json`). Each management command is a separate skill for instant tab-completion and faster execution:
 
 | Command | Description |
 |---------|-------------|
-| `/automate list` | List all tracked automations with options to view, edit, delete, or export |
-| `/automate edit <name>` | Modify an existing automation (name, description, behavior, scope) |
-| `/automate delete <name>` | Remove an automation with confirmation |
-| `/automate export [file]` | Export all automations to a portable JSON file |
-| `/automate import <file>` | Import automations from another machine with conflict resolution |
-| `/automate verify` | Health-check all registered automations — detects missing files or hook entries and offers to repair them |
-| `/automate cleanup` | Pre-uninstall: remove all automations created by this plugin (with option to keep selected ones) |
+| `/automate-list` | List all tracked automations with options to view, edit, delete, or export |
+| `/automate-edit <name>` | Modify an existing automation (name, description, behavior, scope) |
+| `/automate-delete <name>` | Remove an automation with confirmation |
+| `/automate-export [file]` | Export all automations to a portable JSON file |
+| `/automate-import <file>` | Import automations from another machine with conflict resolution |
+| `/automate-verify` | Health-check all registered automations — detects missing files or hook entries and offers to repair them |
+| `/automate-cleanup` | Pre-uninstall: remove all automations created by this plugin (with option to keep selected ones) |
+| `/automate-help` | Show full command reference |
 
 ### Export/Import Example
 
 ```bash
 # On machine A: export your automations
-/automate export ~/my-automations.json
+/automate-export ~/my-automations.json
 
 # Copy the file to machine B, then import
-/automate import ~/my-automations.json
+/automate-import ~/my-automations.json
 ```
 
 When importing, you'll be asked how to handle conflicts if an automation with the same name already exists.
@@ -183,7 +184,7 @@ Tests are split into three categories:
 
 | Type | Command | Tests | Description |
 |------|---------|-------|-------------|
-| Structure | `./tests/scripts/run-tests.sh structure` | 81 | File structure, JSON validity, fixture validation, version sync, negative validation, JSON guard |
+| Structure | `./tests/scripts/run-tests.sh structure` | 97 | File structure, JSON validity, fixture validation, version sync, negative validation, JSON guard |
 | Fixture | `./tests/scripts/run-tests.sh e2e` | 20 | Creates expected outputs in sandbox and validates their structure |
 | Interactive | `./tests/scripts/run-tests.sh interactive` | 5 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) |
 

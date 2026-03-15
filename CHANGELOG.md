@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-03-15
+
+### Added
+- **Management commands as separate skills**: `/automate list` → `/automate-list`, `/automate edit` → `/automate-edit`, etc. Each command loads only its own SKILL.md (5–90 lines) instead of the full 1100-line creation workflow, reducing latency significantly
+- 8 new skills: `automate-help`, `automate-list`, `automate-verify`, `automate-export`, `automate-import`, `automate-delete`, `automate-edit`, `automate-cleanup`
+- `plugin/docs/shared-context.md` — shared procedures (registry bootstrap, merge algorithm, file markers, deletion procedures) referenced by management skills
+- JSON guard hooks on skills that write config files (`automate-edit`, `automate-import`, `automate-delete`, `automate-cleanup`)
+- 16 new structure tests (STRUCT-82..97) for management skill files and frontmatter
+- Backwards compatibility: `/automate list` (old format) suggests `/automate-list`
+
+### Changed
+- Main `/automate` SKILL.md slimmed from ~1100 to ~865 lines (command router + sub-command sections removed)
+- `automate-help.sh` and `automate-list.sh` updated with `/automate-*` command names
+- README.md command table uses new `/automate-*` format
+- CLAUDE.md architecture section documents new skill-per-command structure
+
 ## [2.2.2] - 2026-03-15
 
 ### Fixed

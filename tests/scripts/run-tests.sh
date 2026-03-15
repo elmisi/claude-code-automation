@@ -443,6 +443,67 @@ run_structure_tests() {
         "guard-json-config.sh" "STRUCT-78: SKILL.md has JSON guard hooks"
 
     # ============================================
+    # MANAGEMENT SKILL TESTS (automate-* skills)
+    # ============================================
+    log_info "Testing management skill structure..."
+
+    # automate-help
+    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-help/SKILL.md" \
+        "STRUCT-82: automate-help SKILL.md exists"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-help/SKILL.md" \
+        "STRUCT-83: automate-help has valid frontmatter"
+
+    # automate-list
+    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-list/SKILL.md" \
+        "STRUCT-84: automate-list SKILL.md exists"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-list/SKILL.md" \
+        "STRUCT-85: automate-list has valid frontmatter"
+
+    # automate-verify
+    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-verify/SKILL.md" \
+        "STRUCT-86: automate-verify SKILL.md exists"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-verify/SKILL.md" \
+        "STRUCT-87: automate-verify has valid frontmatter"
+
+    # automate-export
+    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-export/SKILL.md" \
+        "STRUCT-88: automate-export SKILL.md exists"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-export/SKILL.md" \
+        "STRUCT-89: automate-export has valid frontmatter"
+
+    # automate-import
+    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-import/SKILL.md" \
+        "STRUCT-90: automate-import SKILL.md exists"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-import/SKILL.md" \
+        "STRUCT-91: automate-import has valid frontmatter"
+
+    # automate-delete
+    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-delete/SKILL.md" \
+        "STRUCT-92: automate-delete SKILL.md exists"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-delete/SKILL.md" \
+        "STRUCT-93: automate-delete has valid frontmatter"
+
+    # automate-edit
+    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-edit/SKILL.md" \
+        "STRUCT-94: automate-edit SKILL.md exists"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-edit/SKILL.md" \
+        "STRUCT-95: automate-edit has valid frontmatter"
+
+    # automate-cleanup
+    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-cleanup/SKILL.md" \
+        "STRUCT-96: automate-cleanup SKILL.md exists"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-cleanup/SKILL.md" \
+        "STRUCT-97: automate-cleanup has valid frontmatter"
+
+    # ============================================
     # FULL MODEL ID TESTS
     # ============================================
     log_info "Testing full model ID validation..."

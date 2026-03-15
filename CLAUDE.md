@@ -26,18 +26,38 @@ When Claude Code changes (new hook events, new tools, etc.), update the **schema
 
 ### SKILL.md Internals
 
-The core is `plugin/skills/automate/SKILL.md` which implements:
+The core creation workflow is in `plugin/skills/automate/SKILL.md`. Management commands are separate skills under `plugin/skills/automate-*/SKILL.md` for faster execution (each loads only its own content instead of the full 800+ line creation workflow).
 
-1. **Command Router**: Parses `$ARGUMENTS` to dispatch sub-commands (`list`, `edit`, `delete`, `export`, `import`, `verify`, `cleanup`) or fall through to the creation workflow.
-   - **Registry Bootstrap**: Before routing, checks if the registry exists. If not, scans for files with `created-by: automate` markers and rebuilds the registry (handles reinstallation after uninstall).
-2. **8-Step Creation Workflow**: Load schemas → Interview → Decide → Explain → Create → Validate → Verify completeness → Test → Report.
-3. **Two-Level Validation**: SKILL.md loads schemas at Step 0, validates against them at Step 5, and `plugin/scripts/validate-config.sh` provides external validation.
-4. **Registry System**: All automations tracked in `~/.claude/automations-registry.json` with metadata (id, name, type, scope, path, timestamps). Enables list/edit/delete/export/import.
+**Main skill (`/automate`):**
+1. **Registry Bootstrap**: Checks if the registry exists. If not, scans for files with `created-by: automate` markers and rebuilds the registry (handles reinstallation after uninstall).
+2. **Backwards Compat Router**: If `$ARGUMENTS` matches an old sub-command name, suggests the new `/automate-*` skill.
+3. **8-Step Creation Workflow**: Load schemas → Interview → Decide → Explain → Create → Validate → Verify completeness → Test → Report.
+
+**Management skills (`/automate-*`):**
+| Skill | Type | Description |
+|-------|------|-------------|
+| `/automate-help` | Script-only | Runs `automate-help.sh`, zero AI |
+| `/automate-list` | Script-only | Runs `automate-list.sh`, zero AI |
+| `/automate-verify` | Light AI | Reads registry, checks files, offers repair |
+| `/automate-export` | Light AI | Reads registry, bundles content to JSON |
+| `/automate-delete` | Light AI | Finds automation, confirms, removes |
+| `/automate-edit` | Medium AI | Finds automation, asks changes, validates, saves |
+| `/automate-import` | Medium AI | Reads file, resolves conflicts, creates, registers |
+| `/automate-cleanup` | Medium AI | Lists all, options keep/remove, cleans up |
+
+**Shared context**: `plugin/docs/shared-context.md` contains registry bootstrap, merge algorithm, schema refs, file markers, and deletion procedures. Skills that need shared procedures reference this file.
+
+**Two-Level Validation**: SKILL.md loads schemas at Step 0, validates against them at Step 5, and `plugin/scripts/validate-config.sh` provides external validation.
+
+**Registry System**: All automations tracked in `~/.claude/automations-registry.json` with metadata (id, name, type, scope, path, timestamps).
 
 ### Key Directories
 
+- `plugin/skills/automate/` — Main creation workflow skill
+- `plugin/skills/automate-*/` — Management command skills (list, edit, delete, export, import, verify, cleanup, help)
 - `plugin/schemas/` — Source of truth for valid configurations (hooks events, skill frontmatter, subagent tools/models, permission patterns, custom command limits, MCP servers, LSP servers, agent teams)
 - `plugin/templates/` — Ready-to-use templates (hook variants, skill, subagent, permissions, custom command, MCP server, LSP server, agent team)
+- `plugin/docs/shared-context.md` — Shared procedures for management skills (registry bootstrap, merge algorithm, deletion procedures)
 - `plugin/docs/claude-code-reference.md` — Reference copy; Step 0 fetches live docs from code.claude.com and diffs against this
 - `tests/fixtures/` — Expected-output examples used by fixture tests
 - `plugin/scripts/validate-config.sh` — External validation script (also used in CI)
@@ -57,7 +77,7 @@ A GitHub Action (`auto-tag.yml`) automatically creates a git tag `v{VERSION}` wh
 ## Running Tests
 
 ```bash
-# Structure tests — fast, no Claude needed (81 tests, IDs: STRUCT-01..STRUCT-81)
+# Structure tests — fast, no Claude needed (97 tests, IDs: STRUCT-01..STRUCT-97)
 ./tests/scripts/run-tests.sh structure
 
 # Fixture tests — validates expected output structures, no Claude needed (IDs: TEST-01..TEST-06)
