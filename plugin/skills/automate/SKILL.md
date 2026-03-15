@@ -79,24 +79,29 @@ Parse `$ARGUMENTS` to determine the action:
 
 # List Automations
 
-Read the registry file: `~/.claude/automations-registry.json`
+**Step 1: Load registry (silently, no output yet)**
 
-If it doesn't exist, run **Registry Bootstrap** first (scan for `created-by: automate` markers).
-
-If still empty after bootstrap, say:
+Read `~/.claude/automations-registry.json`. If it doesn't exist, run **Registry Bootstrap** (scan for `created-by: automate` markers). If still empty after bootstrap:
 > "No automations found. Create automations with `/automate <description>` to start tracking."
 
-If it exists, display a table:
+Stop here.
+
+**Step 2: Print the table IMMEDIATELY (before anything else)**
+
+Do NOT ask questions or explain anything first. Print the table as your FIRST output:
 
 ```
 ┌─────────────────┬────────┬────────┬─────────────────────────────────────┐
 │ Name            │ Type   │ Scope  │ Description                         │
 ├─────────────────┼────────┼────────┼─────────────────────────────────────┤
 │ icon-prompt     │ skill  │ global │ Generate prompts for AI image gen.  │
+│ pre-push-guard  │ hook   │ global │ Block git push without approval     │
 └─────────────────┴────────┴────────┴─────────────────────────────────────┘
 ```
 
-Then use AskUserQuestion to offer actions:
+**Step 3: Then ask what the user wants to do**
+
+Only AFTER the table is printed, use AskUserQuestion:
 
 ```
 What would you like to do?
