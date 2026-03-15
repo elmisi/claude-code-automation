@@ -312,8 +312,12 @@ validate_subagent() {
                 break
             fi
         done
+        # Also accept full model IDs (e.g. claude-opus-4-6, claude-sonnet-4-6)
+        if [ "$valid_model" == "false" ] && [[ "$model" == claude-* ]]; then
+            valid_model=true
+        fi
         if [ "$valid_model" == "false" ]; then
-            error "Invalid model '$model'. Valid: ${VALID_MODELS[*]}"
+            error "Invalid model '$model'. Valid: ${VALID_MODELS[*]} or full model ID (e.g. claude-sonnet-4-6)"
             ((errors++))
         fi
     fi
@@ -323,7 +327,6 @@ validate_subagent() {
     if [ -n "$tools_line" ]; then
         # First, remove Agent(...) patterns (may contain commas inside parens)
         local tools_cleaned=$(echo "$tools_line" | sed 's/Agent([^)]*)//g')
-        local has_agent_paren=$(echo "$tools_line" | grep -o 'Agent([^)]*)' || true)
 
         IFS=',' read -ra tool_array <<< "$tools_cleaned"
         for tool in "${tool_array[@]}"; do
@@ -656,8 +659,12 @@ validate_agent_team() {
                     break
                 fi
             done
+            # Also accept full model IDs (e.g. claude-opus-4-6)
+            if [ "$valid_model" == "false" ] && [[ "$agent_model" == claude-* ]]; then
+                valid_model=true
+            fi
             if [ "$valid_model" == "false" ]; then
-                error "Agent '$agent_name' has invalid model '$agent_model'. Valid: ${VALID_MODELS[*]}"
+                error "Agent '$agent_name' has invalid model '$agent_model'. Valid: ${VALID_MODELS[*]} or full model ID"
                 ((errors++))
             fi
         fi

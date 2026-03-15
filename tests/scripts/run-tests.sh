@@ -441,6 +441,23 @@ run_structure_tests() {
     # Test: SKILL.md has guard hooks in frontmatter
     assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
         "guard-json-config.sh" "STRUCT-78: SKILL.md has JSON guard hooks"
+
+    # ============================================
+    # FULL MODEL ID TESTS
+    # ============================================
+    log_info "Testing full model ID validation..."
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\nmodel: claude-sonnet-4-6\n---\nContent')" \
+        "STRUCT-79: accept full model ID claude-sonnet-4-6"
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\nmodel: claude-opus-4-6\n---\nContent')" \
+        "STRUCT-80: accept full model ID claude-opus-4-6"
+
+    assert_validation_fails "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\nmodel: gpt-4o\n---\nContent')" \
+        "STRUCT-81: reject non-Claude model ID"
 }
 
 # ============================================

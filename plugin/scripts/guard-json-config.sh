@@ -54,9 +54,8 @@ if [ "$HOOK_EVENT" = "PreToolUse" ]; then
         exit 0
     fi
 
-    # Check if content is valid JSON
-    ERROR=$(echo "$CONTENT" | jq . 2>&1 >/dev/null) || true
-    if ! echo "$CONTENT" | jq . >/dev/null 2>&1; then
+    # Check if content is valid JSON (single jq call)
+    if ! ERROR=$(echo "$CONTENT" | jq . 2>&1 >/dev/null); then
         echo "BLOCKED: Invalid JSON would be written to $FILE_PATH" >&2
         echo "" >&2
         echo "jq error: $ERROR" >&2
@@ -75,8 +74,8 @@ elif [ "$HOOK_EVENT" = "PostToolUse" ]; then
         exit 0
     fi
 
-    ERROR=$(jq . "$FILE_PATH" 2>&1 >/dev/null) || true
-    if ! jq . "$FILE_PATH" >/dev/null 2>&1; then
+    # Check if file is valid JSON (single jq call)
+    if ! ERROR=$(jq . "$FILE_PATH" 2>&1 >/dev/null); then
         echo "WARNING: Edit produced invalid JSON in $FILE_PATH" >&2
         echo "" >&2
         echo "jq error: $ERROR" >&2

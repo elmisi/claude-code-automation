@@ -217,9 +217,8 @@ If ANY component fails:
 
 ---
 
-## Step 0: Load schemas and check for updates
+## Step 0: Load validation schemas
 
-### 0.1 Load validation schemas
 Read the schema files from this plugin to know what values are valid:
 - `plugin/schemas/hooks.json` - Valid hook events, types, matchers
 - `plugin/schemas/skills.json` - Skill frontmatter requirements
@@ -232,51 +231,95 @@ Read the schema files from this plugin to know what values are valid:
 
 **CRITICAL: Only use values listed in these schemas. Never invent event names or fields.**
 
-### 0.2 Check for documentation updates
-Fetch the official documentation to check for updates:
-- https://code.claude.com/docs/en/hooks-guide
-- https://code.claude.com/docs/en/skills
-- https://code.claude.com/docs/en/sub-agents
-- https://code.claude.com/docs/en/settings
-- https://code.claude.com/docs/en/plugins
-- https://code.claude.com/docs/en/mcp
-- https://code.claude.com/docs/en/agent-teams
-
-Compare with `plugin/docs/claude-code-reference.md`. If there are significant differences:
-1. Show the diff to the user
-2. Ask for confirmation before updating
-3. Update schemas if new events/features were added
-
 ---
 
-## Step 1: In-depth interview
+## Step 1: Adaptive interview
 
-Use AskUserQuestion to clarify the use case. Ask specific questions:
+Use AskUserQuestion for each phase. The interview adapts based on answers to minimize questions.
 
-### Timing and frequency
-- When should this automation happen?
-  - Always, on every specific action (e.g., every commit, every edit)
-  - Only in certain contexts (e.g., only for TUI projects)
-  - Only on explicit user request
+### Phase 1: Quick classification (1 question)
 
-### Nature of automation
-- Must it be guaranteed/deterministic (MUST happen) or is it a guideline (SHOULD happen)?
-- Does it need Claude's intelligence/decisions or can a script/command suffice?
-- Can it fail silently or must it block the operation?
+Ask the user to pick the closest category:
 
-### Scope
-- Does it apply to all projects or just this one?
-- Does it apply to the whole project or only certain types of files/work?
-- Should other team developers follow the same rule?
+```
+What best describes what you want to create?
+1. Something that must happen automatically every time (e.g., check before every commit)
+2. Knowledge or rules Claude should follow (e.g., coding standards, project conventions)
+3. A workflow I'll trigger manually (e.g., generate boilerplate, run analysis)
+4. Integration with external tools/services (e.g., database, API, GitHub)
+5. Multiple agents working in parallel on different aspects
+6. I'm not sure, help me decide
+```
 
-### Input/Output
-- Are parameters/arguments needed?
-- Should it produce files, output, or modify configurations?
+### Phase 2: Refinement (1-2 questions, based on Phase 1)
 
-### External integrations and advanced capabilities
-- Does this involve accessing external tools or services (databases, APIs, GitHub, etc.)? → MCP server
-- Do you need code intelligence like diagnostics, hover info, or go-to-definition? → LSP server
-- Does this require multiple agents working in parallel on different aspects? → Agent Teams
+**If answer is 1 (automatic/every time) → Hook path:**
+Ask: "Does it need Claude's intelligence to decide, or is a simple script enough?"
+- Simple script → Hook only
+- Needs intelligence → Hook + Skill combination
+
+**If answer is 2 (knowledge/rules) → Skill or CLAUDE.md path:**
+Ask: "Must this rule be GUARANTEED (can never be skipped), or is it advisory (Claude should follow it but it's not critical)?"
+- Guaranteed → Hook (not CLAUDE.md, which is advisory)
+- Advisory → ask: "Should Claude apply this automatically when relevant, or only when you invoke it?"
+  - Automatically → Skill with `disable-model-invocation: false`
+  - Only on invocation → Skill with `disable-model-invocation: true`
+  - Simple one-liner rule → CLAUDE.md
+
+**If answer is 3 (manual workflow) → Skill (manual) path:**
+Ask: "Does this workflow need a separate, isolated context (e.g., deep analysis that shouldn't pollute your main conversation)?"
+- Yes → Skill + Subagent
+- No → Skill with `disable-model-invocation: true`
+
+**If answer is 4 (external integration) → MCP/LSP path:**
+Ask: "What kind of integration do you need?"
+- External tool/service/API → MCP Server (ask: "What service/tool do you want to integrate?")
+- Code intelligence (diagnostics, hover, go-to-definition) → LSP Server
+
+**If answer is 5 (parallel agents) → Agent Team path:**
+Proceed directly. Warn about experimental status.
+
+**If answer is 6 (not sure) → Full interview:**
+Ask ALL of these questions (one AskUserQuestion with numbered items):
+1. When should this happen? (always/on specific action/on request/in certain contexts)
+2. Must it be guaranteed or is it advisory?
+3. Does it need Claude's intelligence or can a script handle it?
+4. Should it apply to all projects or just this one?
+5. Does it involve external tools/services?
+6. Does it need multiple agents working in parallel?
+
+### Phase 3: Conflict check (automatic, no user question needed)
+
+Before proceeding, read `~/.claude/automations-registry.json` and check for conflicts:
+- Any existing automation with the same name or similar description
+- Any hook on the same event + matcher combination
+
+If conflicts are found, use AskUserQuestion to show them:
+```
+Found existing automation that may conflict:
+  - "pre-commit-check" (hook, PreToolUse → Bash) — "Blocks pushes to main"
+
+What would you like to do?
+1. Overwrite the existing automation
+2. Rename the new automation
+3. Cancel
+```
+
+### Phase 4: Name proposal (1 question)
+
+Propose 3 name options based on the automation's purpose:
+
+```
+Suggested names:
+1. pre-commit-tests
+2. test-runner-hook
+3. commit-guard
+Which do you prefer? (or type your own)
+```
+
+Also ask about scope if not yet determined:
+- Global (all projects): `~/.claude/...`
+- Project-only: `.claude/...`
 
 ---
 
@@ -325,6 +368,80 @@ Based on the answers, use this decision matrix:
 - REQUIRED: Team config in `~/.claude/teams/{name}/config.json`
 - REQUIRED: Skill defining when/how to invoke the team
 - REQUIRED: Both registered with links
+
+---
+
+## Step 2.5: Show example before proceeding
+
+After the decision and before explaining, show the user a concrete preview of what will be created. This helps the user confirm the approach is correct before any files are written.
+
+**For a Hook:**
+```
+Here's what will be created:
+
+~/.claude/settings.json (hook entry):
+{
+  "hooks": {
+    "PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "~/.claude/scripts/your-hook.sh"}]}]
+  }
+}
+
+~/.claude/scripts/your-hook.sh (executable script):
+#!/bin/bash
+INPUT=$(cat)
+COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+# ... your logic here ...
+```
+
+**For a Skill:**
+```
+Here's what will be created:
+
+~/.claude/skills/skill-name/SKILL.md:
+---
+name: skill-name
+description: What this skill does
+disable-model-invocation: true
+created-by: automate
+---
+# Skill Title
+...
+```
+
+**For a Subagent:**
+```
+Here's what will be created:
+
+~/.claude/agents/agent-name.md:
+---
+name: agent-name
+description: What this agent does
+tools: Read, Grep, Glob, Bash
+model: inherit
+created-by: automate
+---
+...
+```
+
+**For MCP Server:**
+```
+Here's what will be created:
+
+.mcp.json (or ~/.claude.json for global):
+{
+  "mcpServers": {
+    "server-name": {
+      "type": "stdio",
+      "command": "path/to/server",
+      "args": []
+    }
+  }
+}
+```
+
+**For combinations**, show all components that will be created.
+
+Adapt the example to use the actual names, events, and logic discussed during the interview. Use AskUserQuestion to confirm: "Does this look right? (Yes / Adjust / Cancel)"
 
 ---
 
@@ -522,7 +639,7 @@ Hook commands receive a JSON object via **stdin** with the full context. Read it
 - `CLAUDE_PLUGIN_ROOT` - Root directory of the plugin
 - `CLAUDE_CODE_REMOTE` - Set to 'true' in remote/web environments
 
-**Use templates from `plugin/templates/hook-*.json` as a base.**
+**Use templates from `${CLAUDE_SKILL_DIR}/../../templates/hook-*.json` as a base.**
 
 ### For Skill
 
@@ -538,7 +655,7 @@ created-by: automate
 ---
 ```
 
-Use template from `plugin/templates/skill.md`.
+Use template from `${CLAUDE_SKILL_DIR}/../../templates/skill.md`.
 
 ### For Subagent
 
@@ -571,7 +688,7 @@ Optional frontmatter fields:
 - `background` - Always run as background task (boolean)
 - `isolation` - Set to 'worktree' for isolated git worktree
 
-Use template from `plugin/templates/subagent.md`.
+Use template from `${CLAUDE_SKILL_DIR}/../../templates/subagent.md`.
 
 ### For Permissions
 
@@ -629,7 +746,7 @@ Valid types: stdio, http, sse (deprecated)
 - Tools appear as `mcp__<server>__<tool>` in Claude
 - Can be used in hook matchers: `"matcher": "mcp__servername__.*"`
 
-Use template from `plugin/templates/mcp-server.json`.
+Use template from `${CLAUDE_SKILL_DIR}/../../templates/mcp-server.json`.
 
 ### For LSP Server
 
@@ -649,7 +766,7 @@ Structure:
 Required: command, languages array
 Optional: args, initializationOptions
 
-Use template from `plugin/templates/lsp-server.json`.
+Use template from `${CLAUDE_SKILL_DIR}/../../templates/lsp-server.json`.
 
 ### For Agent Team
 
@@ -678,7 +795,7 @@ Teams are orchestrated via natural language, not declarative config. The team co
 Valid teammateMode (configured in settings.json as `teammateMode`): in-process, tmux, auto
 Valid models: opus, sonnet, haiku, inherit
 
-Use template from `plugin/templates/agent-team.json`.
+Use template from `${CLAUDE_SKILL_DIR}/../../templates/agent-team.json`.
 
 ---
 
@@ -727,7 +844,33 @@ If this fails, the file is broken. Read it back, fix the JSON, and rewrite.
 **If ANY component is missing or invalid:**
 - DO NOT proceed to Step 7
 - GO BACK and create/fix the missing component
+- You have a maximum of **2 repair attempts** per component
 - This is NON-NEGOTIABLE
+
+### Rollback on failure
+
+If any component fails validation and cannot be fixed after 2 attempts, **roll back ALL created components**:
+
+1. **Delete created files** (hook scripts, skill directories, subagent files, team configs)
+2. **Remove registry entries** from `~/.claude/automations-registry.json`
+3. **Revert settings.json changes** (remove hook entries, permission rules, custom commands added in this session)
+4. **Revert .mcp.json / .lsp.json changes** if applicable
+
+After rollback, show the user exactly what was rolled back and why:
+```
+ROLLBACK — could not complete automation after 2 attempts:
+
+Rolled back:
+  - Deleted ~/.claude/scripts/check-semver.sh
+  - Removed hook entry from ~/.claude/settings.json (PreToolUse → Bash)
+  - Removed registry entry "semver-hook"
+
+Reason: Hook script failed validation — invalid jq syntax on line 12
+
+Please fix the issue and try again with /automate <description>.
+```
+
+**An incomplete automation is worse than no automation — always roll back rather than leave broken components.**
 
 ### Verification checklist for combinations:
 
@@ -765,8 +908,8 @@ If this fails, the file is broken. Read it back, fix the JSON, and rewrite.
 
 ### For Hooks:
 ```bash
-# Test the hook script directly
-~/.claude/scripts/your-hook.sh "test command"
+# Test the hook script by sending JSON via stdin (how hooks actually receive input)
+echo '{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ~/.claude/scripts/your-hook.sh
 echo $?  # Should be 0 (allow) or 2 (block)
 ```
 

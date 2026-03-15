@@ -170,11 +170,26 @@ Tests are split into three categories:
 
 | Type | Command | Tests | Description |
 |------|---------|-------|-------------|
-| Structure | `./tests/scripts/run-tests.sh structure` | 42 | File structure, JSON validity, fixture validation, version sync, negative validation |
+| Structure | `./tests/scripts/run-tests.sh structure` | 81 | File structure, JSON validity, fixture validation, version sync, negative validation, JSON guard |
 | Fixture | `./tests/scripts/run-tests.sh e2e` | 20 | Creates expected outputs in sandbox and validates their structure |
 | Interactive | `./tests/scripts/run-tests.sh interactive` | 5 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) |
 
 **Note**: Structure and fixture tests are deterministic and run in CI. Interactive tests are qualitative smoke tests that verify the skill produces reasonable output with a real Claude instance. They are not CI-grade deterministic tests.
+
+## Roadmap
+
+### Planned: Interactive decision tree (v3.0)
+
+The current interview flow uses adaptive questions with category-based shortcuts. A future version will implement a full interactive decision tree with:
+- Visual flowchart-style navigation
+- Weighted scoring when multiple automation types partially match
+- Side-by-side comparison of alternatives with pros/cons
+- "Did you mean..." suggestions for ambiguous descriptions
+- Learning from previous automations to suggest patterns
+
+### Schema auto-update
+
+A daily GitHub Action checks the official Claude Code documentation for changes and opens issues when schemas need updating. Contributors can then update schemas without manually diffing docs.
 
 ## Contributing
 
