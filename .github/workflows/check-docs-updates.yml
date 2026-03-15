@@ -23,30 +23,24 @@ jobs:
 
           DISCREPANCIES=""
 
-          # --- Helper: fetch a page and cache it ---
           fetch_page() {
             local url="$1"
             local output="$2"
             curl -sL --retry 3 --retry-delay 5 --max-time 30 "$url" -o "$output"
-            if [ ! -s "$output" ]; then
-              echo "WARNING: Failed to fetch $url"
-              return 1
-            fi
-            return 0
+            [ -s "$output" ] || { echo "WARNING: Failed to fetch $url"; return 1; }
           }
 
-          # --- Fetch all documentation pages ---
           echo "Fetching Claude Code documentation pages..."
           mkdir -p /tmp/docs
-
           fetch_page "https://code.claude.com/docs/en/hooks" /tmp/docs/hooks.html || true
-          fetch_page "https://code.claude.com/docs/en/skills" /tmp/docs/skills.html || true
-          fetch_page "https://code.claude.com/docs/en/sub-agents" /tmp/docs/subagents.html || true
-          fetch_page "https://code.claude.com/docs/en/mcp" /tmp/docs/mcp.html || true
-          fetch_page "https://code.claude.com/docs/en/agent-teams" /tmp/docs/agent-teams.html || true
           fetch_page "https://code.claude.com/docs/en/tools-reference" /tmp/docs/tools-reference.html || true
+          fetch_page "https://code.claude.com/docs/en/sub-agents" /tmp/docs/subagents.html || true
 
-          # --- 1. Check hook events ---
+          # ==============================================
+          # 1. Check hook events
+          #    Pattern: <code>EventName</code></td><td
+          #    This matches only event names in the hooks table
+          # ==============================================
           echo ""
           echo "=== Checking hook events ==="
 
@@ -54,77 +48,69 @@ jobs:
           SCHEMA_EVENT_COUNT=$(echo "$SCHEMA_EVENTS" | wc -l)
           echo "Schema has $SCHEMA_EVENT_COUNT hook events"
 
-          # Extract event names from the hooks docs page
-          # Hook events appear as code elements or in tables/lists in the HTML
           if [ -s /tmp/docs/hooks.html ]; then
-            # Look for known event name patterns (PascalCase event names)
-            DOCS_EVENTS=$(grep -oP '(?:>|"|'"'"'|`)(PreToolUse|PostToolUse|PostToolUseFailure|SessionStart|SessionEnd|UserPromptSubmit|PermissionRequest|Notification|Stop|PreCompact|PostCompact|SubagentStart|SubagentStop|TeammateIdle|TaskCompleted|ConfigChange|InstructionsLoaded|WorktreeCreate|WorktreeRemove|Elicitation|ElicitationResult|[A-Z][a-z]+(?:[A-Z][a-z]+)+)(?:<|"|'"'"'|`)' /tmp/docs/hooks.html \
-              | sed 's/^[>"`'"'"']//; s/[<"`'"'"']$//' \
-              | sort -u)
-
-            # Filter to only event-like names (exclude common non-event PascalCase words)
-            DOCS_EVENTS=$(echo "$DOCS_EVENTS" | grep -v -E '^(JavaScript|TypeScript|PascalCase|GitHub|Claude|PostBody|RestApi|WebSocket|ToolUse|HookSpecificOutput|EventName)$' || true)
+            DOCS_EVENTS=$(grep -oP '<code>([A-Z][a-zA-Z]+)</code></td><td' /tmp/docs/hooks.html \
+              | grep -oP '<code>\K[A-Z][a-zA-Z]+' | sort -u)
 
             if [ -n "$DOCS_EVENTS" ]; then
               DOCS_EVENT_COUNT=$(echo "$DOCS_EVENTS" | wc -l)
-              echo "Docs page references $DOCS_EVENT_COUNT unique event-like names"
+              echo "Docs table has $DOCS_EVENT_COUNT events"
 
-              # Find events in docs but NOT in schema
-              NEW_IN_DOCS=$(comm -23 <(echo "$DOCS_EVENTS") <(echo "$SCHEMA_EVENTS") || true)
-              if [ -n "$NEW_IN_DOCS" ]; then
-                DISCREPANCIES="${DISCREPANCIES}\n### New hook events found in docs but missing from schema\n\nThe following event names appear in the [hooks documentation](https://code.claude.com/docs/en/hooks) but are not in \`plugin/schemas/hooks.json\`:\n"
+              NEW_EVENTS=$(comm -23 <(echo "$DOCS_EVENTS") <(echo "$SCHEMA_EVENTS") || true)
+              if [ -n "$NEW_EVENTS" ]; then
+                DISCREPANCIES="${DISCREPANCIES}\n### New hook events in docs, missing from schema\n\n"
+                DISCREPANCIES="${DISCREPANCIES}The following events appear in the [hooks docs table](https://code.claude.com/docs/en/hooks) but not in \`plugin/schemas/hooks.json\`:\n"
                 while IFS= read -r event; do
                   DISCREPANCIES="${DISCREPANCIES}\n- \`$event\`"
-                done <<< "$NEW_IN_DOCS"
+                done <<< "$NEW_EVENTS"
                 DISCREPANCIES="${DISCREPANCIES}\n"
               fi
 
-              # Find events in schema but NOT in docs (possibly removed)
-              REMOVED_FROM_DOCS=$(comm -13 <(echo "$DOCS_EVENTS") <(echo "$SCHEMA_EVENTS") || true)
-              if [ -n "$REMOVED_FROM_DOCS" ]; then
-                # Only flag this if a significant number are missing (some might just not appear in text)
-                REMOVED_COUNT=$(echo "$REMOVED_FROM_DOCS" | wc -l)
-                if [ "$REMOVED_COUNT" -gt 3 ]; then
-                  DISCREPANCIES="${DISCREPANCIES}\n### Schema events not found in docs (possibly removed or renamed)\n\n$REMOVED_COUNT events in schema were not detected in the docs page. This may indicate removed events or a change in documentation format:\n"
+              REMOVED_EVENTS=$(comm -13 <(echo "$DOCS_EVENTS") <(echo "$SCHEMA_EVENTS") || true)
+              if [ -n "$REMOVED_EVENTS" ]; then
+                REMOVED_COUNT=$(echo "$REMOVED_EVENTS" | wc -l)
+                if [ "$REMOVED_COUNT" -gt 2 ]; then
+                  DISCREPANCIES="${DISCREPANCIES}\n### Schema events missing from docs ($REMOVED_COUNT events)\n\n"
+                  DISCREPANCIES="${DISCREPANCIES}These events are in the schema but not found in the docs table (possibly removed or renamed):\n"
                   while IFS= read -r event; do
                     DISCREPANCIES="${DISCREPANCIES}\n- \`$event\`"
-                  done <<< "$REMOVED_FROM_DOCS"
+                  done <<< "$REMOVED_EVENTS"
                   DISCREPANCIES="${DISCREPANCIES}\n"
                 fi
               fi
             else
-              echo "WARNING: Could not extract event names from hooks page (page format may have changed)"
+              echo "WARNING: Could not extract events from hooks page table"
             fi
-          else
-            echo "WARNING: Hooks page not available, skipping event check"
           fi
 
-          # --- 2. Check hook handler types (especially "http") ---
+          # ==============================================
+          # 2. Check hook handler types
+          #    Look for type keywords in specific contexts
+          # ==============================================
           echo ""
           echo "=== Checking hook handler types ==="
 
           SCHEMA_TYPES=$(jq -r '.validTypes[]' plugin/schemas/hooks.json | sort)
-          echo "Schema hook types: $(echo $SCHEMA_TYPES | tr '\n' ' ')"
+          echo "Schema types: $(echo $SCHEMA_TYPES | tr '\n' ' ')"
 
           if [ -s /tmp/docs/hooks.html ]; then
-            # Check if "http" type is documented
-            if grep -qi '"http"\|http.*hook\|type.*http\|HTTP hooks\|http.*handler' /tmp/docs/hooks.html; then
-              echo "HTTP hook type: found in docs (already in schema)"
-            else
-              echo "HTTP hook type: NOT found in docs text (may be undocumented or format changed)"
-            fi
-
-            # Check for any new hook type keywords
+            # Check for new handler types by looking at the "type" field values in the docs
             for candidate in stdio sse grpc websocket webhook graphql; do
-              if grep -qi "type.*['\"]${candidate}['\"]\\|${candidate}.*hook.*type\\|handler.*type.*${candidate}" /tmp/docs/hooks.html; then
+              # Only match in structured contexts like "type": "candidate" or type.*candidate
+              if grep -qP "\"type\"[^\"]*\"${candidate}\"|type.*:.*${candidate}" /tmp/docs/hooks.html; then
                 if ! echo "$SCHEMA_TYPES" | grep -qx "$candidate"; then
-                  DISCREPANCIES="${DISCREPANCIES}\n### New hook handler type detected\n\nThe hook type \`$candidate\` appears in the docs but is not in \`plugin/schemas/hooks.json\` validTypes.\n"
+                  DISCREPANCIES="${DISCREPANCIES}\n### New hook handler type: \`$candidate\`\n\n"
+                  DISCREPANCIES="${DISCREPANCIES}Found in [hooks docs](https://code.claude.com/docs/en/hooks) but not in schema.\n"
                 fi
               fi
             done
           fi
 
-          # --- 3. Check tools reference ---
+          # ==============================================
+          # 3. Check tools reference
+          #    Pattern: <code>ToolName</code></td><td
+          #    This matches only tool names in the tools table
+          # ==============================================
           echo ""
           echo "=== Checking tools reference ==="
 
@@ -133,62 +119,71 @@ jobs:
           echo "Schema has $SCHEMA_TOOL_COUNT tools"
 
           if [ -s /tmp/docs/tools-reference.html ]; then
-            # Extract tool names - they typically appear as headings or code blocks
-            # Known tool names are PascalCase single words
-            DOCS_TOOLS=$(grep -oP '(?:>|"|`)(Read|Write|Edit|Bash|Glob|Grep|Agent|WebFetch|WebSearch|NotebookEdit|AskUserQuestion|TaskOutput|ExitPlanMode|TodoWrite|Skill|ToolSearch|EnterWorktree|ExitWorktree|EnterPlanMode|LSP|CronCreate|CronDelete|CronList|ListMcpResourcesTool|ReadMcpResourceTool|TaskCreate|TaskGet|TaskList|TaskStop|TaskUpdate|[A-Z][a-zA-Z]+)(?:<|"|`)' /tmp/docs/tools-reference.html \
-              | sed 's/^[>"`]//; s/[<"`]$//' \
-              | sort -u)
-
-            # Filter to likely tool names (exclude common words)
-            DOCS_TOOLS=$(echo "$DOCS_TOOLS" | grep -v -E '^(The|This|That|When|What|How|For|Claude|Code|Tool|Tools|Description|Parameters|Example|Required|Optional|Default|Returns|String|Number|Boolean|Array|Object|True|False|None|Note|Important|Warning|Tip|Usage|Overview|Summary|Details|Type|Name|Value|File|Path|Directory|Content|Command|Output|Input|Result|Error|Success|Status|Message|Pattern|Search|Match|Context|Mode|Server|Client|Model|Session|Project|User|Local|Global|Settings|Config|Plugin|Skill|Agent|Agents|Team|Task|Tasks|Hook|Hooks|Permission|Permissions|Memory|Background|Worktree|Isolation)$' || true)
+            DOCS_TOOLS=$(grep -oP '<code>([A-Z][a-zA-Z]+)</code></td><td' /tmp/docs/tools-reference.html \
+              | grep -oP '<code>\K[A-Z][a-zA-Z]+' | sort -u)
 
             if [ -n "$DOCS_TOOLS" ]; then
               DOCS_TOOL_COUNT=$(echo "$DOCS_TOOLS" | wc -l)
-              echo "Docs page references $DOCS_TOOL_COUNT unique tool-like names"
+              echo "Docs table has $DOCS_TOOL_COUNT tools"
 
-              # Find tools in docs but NOT in schema
               NEW_TOOLS=$(comm -23 <(echo "$DOCS_TOOLS") <(echo "$SCHEMA_TOOLS") || true)
               if [ -n "$NEW_TOOLS" ]; then
-                # Filter out unlikely tool names (must start with uppercase, no spaces)
-                NEW_TOOLS=$(echo "$NEW_TOOLS" | grep -E '^[A-Z][a-zA-Z]+$' || true)
-                if [ -n "$NEW_TOOLS" ]; then
-                  DISCREPANCIES="${DISCREPANCIES}\n### New tools found in docs but missing from schema\n\nThe following tool names appear in the [tools reference](https://code.claude.com/docs/en/tools-reference) but are not in \`plugin/schemas/subagents.json\` validValues:\n"
+                DISCREPANCIES="${DISCREPANCIES}\n### New tools in docs, missing from schema\n\n"
+                DISCREPANCIES="${DISCREPANCIES}The following tools appear in the [tools reference table](https://code.claude.com/docs/en/tools-reference) but not in \`plugin/schemas/subagents.json\`:\n"
+                while IFS= read -r tool; do
+                  DISCREPANCIES="${DISCREPANCIES}\n- \`$tool\`"
+                done <<< "$NEW_TOOLS"
+                DISCREPANCIES="${DISCREPANCIES}\n"
+              fi
+
+              REMOVED_TOOLS=$(comm -13 <(echo "$DOCS_TOOLS") <(echo "$SCHEMA_TOOLS") || true)
+              if [ -n "$REMOVED_TOOLS" ]; then
+                REMOVED_COUNT=$(echo "$REMOVED_TOOLS" | wc -l)
+                if [ "$REMOVED_COUNT" -gt 2 ]; then
+                  DISCREPANCIES="${DISCREPANCIES}\n### Schema tools missing from docs ($REMOVED_COUNT tools)\n\n"
+                  DISCREPANCIES="${DISCREPANCIES}These tools are in the schema but not in the docs table:\n"
                   while IFS= read -r tool; do
                     DISCREPANCIES="${DISCREPANCIES}\n- \`$tool\`"
-                  done <<< "$NEW_TOOLS"
+                  done <<< "$REMOVED_TOOLS"
                   DISCREPANCIES="${DISCREPANCIES}\n"
                 fi
               fi
-
-              # Check tool count difference
-              COUNT_DIFF=$((DOCS_TOOL_COUNT - SCHEMA_TOOL_COUNT))
-              if [ "$COUNT_DIFF" -gt 2 ] || [ "$COUNT_DIFF" -lt -2 ]; then
-                DISCREPANCIES="${DISCREPANCIES}\n### Tool count mismatch\n\nDocs page has ~$DOCS_TOOL_COUNT tool-like names vs $SCHEMA_TOOL_COUNT in schema (difference: $COUNT_DIFF). Manual review recommended.\n"
-              fi
             else
-              echo "WARNING: Could not extract tool names from tools-reference page"
+              echo "WARNING: Could not extract tools from tools-reference page table"
             fi
-          else
-            echo "WARNING: Tools reference page not available, skipping tools check"
           fi
 
-          # --- 4. Quick checks on other pages ---
+          # ==============================================
+          # 4. Check subagent frontmatter fields
+          # ==============================================
           echo ""
-          echo "=== Quick checks on other doc pages ==="
+          echo "=== Checking subagent frontmatter ==="
 
-          # Check sub-agents page for new frontmatter fields
           if [ -s /tmp/docs/subagents.html ]; then
-            for field in isolation background memory skills mcpServers hooks permissionMode maxTurns disallowedTools; do
-              if ! grep -qi "$field" /tmp/docs/subagents.html; then
-                echo "Note: subagent field '$field' not found in docs (may be new or renamed)"
+            # Extract field names from the frontmatter fields table
+            DOCS_FIELDS=$(grep -oP '<code>([a-zA-Z]+)</code></td><td' /tmp/docs/subagents.html \
+              | grep -oP '<code>\K[a-zA-Z]+' | sort -u)
+
+            EXPECTED_FIELDS="background description disallowedTools hooks isolation maxTurns mcpServers memory model name permissionMode skills tools"
+            for field in $EXPECTED_FIELDS; do
+              if [ -n "$DOCS_FIELDS" ] && ! echo "$DOCS_FIELDS" | grep -qx "$field"; then
+                echo "Note: expected field '$field' not in docs table (may have been renamed)"
               fi
             done
 
-            # Check for new frontmatter fields we don't know about
-            NEW_FIELDS=$(grep -oP '(?:^|\s)([\w-]+)\s*:' /tmp/docs/subagents.html 2>/dev/null | sed 's/^\s*//; s/\s*:$//' | sort -u || true)
+            if [ -n "$DOCS_FIELDS" ]; then
+              for field in $DOCS_FIELDS; do
+                if ! echo "$EXPECTED_FIELDS" | tr ' ' '\n' | grep -qx "$field"; then
+                  DISCREPANCIES="${DISCREPANCIES}\n### New subagent frontmatter field: \`$field\`\n\n"
+                  DISCREPANCIES="${DISCREPANCIES}Found in [sub-agents docs](https://code.claude.com/docs/en/sub-agents) frontmatter table but not tracked in schema.\n"
+                fi
+              done
+            fi
           fi
 
-          # --- 5. Report results ---
+          # ==============================================
+          # 5. Report results
+          # ==============================================
           echo ""
           echo "=============================="
 
@@ -199,11 +194,10 @@ jobs:
 
           echo "Discrepancies found! Creating GitHub issue..."
 
-          ISSUE_BODY="$(cat <<BODYEOF
+          ISSUE_BODY=$(cat <<BODYEOF
           ## Documentation Change Detected
 
-          The daily docs check found differences between the [Claude Code documentation](https://code.claude.com/docs/en/hooks) and this project's schemas.
-
+          The daily docs check found differences between the Claude Code documentation and this project's schemas.
           $(echo -e "$DISCREPANCIES")
 
           ## Action Required
@@ -214,30 +208,18 @@ jobs:
           4. Update \`SKILL.md\` inline lists if events/tools changed
           5. Run \`./tests/scripts/run-tests.sh structure\` to verify
 
-          ## Links
-
-          - [Hooks docs](https://code.claude.com/docs/en/hooks)
-          - [Skills docs](https://code.claude.com/docs/en/skills)
-          - [Sub-agents docs](https://code.claude.com/docs/en/sub-agents)
-          - [MCP docs](https://code.claude.com/docs/en/mcp)
-          - [Agent Teams docs](https://code.claude.com/docs/en/agent-teams)
-          - [Tools Reference docs](https://code.claude.com/docs/en/tools-reference)
-
           ---
-          *This issue was automatically created by the \`check-docs-updates\` workflow.*
+          *Auto-generated by the \`check-docs-updates\` workflow.*
           BODYEOF
-          )"
+          )
 
-          # Check if a similar open issue already exists
           EXISTING=$(gh issue list --label "schema-update" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
 
           if [ -n "$EXISTING" ]; then
-            echo "Open schema-update issue #$EXISTING already exists. Adding comment instead."
+            echo "Adding comment to existing issue #$EXISTING"
             gh issue comment "$EXISTING" --body "$ISSUE_BODY"
           else
-            # Create label if it doesn't exist
             gh label create "schema-update" --description "Schema needs updating due to Claude Code docs changes" --color "D93F0B" 2>/dev/null || true
-
             gh issue create \
               --title "Schema update needed: Claude Code docs changed" \
               --body "$ISSUE_BODY" \
