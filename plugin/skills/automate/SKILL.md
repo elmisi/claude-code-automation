@@ -80,74 +80,23 @@ Parse `$ARGUMENTS` to determine the action:
 
 # Help
 
-**Print this text EXACTLY as-is, then stop. Do NOT add explanations or call any tools.**
+Run this script and show its output to the user. Do NOT add any text before or after.
 
-```
-/automate — Expert advisor for Claude Code automations
-
-Usage:
-  /automate <description>      Create a new automation (interactive)
-  /automate list               List all automations
-  /automate edit <name>        Edit an existing automation
-  /automate delete <name>      Delete an automation
-  /automate export [file]      Export automations to JSON file
-  /automate import <file>      Import automations from JSON file
-  /automate verify             Health-check all automations
-  /automate cleanup            Remove all automations (pre-uninstall)
-  /automate help               Show this help
-
-Automation types:
-  hook              Deterministic, guaranteed execution on events
-  skill             Domain knowledge / workflows (auto or manual)
-  subagent          Isolated context for analysis / review
-  permissions       Control what Claude can/cannot do
-  claude-md         Advisory rules loaded every session
-  custom-command    Shortcut for a frequent prompt
-  mcp-server        External tool/service integration
-  lsp-server        Code intelligence (diagnostics, hover)
-  agent-team        Parallel multi-agent orchestration (experimental)
-
-Examples:
-  /automate run tests before every commit
-  /automate block push without approval
-  /automate integrate GitHub tools via MCP
+```bash
+"${CLAUDE_SKILL_DIR}/../../scripts/automate-help.sh"
 ```
 
 ---
 
 # List Automations
 
-**Step 1: Load registry (silently, no output yet)**
+If `~/.claude/automations-registry.json` does not exist, run **Registry Bootstrap** first.
 
-Read `~/.claude/automations-registry.json`. If it doesn't exist, run **Registry Bootstrap** (scan for `created-by: automate` markers). If still empty after bootstrap:
-> "No automations found. Create automations with `/automate <description>` to start tracking."
+Then run this script and show its output to the user. Do NOT add any text before or after.
 
-Stop here.
-
-**Step 2: Print the table and commands, then STOP**
-
-Do NOT ask questions, call tools, or add explanations. Print this output and stop:
-
+```bash
+"${CLAUDE_SKILL_DIR}/../../scripts/automate-list.sh"
 ```
-Automations:
-
-┌─────────────────┬────────┬────────┬─────────────────────────────────────┐
-│ Name            │ Type   │ Scope  │ Description                         │
-├─────────────────┼────────┼────────┼─────────────────────────────────────┤
-│ (one row per automation from registry)                                  │
-└─────────────────┴────────┴────────┴─────────────────────────────────────┘
-
-Commands:
-  /automate edit <name>        Edit an automation
-  /automate delete <name>      Delete an automation
-  /automate export [file]      Export all to JSON
-  /automate import <file>      Import from JSON
-  /automate verify             Health-check all
-  /automate cleanup            Remove all (pre-uninstall)
-  /automate <description>      Create new automation
-```
-
-**Do NOT use AskUserQuestion. The user will type the next command themselves.**
 
 ---
 
