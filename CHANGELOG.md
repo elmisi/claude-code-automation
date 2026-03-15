@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-03-15
+
+### Added
+- **Schema sync with Claude Code March 2026**: 21 hook events (+6 new: PostCompact, InstructionsLoaded, WorktreeCreate, WorktreeRemove, Elicitation, ElicitationResult), 31 subagent tools (+18 new), `http` hook handler type, new skill/subagent frontmatter fields
+- **JSON config guard**: PreToolUse/PostToolUse hooks in SKILL.md frontmatter that validate JSON before writing to config files — prevents malformed JSON from silently breaking Claude Code
+- **Adaptive interview**: 4-phase decision tree (quick classification → refinement → conflict check → name proposal with 3 suggestions) replaces flat question list
+- **`/automate cleanup` command**: pre-uninstall cleanup that removes all automations with option to keep selected ones
+- **Registry Bootstrap**: automatic reconstruction of the automations registry from `created-by: automate` file markers — handles seamless reinstallation
+- **Daily docs check GitHub Action**: compares live Claude Code documentation against project schemas, opens issues when discrepancies are found
+- **Rollback on failure**: if creation of a combination fails after 2 attempts, all components are cleaned up automatically
+- 30 new structure tests (STRUCT-43..78) for new events, tools, guard script, model IDs
+
+### Fixed
+- Hook test in Step 7 now uses stdin (matching real hook behavior) instead of command-line arguments
+- `validate-config.sh` accepts full model IDs (e.g. `claude-sonnet-4-6`) in addition to short names
+- `guard-json-config.sh` calls jq once instead of twice per validation
+- Template paths use `${CLAUDE_SKILL_DIR}` for reliable resolution across all environments
+- Removed dead variable (`has_agent_paren`) from validate-config.sh
+- MCP server validation accepts `http` transport type
+- Agent team validation no longer requires `role` field (teams use natural language orchestration)
+
+### Changed
+- Step 0.2 (live docs fetch on every invocation) removed — replaced by daily GitHub Action
+- Agent teams schema reflects natural language orchestration reality (`teammateMode` instead of `displayMode`)
+- `sse` MCP transport marked as deprecated in favor of `http`
+- Skills schema: `name` field now documented as optional (uses directory name if omitted), added `user-invocable`, `allowed-tools`, `model`, `agent`, `argument-hint` fields
+
 ## [2.1.1] - 2026-03-04
 
 ### Fixed

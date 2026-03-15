@@ -1,0 +1,32 @@
+name: Auto-tag on version bump
+
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create tag if VERSION changed
+        run: |
+          VERSION=$(cat VERSION | tr -d '[:space:]')
+          TAG="v${VERSION}"
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists — skipping."
+          else
+            echo "Creating tag $TAG"
+            git tag "$TAG"
+            git push origin "$TAG"
+            echo "Tagged $TAG at $(git rev-parse HEAD)"
+          fi

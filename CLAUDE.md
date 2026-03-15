@@ -52,6 +52,8 @@ When bumping version, update ALL these files:
 
 The marketplace.json version is used by Claude Code's plugin update system. If out of sync, updates won't work.
 
+A GitHub Action (`auto-tag.yml`) automatically creates a git tag `v{VERSION}` when the VERSION file changes on main. **Do not create tags manually.**
+
 ## Running Tests
 
 ```bash
