@@ -16,13 +16,24 @@ fi
 
 REGISTRY="$HOME/.claude/automations-registry.json"
 
-if [ ! -f "$REGISTRY" ] || [ "$(jq 'length' "$REGISTRY" 2>/dev/null)" = "0" ] || [ "$(jq 'length' "$REGISTRY" 2>/dev/null)" = "null" ]; then
+if [ ! -f "$REGISTRY" ]; then
   echo "No automations found. Create one with: /automate <description>"
   exit 0
 fi
 
-# Read all entries
-ENTRIES=$(jq -r '.[] | [.name, .type, .scope, .description] | @tsv' "$REGISTRY" 2>/dev/null)
+# Support both formats:
+#   Array:  [{name, type, ...}, ...]
+#   Object: {automations: [{name, type, ...}, ...], ...}
+ROOT_TYPE=$(jq -r 'type' "$REGISTRY" 2>/dev/null)
+
+if [ "$ROOT_TYPE" = "array" ]; then
+  ENTRIES=$(jq -r '.[] | [.name, .type, .scope, .description] | @tsv' "$REGISTRY" 2>/dev/null)
+elif [ "$ROOT_TYPE" = "object" ]; then
+  ENTRIES=$(jq -r '(.automations // [])[] | [.name, .type, .scope, .description] | @tsv' "$REGISTRY" 2>/dev/null)
+else
+  echo "No automations found. Create one with: /automate <description>"
+  exit 0
+fi
 
 if [ -z "$ENTRIES" ]; then
   echo "No automations found. Create one with: /automate <description>"
