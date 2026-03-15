@@ -30,6 +30,21 @@ This plugin acts as an expert advisor. You describe what you want to automate, i
 
 Then restart Claude Code to activate the plugin.
 
+## Updating
+
+Auto-update is **disabled by default** for third-party plugins. To enable automatic updates:
+
+```
+/plugin → Marketplaces tab → elmisi → Enable auto-update
+```
+
+Or update manually anytime:
+
+```bash
+/plugin marketplace update elmisi
+/reload-plugins
+```
+
 ## Uninstallation
 
 ```bash
