@@ -124,34 +124,30 @@ Read `~/.claude/automations-registry.json`. If it doesn't exist, run **Registry 
 
 Stop here.
 
-**Step 2: Print the table IMMEDIATELY (before anything else)**
+**Step 2: Print the table and commands, then STOP**
 
-Do NOT ask questions or explain anything first. Print the table as your FIRST output:
+Do NOT ask questions, call tools, or add explanations. Print this output and stop:
 
 ```
+Automations:
+
 ┌─────────────────┬────────┬────────┬─────────────────────────────────────┐
 │ Name            │ Type   │ Scope  │ Description                         │
 ├─────────────────┼────────┼────────┼─────────────────────────────────────┤
-│ icon-prompt     │ skill  │ global │ Generate prompts for AI image gen.  │
-│ pre-push-guard  │ hook   │ global │ Block git push without approval     │
+│ (one row per automation from registry)                                  │
 └─────────────────┴────────┴────────┴─────────────────────────────────────┘
+
+Commands:
+  /automate edit <name>        Edit an automation
+  /automate delete <name>      Delete an automation
+  /automate export [file]      Export all to JSON
+  /automate import <file>      Import from JSON
+  /automate verify             Health-check all
+  /automate cleanup            Remove all (pre-uninstall)
+  /automate <description>      Create new automation
 ```
 
-**Step 3: Then ask what the user wants to do**
-
-Only AFTER the table is printed, use AskUserQuestion:
-
-```
-What would you like to do?
-- View details of an automation
-- Edit an automation
-- Delete an automation
-- Export all automations
-- Create a new automation
-- Nothing, just browsing
-```
-
-Handle the selected action accordingly.
+**Do NOT use AskUserQuestion. The user will type the next command themselves.**
 
 ---
 
