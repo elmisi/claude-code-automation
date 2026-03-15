@@ -30,6 +30,18 @@ This plugin acts as an expert advisor. You describe what you want to automate, i
 
 Then restart Claude Code to activate the plugin.
 
+## Uninstallation
+
+```bash
+# 1. Clean up all automations created by the plugin (optional but recommended)
+/automate cleanup
+
+# 2. Uninstall the plugin
+/plugin uninstall automate
+```
+
+If you skip the cleanup step, your automations (skills, hooks, subagents, etc.) will continue to work independently — they don't depend on the plugin at runtime. If you reinstall the plugin later, it will automatically detect and re-register existing automations.
+
 ## Usage
 
 ```bash
@@ -92,6 +104,7 @@ All automations created by this plugin are tracked in a registry (`~/.claude/aut
 | `/automate export [file]` | Export all automations to a portable JSON file |
 | `/automate import <file>` | Import automations from another machine with conflict resolution |
 | `/automate verify` | Health-check all registered automations — detects missing files or hook entries and offers to repair them |
+| `/automate cleanup` | Pre-uninstall: remove all automations created by this plugin (with option to keep selected ones) |
 
 ### Export/Import Example
 

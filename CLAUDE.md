@@ -28,7 +28,8 @@ When Claude Code changes (new hook events, new tools, etc.), update the **schema
 
 The core is `plugin/skills/automate/SKILL.md` which implements:
 
-1. **Command Router**: Parses `$ARGUMENTS` to dispatch sub-commands (`list`, `edit`, `delete`, `export`, `import`, `verify`) or fall through to the creation workflow.
+1. **Command Router**: Parses `$ARGUMENTS` to dispatch sub-commands (`list`, `edit`, `delete`, `export`, `import`, `verify`, `cleanup`) or fall through to the creation workflow.
+   - **Registry Bootstrap**: Before routing, checks if the registry exists. If not, scans for files with `created-by: automate` markers and rebuilds the registry (handles reinstallation after uninstall).
 2. **8-Step Creation Workflow**: Load schemas → Interview → Decide → Explain → Create → Validate → Verify completeness → Test → Report.
 3. **Two-Level Validation**: SKILL.md loads schemas at Step 0, validates against them at Step 5, and `plugin/scripts/validate-config.sh` provides external validation.
 4. **Registry System**: All automations tracked in `~/.claude/automations-registry.json` with metadata (id, name, type, scope, path, timestamps). Enables list/edit/delete/export/import.

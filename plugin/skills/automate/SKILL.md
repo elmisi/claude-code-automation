@@ -23,6 +23,43 @@ Arguments: $ARGUMENTS
 
 ---
 
+## Registry Bootstrap
+
+Before routing commands, ensure the registry is available.
+
+**If `~/.claude/automations-registry.json` does NOT exist:**
+
+Scan for existing automations created by this plugin (they have `created-by: automate` markers). This handles reinstallation after uninstall.
+
+1. Scan `~/.claude/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md` for frontmatter containing `created-by: automate`
+2. Scan `~/.claude/agents/*.md` and `.claude/agents/*.md` for frontmatter containing `created-by: automate`
+3. Scan `~/.claude/settings.json` for hook entries with `"_meta": {"createdBy": "automate"}`
+4. Scan `.claude/settings.json` for the same
+5. Scan `.mcp.json` and `~/.claude.json` for MCP entries with `"_meta": {"createdBy": "automate"}`
+6. Scan `.lsp.json` and `~/.claude/lsp.json` for LSP entries with `"_meta": {"createdBy": "automate"}`
+
+For each found automation, reconstruct a registry entry:
+```json
+{
+  "id": "recovered-<type>-<name>",
+  "name": "<extracted from frontmatter or key name>",
+  "type": "<skill|hook|subagent|permission|custom-command|mcp-server|lsp-server>",
+  "scope": "<global if in ~/.claude/, project if in .claude/>",
+  "path": "<absolute path to the file>",
+  "created": "<file modification time>",
+  "modified": "<file modification time>",
+  "description": "<extracted from frontmatter or empty>",
+  "recovered": true
+}
+```
+
+Write the rebuilt registry and report:
+> "Found N existing automations created by this plugin. Registry rebuilt."
+
+If nothing found → proceed normally (clean start).
+
+---
+
 ## Command Router
 
 Parse `$ARGUMENTS` to determine the action:
@@ -35,6 +72,7 @@ Parse `$ARGUMENTS` to determine the action:
 | `export [file]` | Go to **Export Automations** |
 | `import <file>` | Go to **Import Automations** |
 | `verify` | Go to **Verify Automations** |
+| `cleanup` | Go to **Cleanup Automations** |
 | Anything else | Go to **Create New Automation** |
 
 ---
@@ -43,8 +81,10 @@ Parse `$ARGUMENTS` to determine the action:
 
 Read the registry file: `~/.claude/automations-registry.json`
 
-If it doesn't exist, say:
-> "No automations registry found. Create automations with `/automate <description>` to start tracking."
+If it doesn't exist, run **Registry Bootstrap** first (scan for `created-by: automate` markers).
+
+If still empty after bootstrap, say:
+> "No automations found. Create automations with `/automate <description>` to start tracking."
 
 If it exists, display a table:
 
@@ -190,6 +230,99 @@ Arguments: `verify`
    - For file-based types (skill, subagent, etc.): warn that content is lost and offer
      to recreate with the same name/description from registry metadata
 6. After repair, run verify again and confirm all healthy
+
+---
+
+# Cleanup Automations
+
+Arguments: `cleanup`
+
+**Purpose**: Prepare for plugin uninstallation by removing all automations created by this plugin.
+
+1. Read `~/.claude/automations-registry.json`
+2. If empty/missing, scan for `created-by: automate` markers (same logic as Registry Bootstrap)
+3. If no automations found at all:
+   > "No automations found. Nothing to clean up. You can safely uninstall the plugin."
+
+   Stop here.
+
+4. Display all found automations:
+   ```
+   Automations that will be removed:
+
+   | # | Name            | Type   | Scope   | Path                                    |
+   |---|-----------------|--------|---------|-----------------------------------------|
+   | 1 | semver-hook     | hook   | global  | ~/.claude/settings.json (hook entry)    |
+   | 2 | semver          | skill  | global  | ~/.claude/skills/semver/SKILL.md        |
+   | 3 | code-reviewer   | agent  | project | .claude/agents/code-reviewer.md         |
+   ```
+
+5. Use AskUserQuestion:
+   ```
+   What would you like to do?
+   - Remove ALL automations listed above
+   - Select which automations to keep
+   - Cancel (keep everything)
+   ```
+
+6. **If "Remove ALL":**
+   For each automation, in reverse order of creation:
+
+   **hook**:
+   - Read `settings.json` → remove the specific hook entry matching `_meta.createdBy: "automate"` and the automation name
+   - If the event array becomes empty → remove the event key
+   - If `.hooks` becomes empty → remove the `.hooks` key
+   - Write back the cleaned settings.json
+   - Delete any associated script files in `~/.claude/scripts/` that have `# created-by: automate` marker
+
+   **skill**:
+   - Delete the entire skill directory (`~/.claude/skills/<name>/` or `.claude/skills/<name>/`)
+
+   **subagent**:
+   - Delete the agent file (`~/.claude/agents/<name>.md` or `.claude/agents/<name>.md`)
+
+   **permission**:
+   - Read `settings.json` → remove the specific allow/deny rules that were added
+   - Write back
+
+   **custom-command**:
+   - Read `settings.json` → remove the specific command entry
+   - Write back
+
+   **claude-md**:
+   - Read the CLAUDE.md file → remove the section that was added (identified by `<!-- automate: name -->` markers if present, or by content matching)
+   - Write back
+
+   **mcp-server**:
+   - Read `.mcp.json` or `~/.claude.json` → remove the server entry with `_meta.createdBy: "automate"`
+   - If `mcpServers` becomes empty → remove the key (or delete file if nothing else in it)
+   - Write back
+
+   **lsp-server**:
+   - Read `.lsp.json` or `~/.claude/lsp.json` → remove the server entry
+   - Write back
+
+   **agent-team**:
+   - Delete the team directory (`~/.claude/teams/<name>/`)
+
+7. **If "Select which to keep":**
+   - Show a numbered list, ask which to KEEP (all others will be removed)
+   - Remove only the ones NOT selected
+
+8. After removal, delete `~/.claude/automations-registry.json`
+
+9. Show summary:
+   ```
+   Cleanup complete:
+   - Removed: 3 automations (semver-hook, semver, code-reviewer)
+   - Kept: 0
+   - Registry: deleted
+
+   You can now safely uninstall the plugin with:
+   /plugin uninstall automate
+   ```
+
+**IMPORTANT**: Every JSON file modification during cleanup MUST be validated with `jq` after writing. Use the same merge algorithm as hook creation — never write partial JSON.
 
 ---
 
