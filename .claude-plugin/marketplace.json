@@ -13,6 +13,12 @@
       "version": "2.4.0",
       "source": "./plugin",
       "description": "Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.)"
+    },
+    {
+      "name": "develop-cycle",
+      "version": "1.0.0",
+      "source": "./plugin-develop-cycle",
+      "description": "Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push"
     }
   ]
 }

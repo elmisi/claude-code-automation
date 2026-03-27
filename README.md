@@ -1,13 +1,26 @@
 # claude-code-automation
 
-> An expert advisor plugin for Claude Code that helps you decide and create the right automation for your needs.
+> Claude Code plugins for automation and structured development workflows.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml)
 
-**Schemas updated: Feb 2026** — Covers all Claude Code automation types including MCP Servers, LSP Servers, and Agent Teams. Now with 15 hook events and a `verify` health-check command.
+This repository contains two plugins:
 
-## Why this plugin?
+| Plugin | Command | Description |
+|--------|---------|-------------|
+| **automate** | `/automate` | Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.) |
+| **develop-cycle** | `/develop-cycle` | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
+
+---
+
+## Plugin 1: automate
+
+> An expert advisor that helps you decide and create the right automation for your needs.
+
+**Schemas updated: Mar 2026** — 25 hook events, MCP Servers, LSP Servers, Agent Teams, PowerShell tool, effort/paths/shell fields.
+
+### Why this plugin?
 
 [Claude Code](https://claude.ai/code) is Anthropic's AI coding agent for the terminal. It offers multiple automation mechanisms: **skills**, **hooks**, **subagents**, **permissions**, **CLAUDE.md**, **custom commands**, **MCP servers**, **LSP servers**, and **agent teams**. Each serves a different purpose, but choosing the right one isn't always obvious.
 
@@ -219,6 +232,44 @@ The current interview flow uses adaptive questions with category-based shortcuts
 ### Schema auto-update
 
 A daily GitHub Action checks the official Claude Code documentation for changes and opens issues when schemas need updating. Contributors can then update schemas without manually diffing docs.
+
+---
+
+## Plugin 2: develop-cycle
+
+> A structured development workflow that guides Claude through analysis, implementation, validation, and a mandatory checkpoint before commit/push.
+
+### Installation
+
+```bash
+/plugin marketplace add elmisi/claude-code-automation
+/plugin install develop-cycle
+```
+
+### Usage
+
+```bash
+/develop-cycle add user authentication with JWT tokens
+/develop-cycle fix the race condition in the payment queue
+/develop-cycle refactor the API layer to use dependency injection
+```
+
+### How it works
+
+The workflow has 6 phases:
+
+1. **Analysis and Planning** — Understand the task, study the codebase, clarify ambiguities, propose an approach, define the plan
+2. **Setup** — Create a working branch from the main branch
+3. **Implementation** — Write code and tests following the approved plan
+4. **Validation** — Run pre-commit/lint and tests. **Mandatory checkpoint**: Claude stops and waits for your explicit OK before committing
+5. **Iteration** — If you request changes, Claude applies them and re-validates
+6. **Finalization** — Commit, push, and update docs if needed (only after your approval)
+
+The key feature is the **mandatory checkpoint** after validation passes. Claude will never commit or push autonomously — it always stops to show you the results and waits for your explicit approval.
+
+Pre-commit commands, test commands, and the main branch name are read from your project's `CLAUDE.md` file, so the workflow adapts to any project.
+
+---
 
 ## Contributing
 
