@@ -69,8 +69,8 @@
   "architecture": {
     "teamLead": "The main Claude Code session that creates the team, spawns teammates, and coordinates work",
     "teammates": "Separate Claude Code instances that each work on assigned tasks",
-    "taskList": "Shared list of work items that teammates claim and complete (pending → in progress → completed)",
-    "mailbox": "Messaging system for direct communication between agents"
+    "taskList": "Shared list of work items that teammates claim and complete (pending → in progress → completed). Tasks support dependencies — blocked tasks auto-unblock when dependencies complete. File locking prevents race conditions on task claiming.",
+    "mailbox": "Messaging system for direct communication between agents. Supports 'message' (one teammate) and 'broadcast' (all teammates)."
   },
   "permissions": {
     "description": "Teammates start with the lead's permission settings. If lead uses --dangerously-skip-permissions, all teammates do too.",
@@ -97,6 +97,7 @@
   },
   "hooks": {
     "TeammateIdle": "Runs when a teammate is about to go idle. Exit 2 sends feedback and keeps teammate working.",
+    "TaskCreated": "Runs when a task is being created. Exit 2 prevents creation and sends feedback.",
     "TaskCompleted": "Runs when a task is being marked complete. Exit 2 prevents completion and sends feedback."
   },
   "example": {

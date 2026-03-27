@@ -47,7 +47,11 @@
       "Diagnostics (errors, warnings, hints)",
       "Hover information (type info, documentation)",
       "Completions (code suggestions)",
-      "Go-to-definition (jump to symbol source)"
+      "Go-to-definition (jump to symbol source)",
+      "Find references (all usages of a symbol)",
+      "List symbols (workspace/document symbol search)",
+      "Find implementations (interface/abstract implementations)",
+      "Trace call hierarchies (incoming/outgoing calls)"
     ]
   },
   "limitations": {

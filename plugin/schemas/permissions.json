@@ -20,7 +20,12 @@
       "Bash(npm *)": "Allow all npm commands",
       "Bash(rm -rf *)": "Match dangerous rm commands",
       "Edit(*.test.js)": "Match editing test files",
-      "Write(*.md)": "Match writing markdown files"
+      "Write(*.md)": "Match writing markdown files",
+      "Agent(Explore)": "Match spawning the Explore subagent",
+      "Agent(my-custom-agent)": "Match spawning a specific custom subagent",
+      "Skill(commit)": "Match invoking a specific skill",
+      "Skill(name *)": "Match skills with a name prefix",
+      "MCPSearch": "Match the MCP tool search capability"
     }
   },
   "priority": {

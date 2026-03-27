@@ -22,12 +22,16 @@
     "WorktreeCreate",
     "WorktreeRemove",
     "Elicitation",
-    "ElicitationResult"
+    "ElicitationResult",
+    "TaskCreated",
+    "StopFailure",
+    "CwdChanged",
+    "FileChanged"
   ],
   "validTypes": ["command", "http", "prompt", "agent"],
   "eventHandlerSupport": {
-    "allTypes": ["PermissionRequest", "PostToolUse", "PostToolUseFailure", "PreToolUse", "Stop", "SubagentStop", "TaskCompleted", "UserPromptSubmit"],
-    "commandOnly": ["ConfigChange", "Elicitation", "ElicitationResult", "InstructionsLoaded", "Notification", "PostCompact", "PreCompact", "SessionEnd", "SessionStart", "SubagentStart", "TeammateIdle", "WorktreeCreate", "WorktreeRemove"]
+    "allTypes": ["PermissionRequest", "PostToolUse", "PostToolUseFailure", "PreToolUse", "Stop", "SubagentStop", "TaskCompleted", "TaskCreated", "UserPromptSubmit"],
+    "commandOnly": ["ConfigChange", "CwdChanged", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "Notification", "PostCompact", "PreCompact", "SessionEnd", "SessionStart", "StopFailure", "SubagentStart", "TeammateIdle", "WorktreeCreate", "WorktreeRemove"]
   },
   "hookHandlerFields": {
     "common": {
@@ -64,6 +68,13 @@
         "type": "boolean",
         "description": "Run hook in background without blocking Claude. Only for command type.",
         "default": false,
+        "required": false
+      },
+      "shell": {
+        "type": "string",
+        "description": "Shell to use. Accepts 'bash' (default) or 'powershell' (Windows). Requires CLAUDE_CODE_USE_POWERSHELL_TOOL=1 for PowerShell.",
+        "validValues": ["bash", "powershell"],
+        "default": "bash",
         "required": false
       }
     },
@@ -135,7 +146,7 @@
     },
     "SessionEnd": {
       "description": "Why the session ended",
-      "validValues": ["clear", "logout", "prompt_input_exit", "bypass_permissions_disabled", "other"]
+      "validValues": ["clear", "resume", "logout", "prompt_input_exit", "bypass_permissions_disabled", "other"]
     },
     "Notification": {
       "description": "Notification type",
@@ -182,7 +193,8 @@
     },
     "InstructionsLoaded": {
       "description": "When CLAUDE.md or .claude/rules/*.md file is loaded",
-      "note": "No matcher support. Exit code is ignored."
+      "validValues": ["session_start", "nested_traversal", "path_glob_match", "include", "compact"],
+      "note": "Matcher is the load reason. Exit code is ignored."
     },
     "WorktreeCreate": {
       "description": "When a worktree is being created",
@@ -201,6 +213,24 @@
       "description": "After a user responds to an MCP elicitation",
       "examples": ["mcp-server-name"],
       "note": "Matcher is the MCP server name (regex). Exit 2 blocks response."
+    },
+    "TaskCreated": {
+      "description": "When a task is being created via TaskCreate",
+      "note": "No matcher support. Exit 2 prevents the task from being created."
+    },
+    "StopFailure": {
+      "description": "When the turn ends due to an API error. Output and exit code are ignored.",
+      "validValues": ["rate_limit", "authentication_failed", "billing_error", "invalid_request", "server_error", "max_output_tokens", "unknown"],
+      "note": "Matcher is the error type. No decision control — output and exit code are ignored."
+    },
+    "CwdChanged": {
+      "description": "When the working directory changes (e.g. cd command). Useful for direnv.",
+      "note": "No matcher support. Non-blocking — stderr shown to user only."
+    },
+    "FileChanged": {
+      "description": "When a watched file changes on disk. Matcher specifies filenames to watch.",
+      "examples": [".envrc", ".env", "package.json"],
+      "note": "Matcher is the filename (basename). Non-blocking — stderr shown to user only."
     }
   },
   "capabilities": {
@@ -224,6 +254,11 @@
       "description": "PermissionRequest hooks can control permission decisions",
       "events": ["PermissionRequest"],
       "usage": "Return hookSpecificOutput.decision with behavior (allow/deny), updatedInput, updatedPermissions, message"
+    },
+    "updatedMCPToolOutput": {
+      "description": "PostToolUse hooks can replace MCP tool output",
+      "events": ["PostToolUse"],
+      "usage": "Return hookSpecificOutput.updatedMCPToolOutput to replace the tool's output (MCP tools only)"
     },
     "topLevelDecision": {
       "description": "Several events support top-level decision/reason for blocking",
@@ -257,12 +292,12 @@
   "exitCode2BehaviorPerEvent": {
     "blocking": {
       "description": "These events can be blocked with exit code 2",
-      "events": ["PreToolUse", "PermissionRequest", "UserPromptSubmit", "Stop", "SubagentStop", "TeammateIdle", "TaskCompleted", "ConfigChange", "Elicitation", "ElicitationResult"]
+      "events": ["PreToolUse", "PermissionRequest", "UserPromptSubmit", "Stop", "SubagentStop", "TeammateIdle", "TaskCreated", "TaskCompleted", "ConfigChange", "Elicitation", "ElicitationResult"]
     },
     "nonBlocking": {
       "description": "Exit code 2 shows stderr but does not block",
-      "events": ["PostToolUse", "PostToolUseFailure", "Notification", "SubagentStart", "SessionStart", "SessionEnd", "PreCompact", "PostCompact", "InstructionsLoaded"],
-      "note": "WorktreeCreate: any non-zero exit fails creation. WorktreeRemove: logged in debug only."
+      "events": ["PostToolUse", "PostToolUseFailure", "Notification", "SubagentStart", "SessionStart", "SessionEnd", "CwdChanged", "FileChanged", "PreCompact", "PostCompact", "InstructionsLoaded"],
+      "note": "WorktreeCreate: any non-zero exit fails creation. WorktreeRemove: logged in debug only. StopFailure: output and exit code are ignored entirely."
     }
   },
   "structure": {
@@ -308,6 +343,7 @@
     "CLAUDE_SESSION_ID": "Current session ID",
     "CLAUDE_ENV_FILE": "File path for persisting environment variables (SessionStart hooks)",
     "CLAUDE_PLUGIN_ROOT": "Root directory of the plugin (for referencing bundled scripts)",
+    "CLAUDE_PLUGIN_DATA": "Directory for plugin persistent data (survives plugin updates)",
     "CLAUDE_CODE_REMOTE": "Set to 'true' when running in remote/web environments"
   },
   "configLocations": {

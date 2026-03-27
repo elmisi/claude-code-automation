@@ -58,6 +58,23 @@
       "hooks": {
         "type": "object",
         "description": "Lifecycle hooks scoped to this skill (same format as global hooks)"
+      },
+      "effort": {
+        "type": "string",
+        "validValues": ["low", "medium", "high", "max"],
+        "description": "Effort level when this skill is active. Overrides session effort level. 'max' is Opus 4.6 only.",
+        "default": "inherits from session"
+      },
+      "paths": {
+        "type": "string",
+        "description": "Glob patterns that limit when this skill is activated. Accepts a comma-separated string or a YAML list. When set, Claude loads the skill automatically only when working with files matching the patterns.",
+        "examples": ["src/**/*.ts", "packages/frontend/**"]
+      },
+      "shell": {
+        "type": "string",
+        "validValues": ["bash", "powershell"],
+        "default": "bash",
+        "description": "Shell to use for !`command` blocks in this skill. Setting 'powershell' runs inline shell commands via PowerShell on Windows. Requires CLAUDE_CODE_USE_POWERSHELL_TOOL=1."
       }
     }
   },
@@ -97,6 +114,8 @@
     "additionalDirs": "Skills in .claude/skills/ within --add-dir directories are loaded automatically and support live change detection.",
     "nestedDiscovery": "Claude Code discovers skills from nested .claude/skills/ directories (supports monorepo setups).",
     "contextBudget": "Skill descriptions are loaded at 2% of context window (fallback: 16,000 chars). Override with SLASH_COMMAND_TOOL_CHAR_BUDGET env var.",
-    "permissionControl": "Control skill access via permissions: Skill(name) for exact match, Skill(name *) for prefix match."
+    "permissionControl": "Control skill access via permissions: Skill(name) for exact match, Skill(name *) for prefix match.",
+    "ultrathink": "Including the word 'ultrathink' anywhere in skill content enables extended thinking (thinking mode).",
+    "agentSkillsStandard": "Skills follow the Agent Skills (agentskills.io) open standard, which works across multiple AI tools."
   }
 }

@@ -25,8 +25,8 @@
         "validValues": [
           "Agent", "AskUserQuestion", "Bash", "CronCreate", "CronDelete", "CronList",
           "Edit", "EnterPlanMode", "EnterWorktree", "ExitPlanMode", "ExitWorktree",
-          "Glob", "Grep", "ListMcpResourcesTool", "LSP", "NotebookEdit", "Read",
-          "ReadMcpResourceTool", "Skill", "TaskCreate", "TaskGet", "TaskList",
+          "Glob", "Grep", "ListMcpResourcesTool", "LSP", "NotebookEdit", "PowerShell",
+          "Read", "ReadMcpResourceTool", "Skill", "TaskCreate", "TaskGet", "TaskList",
           "TaskOutput", "TaskStop", "TaskUpdate", "TodoWrite", "ToolSearch",
           "WebFetch", "WebSearch", "Write"
         ],
@@ -85,6 +85,16 @@
         "type": "string",
         "validValues": ["worktree"],
         "description": "Set to 'worktree' to run the subagent in a temporary git worktree, giving it an isolated copy of the repository. Automatically cleaned up if no changes."
+      },
+      "effort": {
+        "type": "string",
+        "validValues": ["low", "medium", "high", "max"],
+        "description": "Effort level for the subagent. Overrides session effort level. 'max' is Opus 4.6 only.",
+        "default": "inherits from session"
+      },
+      "initialPrompt": {
+        "type": "string",
+        "description": "Auto-submitted as first user turn when agent runs as main session agent (via --agent or agent setting). Commands and skills are processed. Prepended to any user-provided prompt."
       }
     }
   },
@@ -137,11 +147,14 @@
   },
   "notes": {
     "backgroundExecution": "Subagents can run concurrently in the background. Pre-approved permissions required.",
-    "resumption": "Subagents can be resumed with full conversation history using agent IDs.",
+    "resumption": "Subagents can be resumed with full conversation history using agent IDs via SendMessage.",
     "mcpTools": "Background subagents cannot use MCP tools.",
-    "autoCompaction": "Subagents support automatic compaction like the main conversation.",
-    "noNesting": "Subagents cannot spawn other subagents. Use Skills or chain from main conversation.",
+    "autoCompaction": "Subagents support automatic compaction at ~95% capacity.",
+    "nestedAgents": "Subagents CAN spawn other subagents using Agent(type1, type2) syntax in the tools field to restrict which types can be spawned. The restriction only applies to agents running as main thread with claude --agent.",
     "taskRenamed": "In v2.1.63, the Task tool was renamed to Agent. Existing Task(...) references still work as aliases.",
-    "disableSubagent": "Deny specific subagents via permissions: Agent(Explore), Agent(my-custom-agent)"
+    "taskOutputDeprecated": "TaskOutput is deprecated. Use Read on the task's output file path instead.",
+    "disableSubagent": "Deny specific subagents via permissions: Agent(Explore), Agent(my-custom-agent)",
+    "pluginSecurity": "Plugin subagents ignore hooks, mcpServers, and permissionMode fields for security.",
+    "subagentModelOverride": "CLAUDE_CODE_SUBAGENT_MODEL env var overrides subagent model at the highest priority."
   }
 }

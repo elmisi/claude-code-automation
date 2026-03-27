@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-03-27
+
+### Added
+- **4 new hook events**: `TaskCreated`, `StopFailure`, `CwdChanged`, `FileChanged` — synced from live Claude Code docs
+- **`shell` field** on command hooks — `bash` (default) or `powershell` for Windows support
+- **`PowerShell` tool** added to valid subagent tools list (opt-in preview)
+- **`effort` field** for skills and subagents — `low`, `medium`, `high`, `max` (Opus 4.6 only)
+- **`initialPrompt` field** for subagents — auto-submitted first turn with `--agent`
+- **`paths` field** for skills — glob patterns that limit when a skill is activated
+- **`shell` field** for skills — shell for `!`command`` blocks (`bash`/`powershell`)
+- **`headersHelper` field** for MCP servers — dynamic header generation via shell command
+- **`oauth.authServerMetadataUrl`** for MCP servers — override OAuth metadata discovery (v2.1.64+)
+- MCP channels feature, plugin-provided MCP servers, `claude mcp serve`, policy controls (`allowedMcpServers`/`deniedMcpServers`)
+- `PostToolUse` hooks can now return `updatedMCPToolOutput` to replace MCP tool output
+- `PreToolUse` hooks gain `additionalContext` field
+- LSP servers: find references, list symbols, find implementations, trace call hierarchies
+- Permission patterns: `Agent(name)`, `Skill(name)`, `MCPSearch`
+- `TaskCreated` hook for agent teams
+- `CLAUDE_PLUGIN_DATA` environment variable for plugin persistent data
+- Effort and shell validation in `validate-config.sh`
+- 5 new structure tests (102 total, up from 97)
+
+### Changed
+- Hook events count: 21 → 25
+- Updated matcher values for `SessionEnd` (+`resume`), `InstructionsLoaded` (now has matchers)
+- Subagent `noNesting` note corrected: subagents CAN spawn other subagents via `Agent(type)` syntax
+- `TaskOutput` tool marked as deprecated (use `Read` on output file path)
+- Plugin subagents note: `hooks`, `mcpServers`, `permissionMode` ignored for security
+- MCP scope naming: `local` (was `project`), `user` (was `global`)
+- `claude-code-reference.md` updated to 2026-03-27
+- "ultrathink" keyword documented for skills (enables extended thinking)
+
 ## [2.3.0] - 2026-03-15
 
 ### Added

@@ -62,11 +62,13 @@ VALID_HOOK_EVENTS=(
     "PermissionRequest"
     "Notification"
     "Stop"
+    "StopFailure"
     "PreCompact"
     "PostCompact"
     "SubagentStart"
     "SubagentStop"
     "TeammateIdle"
+    "TaskCreated"
     "TaskCompleted"
     "ConfigChange"
     "InstructionsLoaded"
@@ -74,6 +76,8 @@ VALID_HOOK_EVENTS=(
     "WorktreeRemove"
     "Elicitation"
     "ElicitationResult"
+    "CwdChanged"
+    "FileChanged"
 )
 
 # Invalid/non-existent hook events (common mistakes)
@@ -94,7 +98,7 @@ INVALID_HOOK_EVENTS=(
 VALID_HOOK_TYPES=("command" "http" "prompt" "agent")
 
 # Valid subagent tools
-VALID_TOOLS=("Agent" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronList" "Edit" "EnterPlanMode" "EnterWorktree" "ExitPlanMode" "ExitWorktree" "Glob" "Grep" "ListMcpResourcesTool" "LSP" "NotebookEdit" "Read" "ReadMcpResourceTool" "Skill" "TaskCreate" "TaskGet" "TaskList" "TaskOutput" "TaskStop" "TaskUpdate" "TodoWrite" "ToolSearch" "WebFetch" "WebSearch" "Write")
+VALID_TOOLS=("Agent" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronList" "Edit" "EnterPlanMode" "EnterWorktree" "ExitPlanMode" "ExitWorktree" "Glob" "Grep" "ListMcpResourcesTool" "LSP" "NotebookEdit" "PowerShell" "Read" "ReadMcpResourceTool" "Skill" "TaskCreate" "TaskGet" "TaskList" "TaskOutput" "TaskStop" "TaskUpdate" "TodoWrite" "ToolSearch" "WebFetch" "WebSearch" "Write")
 
 # Valid models
 VALID_MODELS=("opus" "sonnet" "haiku" "inherit")
@@ -275,6 +279,29 @@ validate_skill() {
         ((errors++))
     fi
 
+    # Validate effort if present
+    local effort=$(echo "$frontmatter" | grep "^effort:" | cut -d: -f2 | tr -d ' ')
+    if [ -n "$effort" ]; then
+        local valid_effort=false
+        for ve in "low" "medium" "high" "max"; do
+            if [ "$effort" == "$ve" ]; then
+                valid_effort=true
+                break
+            fi
+        done
+        if [ "$valid_effort" == "false" ]; then
+            error "Invalid effort '$effort'. Valid: low, medium, high, max"
+            ((errors++))
+        fi
+    fi
+
+    # Validate shell if present
+    local skill_shell=$(echo "$frontmatter" | grep "^shell:" | cut -d: -f2 | tr -d ' ')
+    if [ -n "$skill_shell" ] && [ "$skill_shell" != "bash" ] && [ "$skill_shell" != "powershell" ]; then
+        error "shell must be 'bash' or 'powershell', got '$skill_shell'"
+        ((errors++))
+    fi
+
     return $errors
 }
 
@@ -397,6 +424,22 @@ validate_subagent() {
     if [ -n "$iso" ] && [ "$iso" != "worktree" ]; then
         error "isolation must be 'worktree', got '$iso'"
         ((errors++))
+    fi
+
+    # Validate effort if present
+    local effort=$(echo "$frontmatter" | grep "^effort:" | cut -d: -f2 | tr -d ' ')
+    if [ -n "$effort" ]; then
+        local valid_effort=false
+        for ve in "low" "medium" "high" "max"; do
+            if [ "$effort" == "$ve" ]; then
+                valid_effort=true
+                break
+            fi
+        done
+        if [ "$valid_effort" == "false" ]; then
+            error "Invalid effort '$effort'. Valid: low, medium, high, max"
+            ((errors++))
+        fi
     fi
 
     return $errors

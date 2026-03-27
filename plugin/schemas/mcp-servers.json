@@ -75,8 +75,13 @@
       "fields": {
         "clientId": "Pre-configured OAuth client ID",
         "callbackPort": "Fixed port for OAuth callback URL (http://localhost:PORT/callback)",
-        "authServerMetadataUrl": "Override URL for OAuth metadata discovery"
+        "authServerMetadataUrl": "Override URL for OAuth metadata discovery (must use https://, v2.1.64+)"
       }
+    },
+    "headersHelper": {
+      "type": "string",
+      "description": "Shell command that outputs a JSON object of string key-value pairs to stdout, used as request headers. Runs fresh on each connection (session start and reconnect) with a 10-second timeout. Dynamic headers override static headers with the same name. At project or local scope, only runs after workspace trust dialog acceptance.",
+      "example": "/opt/bin/get-mcp-auth-headers.sh"
     }
   },
   "envVarExpansion": {
@@ -109,12 +114,15 @@
     "prompts": "MCP server prompts appear as /mcp__servername__promptname commands",
     "toolSearch": "When MCP tools exceed 10% of context, Claude Code defers tools and discovers them on demand via ToolSearch",
     "elicitation": "MCP servers can request structured input from users mid-task via elicitation dialogs",
-    "dynamicUpdates": "Claude Code supports MCP list_changed notifications for dynamic tool updates"
+    "dynamicUpdates": "Claude Code supports MCP list_changed notifications for dynamic tool updates",
+    "channels": "MCP servers can push messages into sessions via claude/channel capability. Enable with --channels flag at startup. Server reacts to external events (CI results, monitoring alerts, chat messages).",
+    "pluginMcp": "Plugins can bundle MCP servers in .mcp.json at plugin root or inline in plugin.json. Plugin servers start automatically when plugin is enabled. Use CLAUDE_PLUGIN_ROOT and CLAUDE_PLUGIN_DATA env vars.",
+    "mcpServe": "Claude Code can act as an MCP server itself via 'claude mcp serve', exposing its tools to other clients."
   },
   "scopes": {
     "description": "Scope hierarchy for MCP servers (highest to lowest priority)",
     "order": ["local (default)", "project (.mcp.json)", "user"],
-    "note": "When servers with the same name exist at multiple scopes, higher-priority scope wins"
+    "note": "When servers with the same name exist at multiple scopes, higher-priority scope wins. Scope names were renamed: 'local' (was 'project'), 'user' (was 'global')."
   },
   "limitations": {
     "description": "Important limitations to know",
@@ -133,7 +141,11 @@
       "linux": "/etc/claude-code/managed-mcp.json",
       "windows": "C:\\Program Files\\ClaudeCode\\managed-mcp.json"
     },
-    "note": "When deployed, takes exclusive control — users cannot add/modify MCP servers"
+    "note": "Can be combined with policy-based allowedMcpServers/deniedMcpServers for fine-grained control",
+    "policyControls": {
+      "allowedMcpServers": "Allowlist entries (by serverName, serverCommand, or serverUrl with wildcard). Empty array = complete lockdown. Undefined = no restrictions.",
+      "deniedMcpServers": "Denylist entries (same matching). Denylist takes absolute precedence — a server matching deny is blocked even if also on allowlist."
+    }
   },
   "example": {
     "mcpServers": {

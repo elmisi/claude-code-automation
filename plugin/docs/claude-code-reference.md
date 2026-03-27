@@ -1,6 +1,6 @@
 # Claude Code Reference Documentation
 
-Last updated: 2026-03-14
+Last updated: 2026-03-27
 
 This file contains the reference documentation for Claude Code automation mechanisms.
 For the authoritative source of valid values, see the schema files in `plugin/schemas/`.
@@ -52,7 +52,7 @@ Location: `.claude/settings.json` or `~/.claude/settings.json`
 | Event | Description | Matcher Values |
 |-------|-------------|----------------|
 | `SessionStart` | Session begins | `startup`, `resume`, `clear`, `compact` |
-| `SessionEnd` | Session ends | `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other` |
+| `SessionEnd` | Session ends | `clear`, `resume`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other` |
 | `UserPromptSubmit` | User submits prompt | (no matcher) |
 | `PreToolUse` | Before tool executes | Tool names: `Bash`, `Edit`, `Write`, `Edit\|Write`, `mcp__.*` |
 | `PostToolUse` | After tool succeeds | Same as PreToolUse |
@@ -60,15 +60,22 @@ Location: `.claude/settings.json` or `~/.claude/settings.json`
 | `PermissionRequest` | Permission dialog appears | Tool names |
 | `Notification` | Claude needs attention | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog` |
 | `Stop` | Claude finishes responding | (no matcher) |
+| `StopFailure` | Turn ends due to API error | `rate_limit`, `authentication_failed`, `billing_error`, `invalid_request`, `server_error`, `max_output_tokens`, `unknown` (output ignored) |
 | `PreCompact` | Before context compaction | `manual`, `auto` |
+| `PostCompact` | After context compaction completes | `manual`, `auto` |
 | `SubagentStart` | Subagent spawned | Agent type (e.g. `code-reviewer`, `general-purpose`) |
 | `SubagentStop` | Subagent finished | Agent type (e.g. `code-reviewer`, `general-purpose`) |
-| `PostCompact` | After context compaction completes | `manual`, `auto` |
-| `InstructionsLoaded` | When CLAUDE.md or rules files loaded | (no matcher, exit code ignored) |
+| `TeammateIdle` | Teammate about to go idle | Agent name (exit 2 only) |
+| `TaskCreated` | Task being created via TaskCreate | (no matcher, exit 2 blocks) |
+| `TaskCompleted` | Task being marked completed | (no matcher, exit 2 blocks) |
+| `ConfigChange` | Config file changed | `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills` |
+| `InstructionsLoaded` | When CLAUDE.md or rules files loaded | `session_start`, `nested_traversal`, `path_glob_match`, `include`, `compact` (exit code ignored) |
 | `WorktreeCreate` | When a worktree is being created | (no matcher, any non-zero fails) |
 | `WorktreeRemove` | When a worktree is being removed | (no matcher) |
 | `Elicitation` | When MCP server requests user input | MCP server name (regex) |
 | `ElicitationResult` | After user responds to MCP elicitation | MCP server name (regex) |
+| `CwdChanged` | Working directory changes (e.g. cd) | (no matcher) |
+| `FileChanged` | Watched file changes on disk | Filename basename (e.g. `.envrc`, `.env`) |
 
 ### Invalid Events (DO NOT USE)
 
@@ -92,6 +99,7 @@ These event names do **NOT** exist:
 | Field | Type | Description |
 |-------|------|-------------|
 | `async` | boolean | Run in background, `command` type only |
+| `shell` | string | Shell to use: `bash` (default) or `powershell` (Windows, requires `CLAUDE_CODE_USE_POWERSHELL_TOOL=1`) |
 | `timeout` | integer | Per-hook timeout in seconds (defaults: 600 for command, 30 for prompt, 60 for agent) |
 | `statusMessage` | string | Custom spinner text shown during execution |
 | `model` | string | Model override for `prompt` and `agent` hook types |
@@ -110,8 +118,9 @@ These event names do **NOT** exist:
 
 ### Advanced Capabilities
 
-- **PreToolUse `updatedInput`**: Hooks on `PreToolUse` can return a JSON object with an `updatedInput` key on stdout. This allows hooks to modify the tool's input before execution (e.g., rewriting file paths, adding flags).
-- **PermissionRequest `decision`**: Hooks on `PermissionRequest` can return a JSON object with a `decision` key (`"allow"` or `"deny"`) on stdout. This allows hooks to programmatically control permission decisions without user interaction.
+- **PreToolUse `updatedInput`**: Hooks on `PreToolUse` can return JSON with `hookSpecificOutput.updatedInput` to modify tool inputs before execution, `additionalContext` to add context, and `permissionDecision` (`allow`/`deny`/`ask`).
+- **PermissionRequest `decision`**: Hooks on `PermissionRequest` can return JSON with `hookSpecificOutput.decision.behavior` (`allow`/`deny`), `updatedInput`, `updatedPermissions`, `message`, and `interrupt`.
+- **PostToolUse `updatedMCPToolOutput`**: Hooks on `PostToolUse` can return `hookSpecificOutput.updatedMCPToolOutput` to replace MCP tool output.
 
 ### Hook Input (stdin)
 
@@ -153,6 +162,7 @@ TOOL=$(echo "$INPUT" | jq -r '.tool_name')
 | `CLAUDE_SESSION_ID` | Current session ID |
 | `CLAUDE_ENV_FILE` | Path to a file where hooks can write `KEY=VALUE` pairs to set environment variables for subsequent hooks |
 | `CLAUDE_PLUGIN_ROOT` | Root directory of the plugin that registered the hook |
+| `CLAUDE_PLUGIN_DATA` | Directory for plugin persistent data (survives plugin updates) |
 | `CLAUDE_CODE_REMOTE` | Set to `1` when running in a remote/headless environment |
 
 **Note:** Tool input is NOT available as an environment variable. Always read it from stdin.
@@ -211,6 +221,9 @@ Content here...
 | `allowed-tools` | No | Tools allowed without permission when skill is active |
 | `model` | No | Model to use when skill is active |
 | `agent` | No | Subagent type for `context: fork` (e.g. `Explore`, `Plan`) |
+| `effort` | No | Effort level: `low`, `medium`, `high`, `max` (Opus 4.6 only) |
+| `paths` | No | Glob patterns that limit when skill is activated (comma-separated or YAML list) |
+| `shell` | No | Shell for `!`command`` blocks: `bash` (default) or `powershell` |
 
 ### Variables
 
@@ -251,17 +264,19 @@ System prompt for the agent...
 |-------|----------|--------------|
 | `name` | Yes | Agent identifier |
 | `description` | Yes | Brief description |
-| `tools` | No | `Agent`, `AskUserQuestion`, `Bash`, `CronCreate`, `CronDelete`, `CronList`, `Edit`, `EnterPlanMode`, `EnterWorktree`, `ExitPlanMode`, `ExitWorktree`, `Glob`, `Grep`, `ListMcpResourcesTool`, `LSP`, `NotebookEdit`, `Read`, `ReadMcpResourceTool`, `Skill`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop`, `TaskUpdate`, `TodoWrite`, `ToolSearch`, `WebFetch`, `WebSearch`, `Write` |
-| `model` | No | `opus`, `sonnet`, `haiku`, `inherit` (default: inherit) |
+| `tools` | No | `Agent`, `AskUserQuestion`, `Bash`, `CronCreate`, `CronDelete`, `CronList`, `Edit`, `EnterPlanMode`, `EnterWorktree`, `ExitPlanMode`, `ExitWorktree`, `Glob`, `Grep`, `ListMcpResourcesTool`, `LSP`, `NotebookEdit`, `PowerShell`, `Read`, `ReadMcpResourceTool`, `Skill`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop`, `TaskUpdate`, `TodoWrite`, `ToolSearch`, `WebFetch`, `WebSearch`, `Write` |
+| `model` | No | `opus`, `sonnet`, `haiku`, `inherit`, or full model ID (e.g. `claude-opus-4-6`). Default: `inherit` |
 | `disallowedTools` | No | List of tools the agent cannot use |
-| `permissionMode` | No | Permission mode for the agent's tool usage |
-| `skills` | No | List of skills available to the agent |
+| `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan` |
+| `skills` | No | Skills to preload into subagent context at startup |
 | `hooks` | No | Object defining hooks scoped to this agent |
-| `memory` | No | Persistent memory configuration for the agent |
+| `memory` | No | Persistent memory scope: `user`, `project`, `local` |
 | `maxTurns` | No | Maximum number of agentic turns |
-| `mcpServers` | No | MCP servers scoped to this subagent |
+| `mcpServers` | No | MCP servers scoped to this subagent (name reference or inline definition) |
 | `background` | No | Always run as background task (`true`/`false`) |
 | `isolation` | No | `worktree` for isolated git worktree |
+| `effort` | No | Effort level: `low`, `medium`, `high`, `max` (Opus 4.6 only) |
+| `initialPrompt` | No | Auto-submitted as first user turn when running as main session agent (via `--agent`) |
 
 ### Built-in Agents
 
@@ -309,6 +324,11 @@ Examples:
 - `Bash(git commit *)` - Allow git commit with any message
 - `Bash(npm test)` - Allow npm test
 - `Edit(*.test.js)` - Allow editing test files
+- `Agent(Explore)` - Match spawning the Explore subagent
+- `Agent(my-custom-agent)` - Match a specific custom subagent
+- `Skill(commit)` - Match invoking a specific skill
+- `Skill(name *)` - Match skills by name prefix
+- `MCPSearch` - Match MCP tool search capability
 
 **Use for**: Controlling what Claude can do at the tool level
 
@@ -380,7 +400,25 @@ Location: `.mcp.json` (project) or `~/.claude.json` (global)
 |------|----------------|-------------|
 | `stdio` | `command` | Communicates via stdin/stdout. Requires `command`, optional `args` and `env` |
 | `sse` | `url` | Communicates via Server-Sent Events. Requires `url` (deprecated, use `http` instead) |
-| `http` | `url` | Communicates via streamable HTTP (recommended). Requires `url`, optional `headers` and `oauth` |
+| `http` | `url` | Communicates via streamable HTTP (recommended). Requires `url`, optional `headers`, `headersHelper`, and `oauth` |
+
+### Additional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `headersHelper` | string | Shell command that outputs JSON headers on stdout (10s timeout, runs on each connection) |
+| `oauth.clientId` | string | Pre-configured OAuth client ID |
+| `oauth.callbackPort` | number | Fixed port for OAuth callback URL |
+| `oauth.authServerMetadataUrl` | string | Override OAuth metadata discovery URL (must use `https://`, v2.1.64+) |
+
+### Features
+
+- **Channels**: MCP servers can push messages into sessions via `claude/channel` capability (enable with `--channels` flag)
+- **Resources**: MCP servers expose resources accessible via `@` mentions
+- **Prompts**: MCP prompts appear as `/mcp__servername__promptname` commands
+- **Tool Search**: Deferred tool loading when MCP tools exceed 10% of context (enabled by default)
+- **Elicitation**: MCP servers can request structured input from users mid-task
+- **Dynamic Updates**: Supports `list_changed` notifications for dynamic tool updates
 
 ### Tool Naming
 
@@ -419,7 +457,7 @@ Location: `.lsp.json` (project) or `~/.claude/lsp.json` (global)
 | `command` | The language server executable to run |
 | `languages` | Array of language identifiers this server handles |
 
-**Use for**: Code intelligence features such as diagnostics, hover information, and completions integrated into Claude Code's workflow
+**Use for**: Code intelligence features such as diagnostics, hover information, completions, go-to-definition, find references, list symbols, find implementations, and trace call hierarchies integrated into Claude Code's workflow
 
 **Limitation**: The language server binary must be installed separately on the system. Claude Code does not install language servers automatically.
 
@@ -473,6 +511,8 @@ The `teammateMode` setting in `settings.json` controls how teammates run:
 Delegation strategy and plan approval are controlled via natural language instructions to the orchestrator, not via JSON settings.
 
 **Use for**: Parallel multi-agent orchestration where multiple Claude instances work on different parts of a task simultaneously
+
+**Hooks**: `TeammateIdle` (teammate about to go idle), `TaskCreated` (task being created), `TaskCompleted` (task marked complete). Exit 2 blocks the action and sends feedback.
 
 **Warning**: This is an experimental feature. You must set the environment variable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` to enable it.
 
