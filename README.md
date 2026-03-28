@@ -11,6 +11,7 @@ This repository contains two plugins:
 |--------|---------|-------------|
 | **automate** | `/automate` | Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.) |
 | **develop-cycle** | `/develop-cycle` | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
+| **plan** | `/plan` | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
 
 ---
 
@@ -268,6 +269,45 @@ The workflow has 6 phases:
 The key feature is the **mandatory checkpoint** after validation passes. Claude will never commit or push autonomously — it always stops to show you the results and waits for your explicit approval.
 
 Pre-commit commands, test commands, and the main branch name are read from your project's `CLAUDE.md` file, so the workflow adapts to any project.
+
+---
+
+## Plugin 3: plan
+
+> File-based planning with annotation cycles. A better alternative to Claude Code's built-in plan mode.
+
+### Installation
+
+```bash
+/plugin marketplace add elmisi/claude-code-automation
+/plugin install plan
+```
+
+### Usage
+
+```bash
+/plan add cursor-based pagination to the list endpoint
+/plan refactor the auth module to use JWT tokens
+/plan migrate the database from MongoDB to PostgreSQL
+```
+
+### How it works
+
+1. **Research** — Claude reads the relevant codebase deeply before writing anything
+2. **Write plan.md** — A detailed plan with context, approach, code snippets, edge cases, and a task breakdown
+3. **Annotate** — You open `plan.md` in your editor and add notes directly where you disagree:
+   ```markdown
+   ### Database Schema
+   Add a `visibility` field to the items table...
+
+   > **NOTE:** wrong — visibility goes on the list, not items. restructure this section.
+   ```
+4. **Iterate** — Tell Claude to process your notes. It addresses every annotation and updates the plan. Repeat 1-6 times until the plan is right.
+5. **Approve** — When you're satisfied, the plan is ready. You decide when and how to implement it.
+
+The key insight: a markdown file is **shared mutable state** between you and Claude. You can think at your own pace, point at the exact spot where something is wrong, and write the correction right there. This is fundamentally better than steering through chat messages.
+
+Inspired by [Boris Tane's annotation cycle workflow](https://boristane.com/blog/how-i-use-claude-code/).
 
 ---
 

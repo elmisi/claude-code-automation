@@ -1,0 +1,17 @@
+{
+  "name": "plan",
+  "version": "1.0.0",
+  "description": "File-based planning with annotation cycles. Replaces built-in plan mode with a persistent markdown artifact you can edit and refine iteratively.",
+  "author": {
+    "name": "elmisi"
+  },
+  "repository": "https://github.com/elmisi/claude-code-automation",
+  "license": "MIT",
+  "keywords": [
+    "planning",
+    "annotation",
+    "workflow",
+    "plan",
+    "architecture"
+  ]
+}
