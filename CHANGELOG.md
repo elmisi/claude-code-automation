@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **All hook events now support all 4 handler types** (command, http, prompt, agent) — removed `commandOnly` restriction from 16 events
 - **Skill context budget** corrected to 1% of context window (fallback: 8,000 chars), each entry capped at 250 characters
 - **CLAUDE.md** updated with multi-plugin repo overview and GitHub Actions table
+- **plan plugin renamed to plan-cycle** (`/plan` → `/plan-cycle`) to avoid collision with Claude Code's built-in `/plan` command
 
 ## [2.4.0] - 2026-03-27
 
