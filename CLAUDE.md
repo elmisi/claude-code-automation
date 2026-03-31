@@ -4,7 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A Claude Code plugin (meta-plugin) that helps users decide and create the right automation type through an interactive interview. The user describes what they want to automate, the skill interviews them, applies a decision matrix, then creates and validates the correct files.
+A multi-plugin repository for Claude Code automation:
+
+| Plugin | Directory | Command | Description |
+|--------|-----------|---------|-------------|
+| **automate** | `plugin/` | `/automate` | Expert advisor: interviews user, applies decision matrix, creates the right automation type |
+| **develop-cycle** | `plugin-develop-cycle/` | `/develop-cycle` | Structured dev workflow with mandatory checkpoint before commit/push |
+| **plan** | `plugin-plan/` | `/plan` | File-based planning with annotation cycles (persistent markdown plans) |
+
+The automate plugin is the core of this repo. develop-cycle and plan are self-contained single-skill plugins in their own directories.
 
 ## Architecture
 
@@ -123,7 +131,7 @@ Schemas in `plugin/schemas/` define what's valid. Key gotchas:
 - **Hook events**: 25 valid events (`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SessionStart`, `SessionEnd`, `UserPromptSubmit`, `PermissionRequest`, `Notification`, `Stop`, `StopFailure`, `PreCompact`, `PostCompact`, `SubagentStart`, `SubagentStop`, `TeammateIdle`, `TaskCreated`, `TaskCompleted`, `ConfigChange`, `InstructionsLoaded`, `WorktreeCreate`, `WorktreeRemove`, `Elicitation`, `ElicitationResult`, `CwdChanged`, `FileChanged`). NEVER use `PreCommit`, `PostCommit`, `PreBash`, `PostBash`, `BeforeToolUse`, `AfterToolUse` — they don't exist.
 - **Hook exit codes**: `0` = allow, `2` = block (stderr becomes feedback), anything else = allow but log error. Exit code 1 does NOT block.
 - **Hook structure**: Nested — `hooks.EventName[].hooks[]` (array inside array), not flat.
-- **Hook handler types**: `command` (shell script), `http` (POST to URL), `prompt` (single-turn LLM), `agent` (multi-turn LLM). Not all events support all types — some events are `command`-only. Fields: `async`, `timeout`, `statusMessage`, `model`, `once`, `shell` (`bash`/`powershell`). HTTP type adds: `url`, `headers`, `allowedEnvVars`.
+- **Hook handler types**: `command` (shell script), `http` (POST to URL), `prompt` (single-turn LLM), `agent` (multi-turn LLM). All events support all 4 types. Fields: `if` (permission rule syntax filter), `async`, `timeout`, `statusMessage`, `model`, `once`, `shell` (`bash`/`powershell`). HTTP type adds: `url`, `headers`, `allowedEnvVars`.
 - **Hook input**: Tool input is passed via **stdin** as JSON (NOT via environment variables). Read with `cat | jq -r '.tool_input.file_path'`. Available env vars (without tool input): `CLAUDE_PROJECT_DIR`, `CLAUDE_SESSION_ID`, `CLAUDE_ENV_FILE`, `CLAUDE_PLUGIN_ROOT`, `CLAUDE_CODE_REMOTE`.
 - **Hook special outputs**: `PreToolUse` hooks can modify tool inputs via `hookSpecificOutput.updatedInput`, add context via `additionalContext`, and control permissions via `permissionDecision`. `PermissionRequest` hooks control decisions via `hookSpecificOutput.decision.behavior` (allow/deny). `PostToolUse` hooks can replace MCP tool output via `updatedMCPToolOutput`.
 - **Permissions**: Don't work with `--dangerously-skip-permissions`. Use hooks (exit 2) as a guaranteed alternative. Permission patterns support `Agent(name)`, `Skill(name)`, and `MCPSearch`.
@@ -132,7 +140,7 @@ Schemas in `plugin/schemas/` define what's valid. Key gotchas:
 - **Subagent models**: `opus`, `sonnet`, `haiku`, `inherit` (default: `inherit`).
 - **Subagent memory field**: Optional `memory` in frontmatter — values `user`, `project`, `local` give the subagent a persistent directory across conversations.
 - **Subagent new fields**: `maxTurns` (max agentic turns), `mcpServers` (scoped MCP servers), `background` (always run in background), `isolation: worktree` (isolated git worktree), `effort` (`low`/`medium`/`high`/`max`, Opus 4.6 only), `initialPrompt` (auto-submitted first turn with `--agent`).
-- **MCP servers**: Types: `stdio` (requires `command`), `http` (requires `url`, recommended for remote), `sse` (deprecated, requires `url`). HTTP supports `headers` (with env var interpolation), `headersHelper` (dynamic shell command), and `oauth` (with `authServerMetadataUrl` override, v2.1.64+). Tools named `mcp__<server>__<tool>`. Supports env var expansion in `.mcp.json` (`${VAR}`, `${VAR:-default}`). Features: resources (@ mentions), prompts (as commands), tool search, elicitation, channels (push messages via `claude/channel` capability).
+- **MCP servers**: Types: `stdio` (requires `command`), `http` (requires `url`, recommended for remote), `sse` (deprecated, requires `url`), `ws` (requires `url`, WebSocket). HTTP supports `headers` (with env var interpolation), `headersHelper` (dynamic shell command), and `oauth` (with `authServerMetadataUrl` override, v2.1.64+). Tools named `mcp__<server>__<tool>`. Supports env var expansion in `.mcp.json` (`${VAR}`, `${VAR:-default}`). Features: resources (@ mentions), prompts (as commands), tool search, elicitation, channels (push messages via `claude/channel` capability).
 - **LSP servers**: Requires `command` and `languages` array.
 - **Agent teams**: Experimental (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, v2.1.32+). Teams are orchestrated via natural language, not declarative JSON. Display mode configured via `teammateMode` setting (`in-process`, `tmux`, `auto`).
 
@@ -184,4 +192,10 @@ All auto-created files include origin markers:
 
 When Anthropic adds new hook events, tools, etc.: update the **schema** → update `validate-config.sh` → update SKILL.md inline lists → update `plugin/docs/claude-code-reference.md` → add structure tests if needed.
 
-A daily GitHub Action (`check-docs-updates.yml`) automatically fetches docs from code.claude.com, compares against the schemas, and opens an issue labeled `schema-update` if discrepancies are found. It checks hook events, handler types, tools, and subagent frontmatter fields.
+## GitHub Actions
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | Push/PR to main | Runs structure + e2e tests + fixture validation |
+| `auto-tag.yml` | VERSION file changes on main | Creates `v{VERSION}` git tag automatically |
+| `check-docs-updates.yml` | Daily cron | Fetches docs from code.claude.com, compares against schemas, opens `schema-update` issue if discrepancies found |

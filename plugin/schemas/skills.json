@@ -113,7 +113,7 @@
     "hotReloading": "Skills modified in ~/.claude/skills or .claude/skills are immediately available without restarting the session.",
     "additionalDirs": "Skills in .claude/skills/ within --add-dir directories are loaded automatically and support live change detection.",
     "nestedDiscovery": "Claude Code discovers skills from nested .claude/skills/ directories (supports monorepo setups).",
-    "contextBudget": "Skill descriptions are loaded at 2% of context window (fallback: 16,000 chars). Override with SLASH_COMMAND_TOOL_CHAR_BUDGET env var.",
+    "contextBudget": "Skill descriptions are loaded at 1% of context window (fallback: 8,000 chars). Override with SLASH_COMMAND_TOOL_CHAR_BUDGET env var. Each entry is capped at 250 characters.",
     "permissionControl": "Control skill access via permissions: Skill(name) for exact match, Skill(name *) for prefix match.",
     "ultrathink": "Including the word 'ultrathink' anywhere in skill content enables extended thinking (thinking mode).",
     "agentSkillsStandard": "Skills follow the Agent Skills (agentskills.io) open standard, which works across multiple AI tools."

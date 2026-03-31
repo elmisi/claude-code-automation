@@ -87,6 +87,8 @@ These event names do **NOT** exist:
 
 ### Hook Types
 
+All events support all 4 handler types:
+
 | Type | Description |
 |------|-------------|
 | `command` | Execute a shell command |
@@ -98,6 +100,7 @@ These event names do **NOT** exist:
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `if` | string | Permission rule syntax filter — only runs hook when matching (e.g. `Bash(git *)`) |
 | `async` | boolean | Run in background, `command` type only |
 | `shell` | string | Shell to use: `bash` (default) or `powershell` (Windows, requires `CLAUDE_CODE_USE_POWERSHELL_TOOL=1`) |
 | `timeout` | integer | Per-hook timeout in seconds (defaults: 600 for command, 30 for prompt, 60 for agent) |
@@ -399,8 +402,9 @@ Location: `.mcp.json` (project) or `~/.claude.json` (global)
 | Type | Required Fields | Description |
 |------|----------------|-------------|
 | `stdio` | `command` | Communicates via stdin/stdout. Requires `command`, optional `args` and `env` |
-| `sse` | `url` | Communicates via Server-Sent Events. Requires `url` (deprecated, use `http` instead) |
 | `http` | `url` | Communicates via streamable HTTP (recommended). Requires `url`, optional `headers`, `headersHelper`, and `oauth` |
+| `sse` | `url` | Communicates via Server-Sent Events. Requires `url` (deprecated, use `http` instead) |
+| `ws` | `url` | Communicates via WebSocket. Requires `url`, optional `headers`, `env`, `oauth` |
 
 ### Additional Fields
 

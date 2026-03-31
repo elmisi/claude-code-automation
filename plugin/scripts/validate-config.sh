@@ -104,7 +104,7 @@ VALID_TOOLS=("Agent" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronLis
 VALID_MODELS=("opus" "sonnet" "haiku" "inherit")
 
 # Valid MCP server types
-VALID_MCP_TYPES=("stdio" "http" "sse")
+VALID_MCP_TYPES=("stdio" "http" "sse" "ws")
 
 validate_hooks() {
     local content="$1"
@@ -548,7 +548,7 @@ validate_mcp_servers() {
         # Check type field
         local server_type=$(echo "$server_config" | jq -r '.type // empty')
         if [ -z "$server_type" ]; then
-            error "Server '$server' missing 'type' field (must be 'stdio', 'http', or 'sse')"
+            error "Server '$server' missing 'type' field (must be 'stdio', 'http', 'sse', or 'ws')"
             ((errors++))
             continue
         fi
@@ -572,7 +572,7 @@ validate_mcp_servers() {
                 error "Server '$server' (stdio) missing 'command' field"
                 ((errors++))
             fi
-        elif [ "$server_type" == "http" ] || [ "$server_type" == "sse" ]; then
+        elif [ "$server_type" == "http" ] || [ "$server_type" == "sse" ] || [ "$server_type" == "ws" ]; then
             local url=$(echo "$server_config" | jq -r '.url // empty')
             if [ -z "$url" ]; then
                 error "Server '$server' ($server_type) missing 'url' field"

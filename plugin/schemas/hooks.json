@@ -30,8 +30,7 @@
   ],
   "validTypes": ["command", "http", "prompt", "agent"],
   "eventHandlerSupport": {
-    "allTypes": ["PermissionRequest", "PostToolUse", "PostToolUseFailure", "PreToolUse", "Stop", "SubagentStop", "TaskCompleted", "TaskCreated", "UserPromptSubmit"],
-    "commandOnly": ["ConfigChange", "CwdChanged", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "Notification", "PostCompact", "PreCompact", "SessionEnd", "SessionStart", "StopFailure", "SubagentStart", "TeammateIdle", "WorktreeCreate", "WorktreeRemove"]
+    "allTypes": ["ConfigChange", "CwdChanged", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "Notification", "PermissionRequest", "PostCompact", "PostToolUse", "PostToolUseFailure", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "StopFailure", "SubagentStart", "SubagentStop", "TaskCompleted", "TaskCreated", "TeammateIdle", "UserPromptSubmit", "WorktreeCreate", "WorktreeRemove"]
   },
   "hookHandlerFields": {
     "common": {
@@ -40,6 +39,11 @@
         "required": true,
         "validValues": ["command", "http", "prompt", "agent"],
         "default": "command"
+      },
+      "if": {
+        "type": "string",
+        "description": "Permission rule syntax filter. Only runs the hook when the tool/event matches this pattern (e.g. 'Bash(git *)').",
+        "required": false
       },
       "timeout": {
         "type": "number",
@@ -325,7 +329,7 @@
       "session_id": "Current session identifier",
       "transcript_path": "Path to session transcript file",
       "cwd": "Current working directory",
-      "permission_mode": "Current permission mode (default, plan, acceptEdits, dontAsk, bypassPermissions)",
+      "permission_mode": "Current permission mode (default, plan, acceptEdits, auto, dontAsk, bypassPermissions)",
       "hook_event_name": "The event that triggered the hook (e.g. PostToolUse)",
       "tool_name": "Name of the tool (for PreToolUse/PostToolUse events)",
       "tool_input": "Object with the tool's input parameters (e.g. file_path, command)",

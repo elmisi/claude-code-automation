@@ -489,7 +489,8 @@ NEVER overwrite settings.json. Always merge.
 **Never write a partial `hooks` object — always include all existing events.**
 
 **Hook handler fields:**
-- `type` (string, required): `command`, `http`, `prompt`, or `agent`
+- `type` (string, required): `command`, `http`, `prompt`, or `agent`. All events support all 4 types.
+- `if` (string, optional): Permission rule syntax filter — only runs hook when tool/event matches (e.g. `Bash(git *)`)
 - `command` (string): Shell command to run (command type)
 - `prompt` (string): Prompt text (prompt/agent type)
 - `url` (string): URL endpoint (http type, required)
@@ -627,10 +628,11 @@ Structure:
 }
 ```
 
-Valid types: stdio, http, sse (deprecated)
+Valid types: stdio, http, sse (deprecated), ws
 - stdio: requires `command` field
 - http: requires `url` field, optional `headers` and `oauth` (recommended for remote)
 - sse: requires `url` field (deprecated, use http instead)
+- ws: requires `url` field, WebSocket transport
 - Tools appear as `mcp__<server>__<tool>` in Claude
 - Can be used in hook matchers: `"matcher": "mcp__servername__.*"`
 
@@ -701,7 +703,7 @@ Before creating any configuration file, verify against schemas:
 2. **For hooks**: Verify structure has nested `hooks` array with `type` and `command`
 3. **For skills/subagents**: Verify required frontmatter fields
 4. **For subagents**: Verify tools and model are valid
-5. **For MCP servers**: Verify valid JSON, `mcpServers` key exists, each server has `type` and either `command` (stdio) or `url` (http/sse)
+5. **For MCP servers**: Verify valid JSON, `mcpServers` key exists, each server has `type` and either `command` (stdio) or `url` (http/sse/ws)
 6. **For LSP servers**: Verify valid JSON, each server has `command` and `languages` array
 7. **For Agent Teams**: Verify valid JSON, `name`/`description`/`agents` exist, each agent has `name`
 

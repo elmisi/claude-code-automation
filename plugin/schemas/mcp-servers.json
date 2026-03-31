@@ -39,12 +39,17 @@
       "required": ["url"],
       "optional": ["headers", "env", "oauth"],
       "deprecated": true
+    },
+    "ws": {
+      "description": "Server communicates via WebSocket",
+      "required": ["url"],
+      "optional": ["headers", "env", "oauth"]
     }
   },
   "fields": {
     "type": {
       "type": "string",
-      "validValues": ["stdio", "http", "sse"],
+      "validValues": ["stdio", "http", "sse", "ws"],
       "description": "Transport type for the server. 'http' is recommended for remote servers."
     },
     "command": {

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-03-31
+
+### Added
+- **`if` field** on all hook handlers — permission rule syntax filter (e.g. `Bash(git *)`)
+- **`ws` transport type** for MCP servers — WebSocket support alongside stdio, http, sse
+- **`auto` permission mode** added to hook input schema
+
+### Changed
+- **All hook events now support all 4 handler types** (command, http, prompt, agent) — removed `commandOnly` restriction from 16 events
+- **Skill context budget** corrected to 1% of context window (fallback: 8,000 chars), each entry capped at 250 characters
+- **CLAUDE.md** updated with multi-plugin repo overview and GitHub Actions table
+
 ## [2.4.0] - 2026-03-27
 
 ### Added
