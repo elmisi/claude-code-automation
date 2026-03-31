@@ -21,8 +21,8 @@
       "description": "Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push"
     },
     {
-      "name": "plan",
-      "version": "1.0.0",
+      "name": "plan-cycle",
+      "version": "1.0.1",
       "source": "./plugin-plan",
       "description": "File-based planning with annotation cycles. Replaces built-in plan mode with a persistent markdown artifact you can edit and refine iteratively."
     }

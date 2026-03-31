@@ -11,7 +11,7 @@ This repository contains two plugins:
 |--------|---------|-------------|
 | **automate** | `/automate` | Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.) |
 | **develop-cycle** | `/develop-cycle` | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
-| **plan** | `/plan` | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
+| **plan-cycle** | `/plan-cycle` | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
 
 ---
 
@@ -272,7 +272,7 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 
 ---
 
-## Plugin 3: plan
+## Plugin 3: plan-cycle
 
 > File-based planning with annotation cycles. A better alternative to Claude Code's built-in plan mode.
 
@@ -280,15 +280,15 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 
 ```bash
 /plugin marketplace add elmisi/claude-code-automation
-/plugin install plan
+/plugin install plan-cycle
 ```
 
 ### Usage
 
 ```bash
-/plan add cursor-based pagination to the list endpoint
-/plan refactor the auth module to use JWT tokens
-/plan migrate the database from MongoDB to PostgreSQL
+/plan-cycle add cursor-based pagination to the list endpoint
+/plan-cycle refactor the auth module to use JWT tokens
+/plan-cycle migrate the database from MongoDB to PostgreSQL
 ```
 
 ### How it works

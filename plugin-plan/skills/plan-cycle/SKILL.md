@@ -1,5 +1,5 @@
 ---
-name: plan
+name: plan-cycle
 description: File-based planning with annotation cycles. Researches the codebase, writes a detailed plan.md, then iterates on user annotations until approved. Use instead of built-in plan mode for persistent, editable plans.
 disable-model-invocation: true
 argument-hint: [what you want to build or change]

@@ -10,7 +10,7 @@ A multi-plugin repository for Claude Code automation:
 |--------|-----------|---------|-------------|
 | **automate** | `plugin/` | `/automate` | Expert advisor: interviews user, applies decision matrix, creates the right automation type |
 | **develop-cycle** | `plugin-develop-cycle/` | `/develop-cycle` | Structured dev workflow with mandatory checkpoint before commit/push |
-| **plan** | `plugin-plan/` | `/plan` | File-based planning with annotation cycles (persistent markdown plans) |
+| **plan-cycle** | `plugin-plan/` | `/plan-cycle` | File-based planning with annotation cycles (persistent markdown plans) |
 
 The automate plugin is the core of this repo. develop-cycle and plan are self-contained single-skill plugins in their own directories.
 
