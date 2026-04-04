@@ -1,0 +1,17 @@
+{
+  "name": "takeaway",
+  "version": "1.0.0",
+  "description": "Structured feedback extraction from skill/tool usage. Analyzes what worked, what didn't, identifies patterns, and produces agent-ready improvement instructions.",
+  "author": {
+    "name": "elmisi"
+  },
+  "repository": "https://github.com/elmisi/claude-code-automation",
+  "license": "MIT",
+  "keywords": [
+    "feedback",
+    "retrospective",
+    "improvement",
+    "meta",
+    "self-improvement"
+  ]
+}

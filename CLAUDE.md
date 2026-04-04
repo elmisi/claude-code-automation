@@ -11,8 +11,9 @@ A multi-plugin repository for Claude Code automation:
 | **automate** | `plugin/` | `/automate` | Expert advisor: interviews user, applies decision matrix, creates the right automation type |
 | **develop-cycle** | `plugin-develop-cycle/` | `/develop-cycle` | Structured dev workflow with mandatory checkpoint before commit/push |
 | **plan-cycle** | `plugin-plan/` | `/plan-cycle` | File-based planning with annotation cycles (persistent markdown plans) |
+| **takeaway** | `plugin-takeaway/` | `/takeaway` | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
 
-The automate plugin is the core of this repo. develop-cycle and plan are self-contained single-skill plugins in their own directories.
+The automate plugin is the core of this repo. develop-cycle, plan-cycle, and takeaway are self-contained single-skill plugins in their own directories.
 
 ## Architecture
 

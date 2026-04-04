@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-04-04
+
+### Added
+- **takeaway plugin** (`plugin-takeaway/`, `/takeaway`) — structured feedback extraction from skill/tool usage. Interviews the user, identifies patterns, and produces agent-ready improvement instructions in a `takeaway-<target>.md` file with annotation cycles
+- **plan-cycle: "Failure Modes and Degradation" section** — new mandatory plan section requiring explicit failure behavior, concrete thresholds (timeouts, retry counts, size limits), and specific fallback strategies
+
+### Changed
+- **plan-cycle: Edge Cases and Risks** restructured — now requires likelihood, impact, concrete mitigation, and exit clause for each risk
+- **plan-cycle: 3 new writing guidelines** — concrete numbers over qualitative descriptions, exit clauses over absolute constraints, explicit degradation over implicit assumptions
+- **marketplace.json** — added takeaway plugin entry
+
 ## [2.5.0] - 2026-03-31
 
 ### Added

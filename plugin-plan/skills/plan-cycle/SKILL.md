@@ -67,7 +67,18 @@ Create the file `plan.md` in the project root. If `plan.md` already exists, ask 
 ...
 
 ## Edge Cases and Risks
-<What could go wrong. What needs careful handling.>
+<What could go wrong. For each risk, specify:
+- **Likelihood**: low/medium/high
+- **Impact**: what breaks and how badly
+- **Mitigation**: concrete action, not "be careful"
+- **Exit clause**: at what point do we abandon this approach and what's plan B>
+
+## Failure Modes and Degradation
+<For each critical component or integration point:
+- What happens when it fails or is unavailable?
+- What is the degraded behavior? (explicit, not "it should handle it gracefully")
+- Concrete thresholds: timeouts, retry counts, size limits, rate limits
+- Fallback strategy with specific steps, not just "fall back to X">
 
 ## Open Questions
 <Anything you're unsure about. Decisions the user needs to make.>
@@ -84,6 +95,9 @@ Create the file `plan.md` in the project root. If `plan.md` already exists, ask 
 - When you considered multiple approaches, briefly explain why you chose this one.
 - Put things you're unsure about in "Open Questions" — don't guess silently.
 - The task breakdown should be granular enough that each item is a single, clear unit of work.
+- **Concrete numbers over qualitative descriptions.** Don't write "should be fast" — write "< 200ms p95". Don't write "handles large files" — write "up to 50MB, rejects above with error X". Every constraint needs a number or a measurable threshold.
+- **Exit clauses over absolute constraints.** For each significant decision, state the condition under which you'd abandon the approach and what alternative you'd switch to. Plans that only describe the happy path are incomplete.
+- **Explicit degradation over implicit assumptions.** If a component can fail, describe exactly what happens when it does. "Graceful degradation" is not a plan — "returns cached data from last successful fetch, shows stale-data banner, retries every 30s up to 5 times" is.
 
 After writing the file, tell the user:
 
