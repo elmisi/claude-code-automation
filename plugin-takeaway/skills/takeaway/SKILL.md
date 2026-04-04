@@ -96,10 +96,11 @@ If the file already exists, ask the user if you should overwrite it or use a dif
 ## Observed Patterns
 
 ### Pattern 1: <short name>
-- **Observation:** What happened, with specific example
-- **Frequency:** One-off / recurring / every time
+- **Observation:** What happened, with specific example from this session
+- **Frequency:** Observed once (single session) / observed N times in this session / confirmed across multiple sessions. Be honest about sample size — do not write "every time" or "recurring" based on a single session. Use "observed in this session, candidate recurring pattern" until confirmed by additional evidence.
 - **Impact:** What it caused (wasted time, wrong output, user confusion, etc.)
 - **Root cause:** Why this happens (gap in instructions, missing step, wrong default, etc.)
+- **Portable rule:** One sentence, project-agnostic. Strip away the specific names and artifacts — what is the general principle? E.g., "verify the behavior behind every contract dependency, not just its interface" rather than "the Ampulla pagination SQL was broken."
 
 ### Pattern 2: <short name>
 ...
@@ -117,7 +118,7 @@ If the file already exists, ask the user if you should overwrite it or use a dif
 ### Improvement 1: <short name>
 - **What:** Concrete description of the change
 - **Why:** Which pattern(s) this addresses
-- **Where:** Exact file path and section to modify
+- **Where:** Semantic location — describe the section by name and purpose, not by line number. E.g., "in the plan template, before the Context section" or "in the research step instructions, after the dependency identification bullet." Line numbers are fragile and break on any edit.
 - **How:** Specific instruction an agent can execute. Include:
   - What to add/change/remove
   - Example of current vs. desired content (before/after) when applicable
@@ -144,11 +145,21 @@ If the file already exists, ask the user if you should overwrite it or use a dif
 
 ## Agent Instructions
 
-<A concise block that can be copy-pasted as a prompt to an agent. Written in imperative form:>
+### Generic Process Rules
+
+<Portable rules extracted from this analysis. These apply to any project using the same skill/tool, not just the current one. Written as imperative statements:>
+
+1. <rule — project-agnostic, reusable>
+2. <rule — project-agnostic, reusable>
+3. ...
+
+### Concrete Follow-Up
+
+<Specific changes to apply to the target. References sections by name, not line numbers. Written in imperative form:>
 
 Apply the following improvements to `<target file>`:
 
-1. <first change — specific, actionable>
+1. <first change — references section by semantic name, e.g., "in the Research step, after the dependency bullet">
 2. <second change — specific, actionable>
 3. ...
 
@@ -165,6 +176,10 @@ Constraints:
 - Separate observations (facts) from interpretations (your analysis) from proposals (changes). Don't mix them.
 - Preserve what works. Explicitly state what should NOT be changed.
 - Prioritize ruthlessly. 3 high-impact improvements beat 10 minor ones.
+- **Be honest about sample size.** A single session is not "every time." Use the Frequency field honestly — "observed once, candidate pattern" is more credible than "recurring" with one data point. Overstated generality weakens the document as a reusable process artifact.
+- **Extract portable rules, not just project-specific fixes.** Each pattern's Observation should cite the concrete case, but every pattern must end with a Portable Rule that strips away project names and artifacts. The reader should learn the general planning/process lesson, not just the case study.
+- **Reference locations semantically.** Never use line numbers in the Where field or Agent Instructions — they break on any edit. Use section names, relative positions ("before the Context section"), or structural descriptions ("in the research step, after the dependency bullet").
+- **Separate generic from concrete in Agent Instructions.** The Generic Process Rules should be portable to any project. The Concrete Follow-Up should target the specific file. An agent consuming only the generic rules should still get value.
 
 After writing the file, tell the user:
 

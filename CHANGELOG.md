@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.1] - 2026-04-04
+
+### Changed
+- **takeaway plugin (1.0.1):** Self-improvement from first usage feedback:
+  - Patterns now require honest sample-size labeling (no "every time" from single sessions)
+  - Each pattern must end with a portable, project-agnostic rule
+  - Improvements reference sections semantically, not by line number
+  - Agent Instructions split into "Generic Process Rules" (portable) and "Concrete Follow-Up" (file-specific)
+  - 4 new guidelines: sample-size honesty, portable rules, semantic references, generic/concrete split
+- **Schema sync**: added `PermissionDenied` hook event, `SendMessage`/`TeamCreate`/`TeamDelete` subagent tools (closes #3)
+- **CI fix**: aligned `plugin/.claude-plugin/plugin.json` version
+
 ## [2.6.0] - 2026-04-04
 
 ### Added
