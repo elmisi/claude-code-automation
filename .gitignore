@@ -12,5 +12,8 @@ Thumbs.db
 *.tmp
 *.log
 
+# Local Claude Code settings (not shared)
+.claude/
+
 # Test sandbox
 tests/sandbox/
