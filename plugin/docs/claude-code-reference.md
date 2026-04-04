@@ -1,6 +1,6 @@
 # Claude Code Reference Documentation
 
-Last updated: 2026-03-27
+Last updated: 2026-04-04
 
 This file contains the reference documentation for Claude Code automation mechanisms.
 For the authoritative source of valid values, see the schema files in `plugin/schemas/`.
@@ -76,6 +76,7 @@ Location: `.claude/settings.json` or `~/.claude/settings.json`
 | `ElicitationResult` | After user responds to MCP elicitation | MCP server name (regex) |
 | `CwdChanged` | Working directory changes (e.g. cd) | (no matcher) |
 | `FileChanged` | Watched file changes on disk | Filename basename (e.g. `.envrc`, `.env`) |
+| `PermissionDenied` | User denies a permission request | Tool name (non-blocking, informational) |
 
 ### Invalid Events (DO NOT USE)
 
@@ -267,7 +268,7 @@ System prompt for the agent...
 |-------|----------|--------------|
 | `name` | Yes | Agent identifier |
 | `description` | Yes | Brief description |
-| `tools` | No | `Agent`, `AskUserQuestion`, `Bash`, `CronCreate`, `CronDelete`, `CronList`, `Edit`, `EnterPlanMode`, `EnterWorktree`, `ExitPlanMode`, `ExitWorktree`, `Glob`, `Grep`, `ListMcpResourcesTool`, `LSP`, `NotebookEdit`, `PowerShell`, `Read`, `ReadMcpResourceTool`, `Skill`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop`, `TaskUpdate`, `TodoWrite`, `ToolSearch`, `WebFetch`, `WebSearch`, `Write` |
+| `tools` | No | `Agent`, `AskUserQuestion`, `Bash`, `CronCreate`, `CronDelete`, `CronList`, `Edit`, `EnterPlanMode`, `EnterWorktree`, `ExitPlanMode`, `ExitWorktree`, `Glob`, `Grep`, `ListMcpResourcesTool`, `LSP`, `NotebookEdit`, `PowerShell`, `Read`, `ReadMcpResourceTool`, `SendMessage`, `Skill`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop`, `TaskUpdate`, `TeamCreate`, `TeamDelete`, `TodoWrite`, `ToolSearch`, `WebFetch`, `WebSearch`, `Write` |
 | `model` | No | `opus`, `sonnet`, `haiku`, `inherit`, or full model ID (e.g. `claude-opus-4-6`). Default: `inherit` |
 | `disallowedTools` | No | List of tools the agent cannot use |
 | `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan` |

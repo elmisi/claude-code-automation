@@ -26,11 +26,12 @@
     "TaskCreated",
     "StopFailure",
     "CwdChanged",
-    "FileChanged"
+    "FileChanged",
+    "PermissionDenied"
   ],
   "validTypes": ["command", "http", "prompt", "agent"],
   "eventHandlerSupport": {
-    "allTypes": ["ConfigChange", "CwdChanged", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "Notification", "PermissionRequest", "PostCompact", "PostToolUse", "PostToolUseFailure", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "StopFailure", "SubagentStart", "SubagentStop", "TaskCompleted", "TaskCreated", "TeammateIdle", "UserPromptSubmit", "WorktreeCreate", "WorktreeRemove"]
+    "allTypes": ["ConfigChange", "CwdChanged", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "Notification", "PermissionDenied", "PermissionRequest", "PostCompact", "PostToolUse", "PostToolUseFailure", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "StopFailure", "SubagentStart", "SubagentStop", "TaskCompleted", "TaskCreated", "TeammateIdle", "UserPromptSubmit", "WorktreeCreate", "WorktreeRemove"]
   },
   "hookHandlerFields": {
     "common": {
@@ -235,6 +236,10 @@
       "description": "When a watched file changes on disk. Matcher specifies filenames to watch.",
       "examples": [".envrc", ".env", "package.json"],
       "note": "Matcher is the filename (basename). Non-blocking — stderr shown to user only."
+    },
+    "PermissionDenied": {
+      "description": "When the user denies a permission request",
+      "note": "Matcher is the tool name. Non-blocking — informational only."
     }
   },
   "capabilities": {
@@ -300,7 +305,7 @@
     },
     "nonBlocking": {
       "description": "Exit code 2 shows stderr but does not block",
-      "events": ["PostToolUse", "PostToolUseFailure", "Notification", "SubagentStart", "SessionStart", "SessionEnd", "CwdChanged", "FileChanged", "PreCompact", "PostCompact", "InstructionsLoaded"],
+      "events": ["PostToolUse", "PostToolUseFailure", "Notification", "SubagentStart", "SessionStart", "SessionEnd", "CwdChanged", "FileChanged", "PermissionDenied", "PreCompact", "PostCompact", "InstructionsLoaded"],
       "note": "WorktreeCreate: any non-zero exit fails creation. WorktreeRemove: logged in debug only. StopFailure: output and exit code are ignored entirely."
     }
   },

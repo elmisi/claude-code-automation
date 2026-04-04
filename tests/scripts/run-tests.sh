@@ -349,12 +349,12 @@ run_structure_tests() {
     # ============================================
     log_info "Testing schema contents are up-to-date..."
 
-    # Verify hooks schema has all 25 events
+    # Verify hooks schema has all 26 events
     local hook_events=$(jq '.validEvents | length' "$PROJECT_ROOT/plugin/schemas/hooks.json")
-    if [ "$hook_events" -eq 25 ]; then
-        log_success "STRUCT-64: hooks schema has 25 events"
+    if [ "$hook_events" -eq 26 ]; then
+        log_success "STRUCT-64: hooks schema has 26 events"
     else
-        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 25)"
+        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 26)"
     fi
 
     # Verify hooks schema has http type
@@ -502,6 +502,31 @@ run_structure_tests() {
 
     assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-cleanup/SKILL.md" \
         "STRUCT-97: automate-cleanup has valid frontmatter"
+
+    # ============================================
+    # NEW EVENTS AND TOOLS TESTS (2026-04-04)
+    # ============================================
+    log_info "Testing new hook events and subagent tools..."
+
+    assert_validation_passes "$VALIDATE" hooks \
+        '{"hooks":{"PermissionDenied":[{"matcher":"Bash","hooks":[{"type":"command","command":"echo denied"}]}]}}' \
+        "STRUCT-98: accept PermissionDenied hook event"
+
+    assert_file_contains "$PROJECT_ROOT/plugin/schemas/hooks.json" \
+        '"PermissionDenied"' "STRUCT-99: hooks schema includes PermissionDenied event"
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: SendMessage, TeamCreate, TeamDelete\n---\nContent')" \
+        "STRUCT-100: accept SendMessage, TeamCreate, TeamDelete tools in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+        '"SendMessage"' "STRUCT-101: subagent schema includes SendMessage tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+        '"TeamCreate"' "STRUCT-102: subagent schema includes TeamCreate tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+        '"TeamDelete"' "STRUCT-103: subagent schema includes TeamDelete tool"
 
     # ============================================
     # FULL MODEL ID TESTS

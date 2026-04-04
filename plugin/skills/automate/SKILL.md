@@ -443,6 +443,7 @@ Same pattern:
 - `ElicitationResult` - After user responds to MCP elicitation (matchers: MCP server name regex)
 - `CwdChanged` - When working directory changes, e.g. cd (no matcher; useful for direnv)
 - `FileChanged` - When a watched file changes on disk (matchers: filename basename, e.g. .envrc, .env)
+- `PermissionDenied` - When user denies a permission request (matchers: tool name; non-blocking, informational)
 
 **NEVER use these (they don't exist):**
 - PreCommit, PostCommit, PreBash, PostBash, PreEdit, PostEdit, BeforeToolUse, AfterToolUse
@@ -559,7 +560,7 @@ created-by: automate
 ---
 ```
 
-Valid tools: Agent, AskUserQuestion, Bash, CronCreate, CronDelete, CronList, Edit, EnterPlanMode, EnterWorktree, ExitPlanMode, ExitWorktree, Glob, Grep, ListMcpResourcesTool, LSP, NotebookEdit, PowerShell, Read, ReadMcpResourceTool, Skill, TaskCreate, TaskGet, TaskList, TaskOutput, TaskStop, TaskUpdate, TodoWrite, ToolSearch, WebFetch, WebSearch, Write
+Valid tools: Agent, AskUserQuestion, Bash, CronCreate, CronDelete, CronList, Edit, EnterPlanMode, EnterWorktree, ExitPlanMode, ExitWorktree, Glob, Grep, ListMcpResourcesTool, LSP, NotebookEdit, PowerShell, Read, ReadMcpResourceTool, SendMessage, Skill, TaskCreate, TaskGet, TaskList, TaskOutput, TaskStop, TaskUpdate, TeamCreate, TeamDelete, TodoWrite, ToolSearch, WebFetch, WebSearch, Write
 MCP tools can also be used as `mcp__<server>__<tool>`
 
 Valid models: opus, sonnet, haiku, inherit
@@ -866,7 +867,7 @@ Only after ALL verifications pass:
 - CLAUDE.md instructions are advisory, not guaranteed. If certainty is needed, use Hook.
 - Hooks are scripts, they don't have access to Claude's intelligence. For complex logic, combine Hook + Skill.
 - Subagents consume extra tokens but preserve the main context.
-- Valid hook events: SessionStart, SessionEnd, UserPromptSubmit, PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, Notification, Stop, StopFailure, PreCompact, PostCompact, SubagentStart, SubagentStop, TeammateIdle, TaskCreated, TaskCompleted, ConfigChange, InstructionsLoaded, WorktreeCreate, WorktreeRemove, Elicitation, ElicitationResult, CwdChanged, FileChanged
+- Valid hook events: SessionStart, SessionEnd, UserPromptSubmit, PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, PermissionDenied, Notification, Stop, StopFailure, PreCompact, PostCompact, SubagentStart, SubagentStop, TeammateIdle, TaskCreated, TaskCompleted, ConfigChange, InstructionsLoaded, WorktreeCreate, WorktreeRemove, Elicitation, ElicitationResult, CwdChanged, FileChanged
 - All automations are tracked in `~/.claude/automations-registry.json` for management with list/edit/delete/export/import.
 - Agent Teams require `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and are experimental. The feature may change or be removed.
 - MCP tools appear as `mcp__<server>__<tool>` in Claude and can be matched in hooks using `"matcher": "mcp__servername__.*"`.
