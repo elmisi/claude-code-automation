@@ -1,7 +1,7 @@
 {
   "name": "takeaway",
-  "version": "1.0.1",
-  "description": "Structured feedback extraction from skill/tool usage. Analyzes what worked, what didn't, identifies patterns, and produces agent-ready improvement instructions.",
+  "version": "1.1.0",
+  "description": "Structured feedback extraction from skill/tool usage. Interviews the user, distills observations into portable principles, and produces two files — a project-specific evidence retrospective and a tool-agnostic lessons document an improving agent can consume.",
   "author": {
     "name": "elmisi"
   },

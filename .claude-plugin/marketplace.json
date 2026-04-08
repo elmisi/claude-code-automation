@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "automate",
-      "version": "2.6.1",
+      "version": "2.7.0",
       "source": "./plugin",
       "description": "Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.)"
     },
@@ -28,9 +28,9 @@
     },
     {
       "name": "takeaway",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "source": "./plugin-takeaway",
-      "description": "Structured feedback extraction from skill/tool usage. Analyzes what worked, identifies patterns, and produces agent-ready improvement instructions."
+      "description": "Structured feedback extraction from skill/tool usage. Interviews the user, distills observations into portable principles, and produces two files — a project-specific evidence retrospective and a tool-agnostic lessons document an improving agent can consume."
     }
   ]
 }

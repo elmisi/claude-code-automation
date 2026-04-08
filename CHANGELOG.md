@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2026-04-08
+
+### Changed
+- **takeaway plugin (1.1.0):** Major workflow rewrite to enforce portable lessons:
+  - Output split into two files: `takeaway-<target>-evidence.md` (project-specific retrospective) and `takeaway-<target>-lessons.md` (tool-agnostic principles for an improving agent)
+  - New Step 3.5 Distillation pass with 5 sub-steps: root theme grouping, unifying principle detection, vocabulary audit, self-check, discarded-as-too-specific list
+  - Candidate principle now written FIRST in each pattern (before Observation), preventing the rule from inheriting the evidence's project-specific vocabulary
+  - New Step 1 classification: universal vs project-scoped target shapes how the lessons file's Agent Instructions are written
+  - Vocabulary audit teaches the named-artifact vs domain-concept distinction via worked examples (e.g., "the User class" forbidden, "a user" allowed) without hard-coded ban lists
+  - Annotation handling: contamination flags on the lessons file trigger re-running of the distillation pass on that lesson, not single-line edits
+  - Note: output file naming changes from `takeaway-<target>.md` to a two-file split — downstream consumers that match the old pattern must update
+
 ## [2.6.1] - 2026-04-04
 
 ### Changed
