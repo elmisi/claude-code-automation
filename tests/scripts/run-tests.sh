@@ -528,6 +528,13 @@ run_structure_tests() {
     assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
         '"TeamDelete"' "STRUCT-103: subagent schema includes TeamDelete tool"
 
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: Monitor\n---\nContent')" \
+        "STRUCT-104: accept Monitor tool in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+        '"Monitor"' "STRUCT-105: subagent schema includes Monitor tool"
+
     # ============================================
     # FULL MODEL ID TESTS
     # ============================================
