@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.0] - 2026-04-16
+
+### Changed
+- **plan-cycle plugin (1.1.0):** epistemic-hygiene discipline added to the plan-writing guidelines, derived from a takeaway retrospective on two prior planning sessions:
+  - Step 1 (Research): plan author keeps a short trace of the checks run during research, so claims the plan relies on reveal where they came from at write time rather than in reconstruction
+  - Step 2 (Open Questions): broadened to host unverifiable assumptions that drive scope/risk/design decisions, not only things the author does not know at all
+  - Step 2 (Guidelines): three additive bullets — **Verify empirical premises before using them** (broadens the existing "concrete numbers" discipline to every empirical premise that drives a decision, with the verification visible: what, against what surface, when); **Universal and existential claims need an enumerated domain** (quantifier claims require the domain named and the check shown inline, or the claim is rewritten as an assumption); **Mark unverifiable assumptions inline** (short marker at the point of use, e.g. "assumed:" / "unverified:", with lift into Open Questions when the assumption is material)
+  - Additive-only: no new mandatory sections, no per-claim tagging schema, plan structure and annotation-cycle format unchanged, no dependency on an external source brief
+
 ## [2.7.1] - 2026-04-14
 
 ### Added

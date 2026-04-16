@@ -39,6 +39,8 @@ Before writing anything, study the relevant parts of the codebase in depth.
 
 Do NOT skim. Read deeply. The quality of the plan depends entirely on how well you understand the existing code.
 
+As you read, keep a short trace of the checks you run — what you grepped, what you opened, what the result was, what surface it covered. Claims the plan will rely on must reveal where they came from, and that trace is cheapest to produce at research time, not reconstructed later.
+
 ---
 
 ## Step 2: Write the plan
@@ -81,7 +83,7 @@ Create the file `plan.md` in the project root. If `plan.md` already exists, ask 
 - Fallback strategy with specific steps, not just "fall back to X">
 
 ## Open Questions
-<Anything you're unsure about. Decisions the user needs to make.>
+<Anything you're unsure about, plus any unverifiable assumption on which a significant scope, risk, or design decision rests. This is the place to surface levers reviewers and executors should probe — don't reserve it only for "things I don't know at all".>
 
 ## Task Breakdown
 - [ ] Task 1: description
@@ -98,6 +100,9 @@ Create the file `plan.md` in the project root. If `plan.md` already exists, ask 
 - **Concrete numbers over qualitative descriptions.** Don't write "should be fast" — write "< 200ms p95". Don't write "handles large files" — write "up to 50MB, rejects above with error X". Every constraint needs a number or a measurable threshold.
 - **Exit clauses over absolute constraints.** For each significant decision, state the condition under which you'd abandon the approach and what alternative you'd switch to. Plans that only describe the happy path are incomplete.
 - **Explicit degradation over implicit assumptions.** If a component can fail, describe exactly what happens when it does. "Graceful degradation" is not a plan — "returns cached data from last successful fetch, shows stale-data banner, retries every 30s up to 5 times" is.
+- **Verify empirical premises before using them.** If a decision rests on an empirical claim about the codebase ("only X uses this", "all consumers return objects", "no caller passes a null here") and the claim can be checked today — by grepping, reading, or running a test — check it before writing it, and leave the verification visible: what you checked, against what surface, when. Apply this to every empirical premise that drives scope, risk, or design, not only to numerical counts. A claim that drives a decision without a visible check is a conjecture presented as a fact.
+- **Universal and existential claims need an enumerated domain.** "No X does Y", "every X does Z", "all Xs satisfy W" is only as strong as the enumeration behind it. Name the domain ("the 7 callers of `fooBar` in `src/api/`"), show how you checked it (grep pattern, file list, test run), and record the result inline with the claim. If the domain cannot be enumerated today, rewrite the claim as an assumption and follow the next rule. A bare universal quantifier with a concrete predicate looks like a fact and reads like a fact — but until the domain is enumerated, it is a guess in factual dress, and it is the single most common source of plan-introduced regressions.
+- **Mark unverifiable assumptions inline.** Some claims depend on future behaviour, runtime observations that aren't captured, or stakeholder intent, and cannot be checked against today's artifacts. They are still legitimate inputs, but a reader must be able to tell them apart from verified facts — otherwise the plan's credibility leaks onto them. Add a short marker at the point of use (e.g. "assumed:", "unverified:") so reviewers know which levers to probe. If the assumption drives a material scope, risk, or design decision, lift it into Open Questions as well.
 
 After writing the file, tell the user:
 
