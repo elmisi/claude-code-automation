@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0] - 2026-04-29
+
+### Added
+- `PostToolBatch` and `UserPromptExpansion` hook events added to schema (closes #6)
+  - `PostToolBatch`: fires after a full batch of parallel tool calls resolves, before the next model call. No matcher. Can block or add context.
+  - `UserPromptExpansion`: fires when a user-typed slash command expands into a prompt. Matcher is the command name. Can block expansion or add context.
+  - Updated `plugin/schemas/hooks.json`, `plugin/scripts/validate-config.sh`, `plugin/skills/automate/SKILL.md`, `plugin/docs/claude-code-reference.md`, `CLAUDE.md`
+  - Test STRUCT-64 updated: 26 → 28 events
+  - Detected by `check-docs-updates` workflow against the live Claude Code hooks reference
+
+### Changed
+- **plan-cycle plugin (1.2.0):** rules, self-containment, and dynamic filenames
+  - New `## Rules` section in generated plans — 8 rules for executor/reviewer agents (source of truth, full-read-first, task marking, ambiguity, executor/planner separation, ordering, completeness, failure documentation)
+  - Self-containment guideline: every plan section must be operative and executable in a new session with zero prior context
+  - Dynamic filenames: `plan-{slug}-{YYYYMMDD-HHMM}.md` with `docs/` directory preference, replacing hardcoded `plan.md`
+
 ## [2.8.0] - 2026-04-16
 
 ### Changed

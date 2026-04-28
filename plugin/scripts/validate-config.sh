@@ -79,6 +79,8 @@ VALID_HOOK_EVENTS=(
     "CwdChanged"
     "FileChanged"
     "PermissionDenied"
+    "PostToolBatch"
+    "UserPromptExpansion"
 )
 
 # Invalid/non-existent hook events (common mistakes)

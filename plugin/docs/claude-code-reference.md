@@ -77,6 +77,8 @@ Location: `.claude/settings.json` or `~/.claude/settings.json`
 | `CwdChanged` | Working directory changes (e.g. cd) | (no matcher) |
 | `FileChanged` | Watched file changes on disk | Filename basename (e.g. `.envrc`, `.env`) |
 | `PermissionDenied` | User denies a permission request | Tool name (non-blocking, informational) |
+| `PostToolBatch` | After full batch of parallel tool calls resolves | (no matcher, can block next model call) |
+| `UserPromptExpansion` | User-typed slash command expands into prompt | Command name (can block expansion) |
 
 ### Invalid Events (DO NOT USE)
 

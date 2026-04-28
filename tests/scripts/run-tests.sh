@@ -349,12 +349,12 @@ run_structure_tests() {
     # ============================================
     log_info "Testing schema contents are up-to-date..."
 
-    # Verify hooks schema has all 26 events
+    # Verify hooks schema has all 28 events
     local hook_events=$(jq '.validEvents | length' "$PROJECT_ROOT/plugin/schemas/hooks.json")
-    if [ "$hook_events" -eq 26 ]; then
-        log_success "STRUCT-64: hooks schema has 26 events"
+    if [ "$hook_events" -eq 28 ]; then
+        log_success "STRUCT-64: hooks schema has 28 events"
     else
-        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 26)"
+        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 28)"
     fi
 
     # Verify hooks schema has http type
