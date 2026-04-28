@@ -1,6 +1,6 @@
 ---
 name: plan-cycle
-description: File-based planning with annotation cycles. Researches the codebase, writes a detailed plan.md, then iterates on user annotations until approved. Use instead of built-in plan mode for persistent, editable plans.
+description: File-based planning with annotation cycles. Researches the codebase, writes a detailed plan file with unique name, then iterates on user annotations until approved. Use instead of built-in plan mode for persistent, editable plans.
 disable-model-invocation: true
 argument-hint: [what you want to build or change]
 ---
@@ -15,7 +15,7 @@ The user's request: **$ARGUMENTS**
 
 ## How this works
 
-1. You research the codebase deeply, then write a `plan.md` file
+1. You research the codebase deeply, then write a plan file (with a unique, descriptive filename)
 2. The user reads it, adds inline annotations where they disagree or want changes
 3. You process every annotation, update the plan, and remove the resolved notes
 4. Repeat until the user approves
@@ -45,7 +45,15 @@ As you read, keep a short trace of the checks you run — what you grepped, what
 
 ## Step 2: Write the plan
 
-Create the file `plan.md` in the project root. If `plan.md` already exists, ask the user if you should overwrite it or use a different name.
+**Choose the plan filename:**
+1. Derive a slug from the user's request (lowercase, hyphens, max 5 words). Example: "improve plan-cycle plugin" → `improve-plan-cycle`
+2. Generate a timestamp in `YYYYMMDD-HHMM` format (local time).
+3. Compose: `plan-{slug}-{YYYYMMDD-HHMM}.md`
+4. If a `docs/` directory exists in the project root, place the file there. Otherwise, place it in the project root.
+
+If the slug cannot be derived (request too short or non-ASCII), fall back to `plan-{YYYYMMDD-HHMM}.md`.
+
+Store the chosen path — all subsequent references to "the plan file" use this path, not a hardcoded name.
 
 ### Plan structure
 
@@ -54,6 +62,19 @@ Create the file `plan.md` in the project root. If `plan.md` already exists, ask 
 
 ## Context
 <What exists today and why this change is needed. Reference specific files and code.>
+
+## Rules
+
+These rules govern how any agent (human or AI) works with this plan:
+
+1. **This file is the single source of truth.** All decisions, context, and task state live here. Do not track progress elsewhere.
+2. **Never execute without reading the full plan first.** Context, approach, edge cases, and open questions are all load-bearing.
+3. **Mark tasks as you go.** Change `- [ ]` to `- [x]` in the Task Breakdown when a task is done. Do not batch — mark each task immediately upon completion.
+4. **If something is ambiguous, stop and ask.** Do not guess intent. Leave the ambiguous task unchecked and surface the question to the user.
+5. **Executors: do not modify the plan structure.** If you are executing this plan (not the planner revising it), you may add notes (using `> **NOTE:**` format) but do not rewrite sections, reorder tasks, or remove content. The planner owns the structure; executors own the checkmarks and notes.
+6. **Each task is a self-contained unit.** Execute tasks in order unless explicitly marked as parallelizable. Do not start a task that depends on an incomplete one.
+7. **Complete every task — no more, no less.** Implement exactly what the plan says, nothing outside scope. Do not skip any task. Every unchecked item must be addressed before the plan is considered done. If you see an improvement opportunity outside scope, note it — do not act on it. If a task seems unnecessary, add a `> **NOTE:**` explaining why and let the user decide — do not silently skip it.
+8. **On failure, document before retrying.** If a task fails, add a `> **NOTE:**` explaining what happened and what you tried before attempting a different approach.
 
 ## Approach
 <High-level strategy. What changes, what stays the same, and why this approach over alternatives.>
@@ -97,6 +118,7 @@ Create the file `plan.md` in the project root. If `plan.md` already exists, ask 
 - When you considered multiple approaches, briefly explain why you chose this one.
 - Put things you're unsure about in "Open Questions" — don't guess silently.
 - The task breakdown should be granular enough that each item is a single, clear unit of work.
+- **Every section must be operative and self-contained.** A fresh agent opening this plan in a new session — with zero prior context — must be able to understand and execute it. Each section must include: (a) enough context to act without reading chat history, (b) concrete file paths and code references (not "the file we discussed"), (c) explicit success criteria for the work it describes, (d) any prerequisite state or setup steps. If a section only makes sense in light of a previous conversation, it is incomplete.
 - **Concrete numbers over qualitative descriptions.** Don't write "should be fast" — write "< 200ms p95". Don't write "handles large files" — write "up to 50MB, rejects above with error X". Every constraint needs a number or a measurable threshold.
 - **Exit clauses over absolute constraints.** For each significant decision, state the condition under which you'd abandon the approach and what alternative you'd switch to. Plans that only describe the happy path are incomplete.
 - **Explicit degradation over implicit assumptions.** If a component can fail, describe exactly what happens when it does. "Graceful degradation" is not a plan — "returns cached data from last successful fetch, shows stale-data banner, retries every 30s up to 5 times" is.
@@ -107,7 +129,7 @@ Create the file `plan.md` in the project root. If `plan.md` already exists, ask 
 After writing the file, tell the user:
 
 ```
-I wrote plan.md based on my analysis of the codebase.
+I wrote {plan-file-path} based on my analysis of the codebase.
 
 Please review it and add your notes directly in the file using this format:
 
@@ -122,7 +144,7 @@ I'll address all your annotations when you're ready. Just tell me when you've ad
 
 When the user says they've added notes (or says something like "check the plan", "I annotated it", "review my notes", etc.):
 
-1. Read `plan.md` (or whatever the plan file is named)
+1. Read the plan file (path established in Step 2)
 2. Find ALL annotations — look for these patterns:
    - Lines starting with `> **NOTE:**` (blockquote format — recommended)
    - Lines starting with `> NOTE:` or `> note:`
@@ -150,7 +172,7 @@ When the plan is approved, say:
 
 ```
 Plan approved. You can start implementation whenever you're ready.
-The task breakdown in plan.md can be used to track progress.
+The task breakdown in {plan-file-path} can be used to track progress.
 ```
 
 Do NOT start implementing. The user decides when and how to execute the plan.
