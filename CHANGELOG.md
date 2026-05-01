@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.0] - 2026-05-01
+
+### Added
+- `Setup` hook event added to schema (closes #7)
+  - Fires only with `--init-only`, or `--init`/`--maintenance` in `-p` mode. For one-time dependency installation or scheduled cleanup.
+  - Matcher values: `init`, `maintenance`
+  - Only supports `command` handler type (not prompt/agent/http)
+  - Cannot block — exit 2 shows stderr but continues execution
+  - Has access to `CLAUDE_ENV_FILE` for persisting environment variables
+  - Updated `plugin/schemas/hooks.json`, `plugin/scripts/validate-config.sh`, `plugin/skills/automate/SKILL.md`, `plugin/docs/claude-code-reference.md`, `CLAUDE.md`
+  - Added `commandOnly` field to `eventHandlerSupport` in hooks schema for events with restricted handler types
+  - Test STRUCT-64 updated: 28 → 29 events; added STRUCT-106, STRUCT-107, STRUCT-108
+  - Detected by `check-docs-updates` workflow against the live Claude Code hooks reference
+
 ## [2.9.1] - 2026-05-01
 
 ### Changed

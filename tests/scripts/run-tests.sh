@@ -349,12 +349,12 @@ run_structure_tests() {
     # ============================================
     log_info "Testing schema contents are up-to-date..."
 
-    # Verify hooks schema has all 28 events
+    # Verify hooks schema has all 29 events
     local hook_events=$(jq '.validEvents | length' "$PROJECT_ROOT/plugin/schemas/hooks.json")
-    if [ "$hook_events" -eq 28 ]; then
-        log_success "STRUCT-64: hooks schema has 28 events"
+    if [ "$hook_events" -eq 29 ]; then
+        log_success "STRUCT-64: hooks schema has 29 events"
     else
-        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 28)"
+        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 29)"
     fi
 
     # Verify hooks schema has http type
@@ -534,6 +534,22 @@ run_structure_tests() {
 
     assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
         '"Monitor"' "STRUCT-105: subagent schema includes Monitor tool"
+
+    # ============================================
+    # SETUP EVENT TESTS (2026-05-01)
+    # ============================================
+    log_info "Testing Setup hook event..."
+
+    assert_validation_passes "$VALIDATE" hooks \
+        '{"hooks":{"Setup":[{"matcher":"init","hooks":[{"type":"command","command":"npm install"}]}]}}' \
+        "STRUCT-106: accept Setup hook event"
+
+    assert_file_contains "$PROJECT_ROOT/plugin/schemas/hooks.json" \
+        '"Setup"' "STRUCT-107: hooks schema includes Setup event"
+
+    assert_validation_passes "$VALIDATE" hooks \
+        '{"hooks":{"Setup":[{"matcher":"maintenance","hooks":[{"type":"command","command":"cleanup.sh"}]}]}}' \
+        "STRUCT-108: accept Setup hook with maintenance matcher"
 
     # ============================================
     # FULL MODEL ID TESTS

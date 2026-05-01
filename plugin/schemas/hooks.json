@@ -29,11 +29,13 @@
     "FileChanged",
     "PermissionDenied",
     "PostToolBatch",
-    "UserPromptExpansion"
+    "UserPromptExpansion",
+    "Setup"
   ],
   "validTypes": ["command", "http", "prompt", "agent"],
   "eventHandlerSupport": {
-    "allTypes": ["ConfigChange", "CwdChanged", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "Notification", "PermissionDenied", "PermissionRequest", "PostCompact", "PostToolBatch", "PostToolUse", "PostToolUseFailure", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "StopFailure", "SubagentStart", "SubagentStop", "TaskCompleted", "TaskCreated", "TeammateIdle", "UserPromptExpansion", "UserPromptSubmit", "WorktreeCreate", "WorktreeRemove"]
+    "allTypes": ["ConfigChange", "CwdChanged", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "Notification", "PermissionDenied", "PermissionRequest", "PostCompact", "PostToolBatch", "PostToolUse", "PostToolUseFailure", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "StopFailure", "SubagentStart", "SubagentStop", "TaskCompleted", "TaskCreated", "TeammateIdle", "UserPromptExpansion", "UserPromptSubmit", "WorktreeCreate", "WorktreeRemove"],
+    "commandOnly": ["Setup"]
   },
   "hookHandlerFields": {
     "common": {
@@ -251,6 +253,11 @@
       "description": "When a user-typed slash command expands into a prompt (before reaching Claude)",
       "examples": ["skill-name", "custom-command-name"],
       "note": "Matcher is the command name. Can block expansion or add context. Input includes expansion_type, command_name, command_args, command_source, prompt."
+    },
+    "Setup": {
+      "description": "Fires only with --init-only, or --init/--maintenance in -p mode. For one-time dependency installation or scheduled cleanup.",
+      "validValues": ["init", "maintenance"],
+      "note": "Matcher is the CLI flag that triggered the hook. Only command type supported. Cannot block — exit 2 shows stderr but continues. Has access to CLAUDE_ENV_FILE for persisting env vars."
     }
   },
   "capabilities": {
@@ -316,7 +323,7 @@
     },
     "nonBlocking": {
       "description": "Exit code 2 shows stderr but does not block",
-      "events": ["PostToolUse", "PostToolUseFailure", "Notification", "SubagentStart", "SessionStart", "SessionEnd", "CwdChanged", "FileChanged", "PermissionDenied", "PreCompact", "PostCompact", "InstructionsLoaded"],
+      "events": ["PostToolUse", "PostToolUseFailure", "Notification", "SubagentStart", "SessionStart", "SessionEnd", "CwdChanged", "FileChanged", "PermissionDenied", "PreCompact", "PostCompact", "InstructionsLoaded", "Setup"],
       "note": "WorktreeCreate: any non-zero exit fails creation. WorktreeRemove: logged in debug only. StopFailure: output and exit code are ignored entirely."
     }
   },

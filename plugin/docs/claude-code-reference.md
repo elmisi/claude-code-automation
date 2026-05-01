@@ -79,6 +79,7 @@ Location: `.claude/settings.json` or `~/.claude/settings.json`
 | `PermissionDenied` | User denies a permission request | Tool name (non-blocking, informational) |
 | `PostToolBatch` | After full batch of parallel tool calls resolves | (no matcher, can block next model call) |
 | `UserPromptExpansion` | User-typed slash command expands into prompt | Command name (can block expansion) |
+| `Setup` | Fires with `--init-only` or `--init`/`--maintenance` in `-p` mode | `init`, `maintenance` (command type only, cannot block) |
 
 ### Invalid Events (DO NOT USE)
 
@@ -90,7 +91,7 @@ These event names do **NOT** exist:
 
 ### Hook Types
 
-All events support all 4 handler types:
+All events support all 4 handler types (except `Setup` which only supports `command`):
 
 | Type | Description |
 |------|-------------|

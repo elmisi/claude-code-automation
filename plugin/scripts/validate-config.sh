@@ -81,6 +81,7 @@ VALID_HOOK_EVENTS=(
     "PermissionDenied"
     "PostToolBatch"
     "UserPromptExpansion"
+    "Setup"
 )
 
 # Invalid/non-existent hook events (common mistakes)
