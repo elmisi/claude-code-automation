@@ -65,16 +65,12 @@ Store the chosen path — all subsequent references to "the plan file" use this 
 
 ## Rules
 
-These rules govern how any agent (human or AI) works with this plan:
+Before doing anything with this plan, read it entirely. Context, approach, edge cases, and open questions are all load-bearing.
 
-1. **This file is the single source of truth.** All decisions, context, and task state live here. Do not track progress elsewhere.
-2. **Never execute without reading the full plan first.** Context, approach, edge cases, and open questions are all load-bearing.
-3. **Mark tasks as you go.** Change `- [ ]` to `- [x]` in the Task Breakdown when a task is done. Do not batch — mark each task immediately upon completion.
-4. **If something is ambiguous, stop and ask.** Do not guess intent. Leave the ambiguous task unchecked and surface the question to the user.
-5. **Executors: do not modify the plan structure.** If you are executing this plan (not the planner revising it), you may add notes (using `> **NOTE:**` format) but do not rewrite sections, reorder tasks, or remove content. The planner owns the structure; executors own the checkmarks and notes.
-6. **Each task is a self-contained unit.** Execute tasks in order unless explicitly marked as parallelizable. Do not start a task that depends on an incomplete one.
-7. **Complete every task — no more, no less.** Implement exactly what the plan says, nothing outside scope. Do not skip any task. Every unchecked item must be addressed before the plan is considered done. If you see an improvement opportunity outside scope, note it — do not act on it. If a task seems unnecessary, add a `> **NOTE:**` explaining why and let the user decide — do not silently skip it.
-8. **On failure, document before retrying.** If a task fails, add a `> **NOTE:**` explaining what happened and what you tried before attempting a different approach.
+Two actions are possible on this plan:
+
+1. **Annotate** — Insert `> **NOTE**: your comment` inline, right next to the section or task it refers to. Use annotations to signal improvements, possible gaps, or errors. Do not modify the plan in any other way.
+2. **Review** — Read the entire plan, find all `> **NOTE**:` annotations, and process them: integrate each one into the plan, then remove the resolved annotation. The goal is to make the plan operative, self-contained (executable in a fresh session with no other context — everything needed is in this file), coherent, and robust.
 
 ## Approach
 <High-level strategy. What changes, what stays the same, and why this approach over alternatives.>
@@ -104,7 +100,7 @@ These rules govern how any agent (human or AI) works with this plan:
 - Fallback strategy with specific steps, not just "fall back to X">
 
 ## Open Questions
-<Anything you're unsure about, plus any unverifiable assumption on which a significant scope, risk, or design decision rests. This is the place to surface levers reviewers and executors should probe — don't reserve it only for "things I don't know at all".>
+<Anything you're unsure about, plus any unverifiable assumption on which a significant scope, risk, or design decision rests. This is the place to surface levers reviewers should probe — don't reserve it only for "things I don't know at all".>
 
 ## Task Breakdown
 - [ ] Task 1: description
@@ -118,7 +114,7 @@ These rules govern how any agent (human or AI) works with this plan:
 - When you considered multiple approaches, briefly explain why you chose this one.
 - Put things you're unsure about in "Open Questions" — don't guess silently.
 - The task breakdown should be granular enough that each item is a single, clear unit of work.
-- **Every section must be operative and self-contained.** A fresh agent opening this plan in a new session — with zero prior context — must be able to understand and execute it. Each section must include: (a) enough context to act without reading chat history, (b) concrete file paths and code references (not "the file we discussed"), (c) explicit success criteria for the work it describes, (d) any prerequisite state or setup steps. If a section only makes sense in light of a previous conversation, it is incomplete.
+- **Every section must be operative and self-contained.** A fresh agent opening this plan in a new session must be able to understand and execute it without any other context — everything needed is in the file. Each section must include: (a) enough context to act without reading chat history, (b) concrete file paths and code references (not "the file we discussed"), (c) explicit success criteria for the work it describes, (d) any prerequisite state or setup steps. If a section only makes sense in light of a previous conversation, it is incomplete.
 - **Concrete numbers over qualitative descriptions.** Don't write "should be fast" — write "< 200ms p95". Don't write "handles large files" — write "up to 50MB, rejects above with error X". Every constraint needs a number or a measurable threshold.
 - **Exit clauses over absolute constraints.** For each significant decision, state the condition under which you'd abandon the approach and what alternative you'd switch to. Plans that only describe the happy path are incomplete.
 - **Explicit degradation over implicit assumptions.** If a component can fail, describe exactly what happens when it does. "Graceful degradation" is not a plan — "returns cached data from last successful fetch, shows stale-data banner, retries every 30s up to 5 times" is.
@@ -129,13 +125,13 @@ These rules govern how any agent (human or AI) works with this plan:
 After writing the file, tell the user:
 
 ```
-I wrote {plan-file-path} based on my analysis of the codebase.
+Plan written: {plan-file-path}
 
-Please review it and add your notes directly in the file using this format:
+Review it and add your annotations inline using:
 
-> **NOTE:** your comment here
+> **NOTE**: your comment here
 
-I'll address all your annotations when you're ready. Just tell me when you've added your notes.
+Tell me when you're done and I'll process them.
 ```
 
 ---
@@ -145,12 +141,7 @@ I'll address all your annotations when you're ready. Just tell me when you've ad
 When the user says they've added notes (or says something like "check the plan", "I annotated it", "review my notes", etc.):
 
 1. Read the plan file (path established in Step 2)
-2. Find ALL annotations — look for these patterns:
-   - Lines starting with `> **NOTE:**` (blockquote format — recommended)
-   - Lines starting with `> NOTE:` or `> note:`
-   - Lines starting with `**NOTE:**` or `NOTE:`
-   - Lines inside `<!-- NOTE: ... -->` HTML comments
-   - Any obvious inline comment that stands out from the plan content (the user may write free-form notes)
+2. Find ALL lines matching `> **NOTE**:`
 3. For EACH annotation:
    - Understand what the user wants changed
    - Update the plan section accordingly
@@ -171,8 +162,7 @@ The annotation cycle continues until the user says the plan is good (e.g., "look
 When the plan is approved, say:
 
 ```
-Plan approved. You can start implementation whenever you're ready.
-The task breakdown in {plan-file-path} can be used to track progress.
+Plan approved: {plan-file-path}
 ```
 
 Do NOT start implementing. The user decides when and how to execute the plan.

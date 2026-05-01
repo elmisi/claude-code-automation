@@ -294,18 +294,27 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 ### How it works
 
 1. **Research** — Claude reads the relevant codebase deeply before writing anything
-2. **Write plan.md** — A detailed plan with context, approach, code snippets, edge cases, and a task breakdown
-3. **Annotate** — You open `plan.md` in your editor and add notes directly where you disagree:
-   ```markdown
-   ### Database Schema
-   Add a `visibility` field to the items table...
+2. **Write plan** — A detailed markdown plan with context, approach, code snippets, edge cases, and a task breakdown
+3. **Approve** — Iterate with annotations until the plan is right, then approve it
 
-   > **NOTE:** wrong — visibility goes on the list, not items. restructure this section.
-   ```
-4. **Iterate** — Tell Claude to process your notes. It addresses every annotation and updates the plan. Repeat 1-6 times until the plan is right.
-5. **Approve** — When you're satisfied, the plan is ready. You decide when and how to implement it.
+The plan embeds two simple rules that any agent (human or AI) can follow:
 
-The key insight: a markdown file is **shared mutable state** between you and Claude. You can think at your own pace, point at the exact spot where something is wrong, and write the correction right there. This is fundamentally better than steering through chat messages.
+- **Annotate** — Insert `> **NOTE**: your comment` inline to signal improvements, gaps, or errors. Don't change anything else.
+- **Review** — Process all `> **NOTE**:` annotations, integrate them into the plan, remove resolved ones. The goal is a plan that is operative, self-contained (executable in a fresh session with no other context), coherent, and robust.
+
+### Typical cycle
+
+```
+You ──── /plan-cycle add pagination ────→ Claude writes plan.md
+You ──── read plan, add > **NOTE**: ... ─→ (annotations in the file)
+You ──── "process my notes" ─────────────→ Claude reviews: integrates annotations, removes them
+         ... repeat until satisfied ...
+You ──── "approved" ─────────────────────→ plan is ready
+```
+
+You can also hand the plan to any other coding agent and ask it to **annotate** (add its own `> **NOTE**:` comments) or **review** (process existing annotations). The rules are in the plan itself — no plugin needed to understand them.
+
+The key insight: a markdown file is **shared mutable state** between you and any number of agents. You can think at your own pace, point at the exact spot where something is wrong, and write the correction right there. This is fundamentally better than steering through chat messages.
 
 Inspired by [Boris Tane's annotation cycle workflow](https://boristane.com/blog/how-i-use-claude-code/).
 

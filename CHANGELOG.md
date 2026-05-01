@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.1] - 2026-05-01
+
+### Changed
+- **plan-cycle plugin (1.3.0):** simplified plan rules to two actions — annotate and review
+  - Replaced 8 execution-oriented rules with 2 clear actions: **Annotate** (insert `> **NOTE**: comment` inline) and **Review** (process all annotations, integrate into plan, remove resolved ones)
+  - Removed all execution language — plans describe how to annotate and review, not how to execute
+  - Self-contained definition clarified: plan must be executable in a fresh session with no other context — everything needed is in the file
+  - Standardized NOTE format to single form `> **NOTE**:` everywhere (skill and templates)
+- **takeaway plugin:** aligned NOTE format to `> **NOTE**:` for consistency
+- **README:** updated plan-cycle section with new rules, typical cycle diagram, and multi-agent usage
+
 ## [2.9.0] - 2026-04-29
 
 ### Added

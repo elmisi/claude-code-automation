@@ -330,7 +330,7 @@ I wrote two files based on our conversation:
 
 Please review both and add your notes directly in the files using this format:
 
-> **NOTE:** your comment here
+> **NOTE**: your comment here
 
 The lessons file is the primary deliverable — it is what an improving agent will consume. Pay special attention to any lesson that still reads as project-specific; flag it with a note and I will re-run the distillation on that item.
 
@@ -345,7 +345,7 @@ When the user says they've added notes:
 
 1. Read BOTH files — the evidence file and the lessons file.
 2. Find ALL annotations in both files — look for these patterns:
-   - Lines starting with `> **NOTE:**` (blockquote format — recommended)
+   - Lines starting with `> **NOTE**:` (blockquote format — recommended)
    - Lines starting with `> NOTE:` or `> note:`
    - Lines starting with `**NOTE:**` or `NOTE:`
    - Lines inside `<!-- NOTE: ... -->` HTML comments
