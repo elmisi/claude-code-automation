@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [plan-cycle 1.4.0] - 2026-05-05
+
+### Added
+- Ops template (`ops-template.md`): companion file copiato accanto ad ogni piano, descrive tutte le operazioni disponibili — usabile da qualunque coding agent senza il plugin
+- `/plan-cycle:plan-impact` skill: analisi d'impatto codebase sui piani (overlap, obsolescenza, convenzioni, ripple effects)
+- `/plan-cycle:plan-quality` skill: verifica criteri "bel codice" configurabili dall'utente
+- `code-quality.md`: 9 principi quality prioritizzati come contenuto iniziale
+
+### Changed
+- Plan template: sezione "Rules" rimossa, sostituita da riferimento al file ops companion
+- Step 3 (process annotations): semplificato a fallback same-session
+
 ## [2.10.0] - 2026-05-01
 
 ### Added

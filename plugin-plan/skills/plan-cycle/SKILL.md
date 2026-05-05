@@ -53,6 +53,13 @@ As you read, keep a short trace of the checks you run — what you grepped, what
 
 If the slug cannot be derived (request too short or non-ASCII), fall back to `plan-{YYYYMMDD-HHMM}.md`.
 
+5. Copy the ops template alongside the plan:
+   - Read the ops template from `${CLAUDE_SKILL_DIR}/../../ops-template.md`
+   - Write it to the same directory as the plan, named `plan-{slug}-{timestamp}.ops.md`
+   - The ops file uses the EXACT same slug and timestamp as the plan file
+   - If the template cannot be read, skip this step (the plan works without it)
+6. In the plan's "How to work with this plan" section, replace `{ops-filename}` with the actual ops filename.
+
 Store the chosen path — all subsequent references to "the plan file" use this path, not a hardcoded name.
 
 ### Plan structure
@@ -63,14 +70,11 @@ Store the chosen path — all subsequent references to "the plan file" use this 
 ## Context
 <What exists today and why this change is needed. Reference specific files and code.>
 
-## Rules
+## How to work with this plan
 
-Before doing anything with this plan, read it entirely. Context, approach, edge cases, and open questions are all load-bearing.
+Read the entire plan before acting. Context, approach, edge cases, and open questions are all load-bearing.
 
-Two actions are possible on this plan:
-
-1. **Annotate** — Insert `> **NOTE**: your comment` inline, right next to the section or task it refers to. Use annotations to signal improvements, possible gaps, or errors. Do not modify the plan in any other way.
-2. **Review** — Read the entire plan, find all `> **NOTE**:` annotations, and process them: integrate each one into the plan, then remove the resolved annotation. The goal is to make the plan operative, self-contained (executable in a fresh session with no other context — everything needed is in this file), coherent, and robust.
+For operational instructions (how to annotate, review, analyze impact, check quality): see the companion file `{ops-filename}` in the same directory.
 
 ## Approach
 <High-level strategy. What changes, what stays the same, and why this approach over alternatives.>
@@ -136,22 +140,15 @@ Tell me when you're done and I'll process them.
 
 ---
 
-## Step 3: Process annotations
+## Step 3: Process annotations (same-session fallback)
 
-When the user says they've added notes (or says something like "check the plan", "I annotated it", "review my notes", etc.):
-
+If the user asks you to process annotations within this session:
 1. Read the plan file (path established in Step 2)
 2. Find ALL lines matching `> **NOTE**:`
-3. For EACH annotation:
-   - Understand what the user wants changed
-   - Update the plan section accordingly
-   - Remove the annotation after addressing it
-4. After processing all annotations, tell the user:
-   - How many annotations you found and addressed
-   - A brief summary of the key changes (2-3 lines, not a full recap)
-   - Ask if they want to review again or if the plan is approved
+3. For each annotation: understand what the user wants, update the plan, remove the resolved annotation
+4. Report: how many processed, what changed (2-3 lines)
 
-**If an annotation is unclear**, don't guess — keep the annotation in place and ask the user to clarify it.
+For cross-session use, the ops companion file contains instructions any agent can follow without this skill.
 
 ---
 

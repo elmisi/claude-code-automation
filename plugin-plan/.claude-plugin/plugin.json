@@ -1,7 +1,7 @@
 {
   "name": "plan-cycle",
-  "version": "1.3.0",
-  "description": "File-based planning with annotation cycles. Replaces built-in plan mode with a persistent markdown artifact you can edit and refine iteratively.",
+  "version": "1.4.0",
+  "description": "File-based planning with annotation pipeline. Creates persistent markdown plans, companion ops guide, and supports impact/quality analysis via composable skills.",
   "author": {
     "name": "elmisi"
   },
@@ -12,6 +12,8 @@
     "annotation",
     "workflow",
     "plan",
-    "architecture"
+    "architecture",
+    "pipeline",
+    "quality"
   ]
 }

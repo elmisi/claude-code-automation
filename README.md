@@ -15,7 +15,7 @@ This repository contains two plugins:
 
 ---
 
-## Plugin 1: automate
+## /automate plugin
 
 > An expert advisor that helps you decide and create the right automation for your needs.
 
@@ -236,7 +236,7 @@ A daily GitHub Action checks the official Claude Code documentation for changes 
 
 ---
 
-## Plugin 2: develop-cycle
+## /develop-cycle plugin
 
 > A structured development workflow that guides Claude through analysis, implementation, validation, and a mandatory checkpoint before commit/push.
 
@@ -272,9 +272,9 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 
 ---
 
-## Plugin 3: plan-cycle
+## /plan-cycle plugin 
 
-> File-based planning with annotation cycles. A better alternative to Claude Code's built-in plan mode.
+> File-based planning with annotation pipeline. Creates persistent markdown plans with composable analysis skills.
 
 ### Installation
 
@@ -282,6 +282,14 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 /plugin marketplace add elmisi/claude-code-automation
 /plugin install plan-cycle
 ```
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `/plan-cycle <request>` | Research codebase and write a detailed plan file |
+| `/plan-cycle:plan-impact <plan-path>` | Codebase impact analysis — finds overlaps, obsolescence, broken conventions, ripple effects |
+| `/plan-cycle:plan-quality <plan-path>` | Code quality review — checks plan against configurable quality criteria |
 
 ### Usage
 
@@ -291,28 +299,26 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 /plan-cycle migrate the database from MongoDB to PostgreSQL
 ```
 
+### Pipeline workflow
+
+```
+/plan-cycle <request>          → writes plan + ops companion file
+/plan-cycle:plan-impact <plan> → annotates codebase-level issues
+/plan-cycle:plan-quality <plan> → annotates quality violations
+"review the plan"              → processes all annotations, updates plan
+... repeat until approved ...
+"approved"                     → plan is ready
+```
+
 ### How it works
 
 1. **Research** — Claude reads the relevant codebase deeply before writing anything
-2. **Write plan** — A detailed markdown plan with context, approach, code snippets, edge cases, and a task breakdown
-3. **Approve** — Iterate with annotations until the plan is right, then approve it
+2. **Write plan** — A detailed markdown plan with context, approach, code snippets, edge cases, and a task breakdown. A companion ops file is written alongside with operational instructions.
+3. **Analyze** — Run `/plan-cycle:plan-impact` and/or `/plan-cycle:plan-quality` to get automated annotations
+4. **Review** — Process all `> **NOTE**:` annotations, integrate them into the plan, remove resolved ones
+5. **Approve** — Iterate until the plan is right, then approve it
 
-The plan embeds two simple rules that any agent (human or AI) can follow:
-
-- **Annotate** — Insert `> **NOTE**: your comment` inline to signal improvements, gaps, or errors. Don't change anything else.
-- **Review** — Process all `> **NOTE**:` annotations, integrate them into the plan, remove resolved ones. The goal is a plan that is operative, self-contained (executable in a fresh session with no other context), coherent, and robust.
-
-### Typical cycle
-
-```
-You ──── /plan-cycle add pagination ────→ Claude writes plan.md
-You ──── read plan, add > **NOTE**: ... ─→ (annotations in the file)
-You ──── "process my notes" ─────────────→ Claude reviews: integrates annotations, removes them
-         ... repeat until satisfied ...
-You ──── "approved" ─────────────────────→ plan is ready
-```
-
-You can also hand the plan to any other coding agent and ask it to **annotate** (add its own `> **NOTE**:` comments) or **review** (process existing annotations). The rules are in the plan itself — no plugin needed to understand them.
+The ops companion file describes all operations (annotate, review, impact analysis, quality check) so any coding agent can work with the plan without the plugin installed.
 
 The key insight: a markdown file is **shared mutable state** between you and any number of agents. You can think at your own pace, point at the exact spot where something is wrong, and write the correction right there. This is fundamentally better than steering through chat messages.
 
