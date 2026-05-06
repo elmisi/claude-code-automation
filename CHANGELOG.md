@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [plan-cycle 1.5.0] - 2026-05-06
+
+### Added
+- Ops template: comando `Finalize` — verifica consistenza del piano (autocontenuto, operativo, coerente, robusto) e riscrive direttamente le sezioni carenti
+
+### Changed
+- Ops template: rimossi Impact Analysis e Code Quality (restano come skill del plugin, non operazioni per agenti esterni)
+- Ops template: rimosso goal aspirazionale da Review — ora Review processa solo annotazioni, senza pretese di finalizzazione
+
 ## [plan-cycle 1.4.0] - 2026-05-05
 
 ### Added

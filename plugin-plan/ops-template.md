@@ -1,7 +1,7 @@
 # Operations Guide
 
 This file describes all available operations on the accompanying plan.
-Any coding agent can follow these instructions — no plugin required.
+Any coding agent can follow these instructions.
 
 ## Annotate
 
@@ -19,33 +19,23 @@ Do not modify the plan content — only add annotations.
 3. For each annotation: understand the request, update the plan, remove the annotation
 4. If an annotation is unclear, keep it in place and ask for clarification
 
-Goal: make the plan operative, self-contained, coherent, and robust.
+## Finalize
 
-## Impact Analysis
+Make the plan operative, self-contained, coherent, and robust — a fresh agent opening it in a new session must be able to execute it without any prior context.
 
-Examine each proposed change against the broader codebase:
-
-- **Overlap**: does a function, utility, or pattern already exist that covers this need (fully or partially)?
-- **Obsolescence**: does this change make existing code dead or redundant? If so, the plan should include its removal.
-- **Conventions**: does the proposed approach follow the project's established patterns (naming, structure, error handling, module boundaries)?
-- **Ripple effects**: what other modules consume or depend on the code being changed? Are they accounted for?
-- **Infrastructure**: is there shared infrastructure (helpers, base classes, config systems) the plan should leverage instead of building from scratch?
-- **Symmetry**: if the codebase treats similar concerns uniformly, does this change maintain or break that uniformity?
-
-Produce `> **NOTE**: ...` annotations where issues are found.
-
-## Code Quality
-
-Review proposed changes against the project's code quality criteria.
-Criteria are defined in a separate file maintained by the project owner.
-
-For each criterion violated by the plan's proposed approach, add:
-
-> **NOTE**: [quality: criterion-name] — explanation of how it's violated and suggested fix
+1. Read the entire plan
+2. Check every section against these criteria:
+   - **Self-contained**: no references to "the file we discussed", "as mentioned above in chat", or any other implicit conversation context. Every reference must be concrete: file paths, function names, line numbers where relevant
+   - **Operative**: each task in the breakdown maps to specific changes in "Detailed Changes". No task says "handle the edge cases" without specifying which ones and how. Code snippets show target shape (interfaces, signatures), not just prose descriptions
+   - **Coherent**: no contradictions between sections. The task breakdown covers exactly what "Detailed Changes" describes — nothing more, nothing less. Dependencies between tasks are explicit and ordered correctly
+   - **Robust**: risks have concrete mitigations (not "be careful"). Failure modes describe what happens, not just that something "could fail". Assumptions that can be verified against today's code are verified (with visible trace); those that cannot are marked as such
+3. Fix every gap found — rewrite the section, don't annotate it
+4. Report: how many sections were updated and a one-line summary of what changed
 
 ## General Principles
 
-- Operations may only add `> **NOTE**:` annotations — they must not rewrite existing plan content
+- Annotate may only add `> **NOTE**:` annotations — it must not rewrite plan content
+- Review and Finalize rewrite plan content directly
 - Annotations are processed in a separate review pass
-- Multiple operations can run in sequence before a single review pass
+- Multiple annotate passes can run before a single review pass
 - The plan is approved only when the owner explicitly says so
