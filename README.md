@@ -5,44 +5,31 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml)
 
-This repository contains two plugins:
+This repository contains four plugins:
 
 | Plugin | Command | Description |
 |--------|---------|-------------|
 | **automate** | `/automate` | Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.) |
 | **develop-cycle** | `/develop-cycle` | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
 | **plan-cycle** | `/plan-cycle` | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
+| **takeaway** | `/takeaway` | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
 
 ---
-
-## /automate plugin
-
-> An expert advisor that helps you decide and create the right automation for your needs.
-
-**Schemas updated: Mar 2026** — 25 hook events, MCP Servers, LSP Servers, Agent Teams, PowerShell tool, effort/paths/shell fields.
-
-### Why this plugin?
-
-[Claude Code](https://claude.ai/code) is Anthropic's AI coding agent for the terminal. It offers multiple automation mechanisms: **skills**, **hooks**, **subagents**, **permissions**, **CLAUDE.md**, **custom commands**, **MCP servers**, **LSP servers**, and **agent teams**. Each serves a different purpose, but choosing the right one isn't always obvious.
-
-**Common questions:**
-- Should I use a hook or a skill?
-- When do I need a subagent vs a regular skill?
-- How do I enforce a rule that Claude MUST follow, not just "should" follow?
-- What if I use `--dangerously-skip-permissions`?
-- When should I set up an MCP server vs a hook?
-- Do I need an agent team or just a subagent?
-
-This plugin acts as an expert advisor. You describe what you want to automate, it interviews you to understand your exact needs, then creates the right files in the right places.
 
 ## Installation
 
 ```bash
+# Add the marketplace (once)
 /plugin marketplace add elmisi/claude-code-automation
+
+# Install the plugin(s) you want
 /plugin install automate
+/plugin install develop-cycle
+/plugin install plan-cycle
+/plugin install takeaway
 ```
 
-Then restart Claude Code to activate the plugin.
+Restart Claude Code after installation to activate.
 
 ## Updating
 
@@ -62,22 +49,42 @@ Or update manually anytime:
 ## Uninstallation
 
 ```bash
-# 1. Clean up all automations created by the plugin (optional but recommended)
+# For automate: clean up all created automations first (optional but recommended)
 /automate-cleanup
 
-# 2. Uninstall the plugin
-/plugin uninstall automate
+# Uninstall any plugin
+/plugin uninstall <plugin-name>
 ```
 
-If you skip the cleanup step, your automations (skills, hooks, subagents, etc.) will continue to work independently — they don't depend on the plugin at runtime. If you reinstall the plugin later, it will automatically detect and re-register existing automations.
+Automations created by `/automate` continue to work independently after uninstallation. If you reinstall the plugin later, it will automatically detect and re-register existing automations.
 
-## Usage
+---
+
+## automate
+
+> An expert advisor that helps you decide and create the right automation for your needs.
+
+**Schemas updated: May 2026** — 29 hook events, 4 hook handler types, MCP/LSP Servers, Agent Teams, full model IDs.
+
+### Why this plugin?
+
+[Claude Code](https://claude.ai/code) offers multiple automation mechanisms: **skills**, **hooks**, **subagents**, **permissions**, **CLAUDE.md**, **custom commands**, **MCP servers**, **LSP servers**, and **agent teams**. Each serves a different purpose, but choosing the right one isn't always obvious.
+
+**Common questions:**
+- Should I use a hook or a skill?
+- When do I need a subagent vs a regular skill?
+- How do I enforce a rule that Claude MUST follow, not just "should" follow?
+- What if I use `--dangerously-skip-permissions`?
+- When should I set up an MCP server vs a hook?
+- Do I need an agent team or just a subagent?
+
+This plugin acts as an expert advisor. You describe what you want to automate, it interviews you to understand your exact needs, then creates the right files in the right places.
+
+### Usage
 
 ```bash
 /automate <your topic>
 ```
-
-### Examples
 
 ```bash
 /automate semantic versioning on every commit
@@ -89,7 +96,7 @@ If you skip the cleanup step, your automations (skills, hooks, subagents, etc.) 
 /automate set up TypeScript language server
 ```
 
-## See it in action
+### See it in action
 
 > `/automate run tests before every commit`
 
@@ -104,7 +111,7 @@ The plugin interviews you to understand exactly what you need:
 **Q: Should Claude decide which tests to run?**
 &rarr; *Yes, based on the changed files*
 
-### Decision: Hook + Skill
+#### Decision: Hook + Skill
 
 > *"A Skill alone won't work — Claude can skip skills. You need a **Hook** to guarantee tests run on every commit. But since Claude should intelligently pick which tests based on changed files, you also need a **Skill** for the logic. I'll create both."*
 
@@ -119,36 +126,7 @@ Both files are validated against schemas and registered for easy management (`/a
 
 **The twist:** had you answered *"just a guideline"* instead, the plugin would create a single `CLAUDE.md` rule — no hooks, no skills. Same topic, different needs, completely different automation.
 
----
-
-## Managing Automations
-
-All automations created by this plugin are tracked in a registry (`~/.claude/automations-registry.json`). Each management command is a separate skill for instant tab-completion and faster execution:
-
-| Command | Description |
-|---------|-------------|
-| `/automate-list` | List all tracked automations with options to view, edit, delete, or export |
-| `/automate-edit <name>` | Modify an existing automation (name, description, behavior, scope) |
-| `/automate-delete <name>` | Remove an automation with confirmation |
-| `/automate-export [file]` | Export all automations to a portable JSON file |
-| `/automate-import <file>` | Import automations from another machine with conflict resolution |
-| `/automate-verify` | Health-check all registered automations — detects missing files or hook entries and offers to repair them |
-| `/automate-cleanup` | Pre-uninstall: remove all automations created by this plugin (with option to keep selected ones) |
-| `/automate-help` | Show full command reference |
-
-### Export/Import Example
-
-```bash
-# On machine A: export your automations
-/automate-export ~/my-automations.json
-
-# Copy the file to machine B, then import
-/automate-import ~/my-automations.json
-```
-
-When importing, you'll be asked how to handle conflicts if an automation with the same name already exists.
-
-## How it works
+### How it works
 
 1. **Auto-updates**: Fetches the latest Claude Code documentation to stay current with new features
 2. **Interviews you**: Asks specific questions about timing, scope, and requirements
@@ -159,7 +137,7 @@ When importing, you'll be asked how to handle conflicts if an automation with th
 7. **Verifies**: Ensures all components of a combination are complete
 8. **Tests**: Shows you how to test and use your new automation
 
-## Decision Matrix
+### Decision matrix
 
 | Need | Solution |
 |------|----------|
@@ -174,7 +152,7 @@ When importing, you'll be asked how to handle conflicts if an automation with th
 | Code intelligence (diagnostics, hover) | LSP Server |
 | Parallel multi-agent orchestration | Agent Team (experimental) |
 
-## Common Combinations
+### Common combinations
 
 - **Hook + Skill**: Guaranteed execution (hook) with complex logic (skill)
 - **Permissions + CLAUDE.md**: Technical block + explanation of why
@@ -182,70 +160,43 @@ When importing, you'll be asked how to handle conflicts if an automation with th
 - **MCP Server + Skill**: External tool access + workflow orchestration
 - **Agent Team + Skill**: Multi-agent orchestration + domain knowledge
 
-## Key Insights
+### Managing automations
 
-### Hooks vs Skills
+All automations created by this plugin are tracked in a registry (`~/.claude/automations-registry.json`). Each management command is a separate skill for instant tab-completion and faster execution:
+
+| Command | Description |
+|---------|-------------|
+| `/automate-list` | List all tracked automations with options to view, edit, delete, or export |
+| `/automate-edit <name>` | Modify an existing automation (name, description, behavior, scope) |
+| `/automate-delete <name>` | Remove an automation with confirmation |
+| `/automate-export [file]` | Export all automations to a portable JSON file |
+| `/automate-import <file>` | Import automations from another machine with conflict resolution |
+| `/automate-verify` | Health-check all registered automations — detects missing files or hook entries and offers to repair them |
+| `/automate-cleanup` | Pre-uninstall: remove all automations created by this plugin (with option to keep selected ones) |
+| `/automate-help` | Show full command reference |
+
+### Key insights
+
+**Hooks vs Skills**
 - **Hooks** are scripts that run automatically at specific events. They're deterministic and guaranteed.
 - **Skills** are knowledge/workflows that Claude applies with intelligence. They're advisory.
 - Use hooks when something MUST happen. Use skills when Claude needs to think.
 
-### Permissions Caveat
-If you use `--dangerously-skip-permissions`, permission rules won't work. The plugin will suggest using hooks as an alternative for guaranteed blocks.
+**Permissions caveat** — If you use `--dangerously-skip-permissions`, permission rules won't work. The plugin will suggest using hooks as an alternative for guaranteed blocks.
 
-### MCP Servers
-MCP servers expose external tools to Claude via the Model Context Protocol. Tools appear as `mcp__<server>__<tool>` and can be matched in hook matchers. Supports `stdio` (local processes) and `sse` (remote HTTP) transports.
+**MCP Servers** — Expose external tools to Claude via the Model Context Protocol. Tools appear as `mcp__<server>__<tool>` and can be matched in hook matchers. Supports `stdio`, `http`, `sse`, and `ws` transports.
 
-### LSP Servers
-LSP servers provide code intelligence features (diagnostics, hover, completions) via the Language Server Protocol. The language server binary must be installed separately.
+**LSP Servers** — Provide code intelligence features (diagnostics, hover, completions) via the Language Server Protocol. The language server binary must be installed separately.
 
-### Agent Teams (Experimental)
-Agent teams enable parallel multi-agent orchestration. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. The feature is experimental and may change.
+**Agent Teams** (experimental) — Enable parallel multi-agent orchestration. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 
-### Subagents for Clean Context
-Subagents run in isolated context windows. Use them for:
-- Code review (unbiased, separate from the code that was just written)
-- Deep investigation (reads many files without polluting your main context)
-- Specialized analysis (security, performance, etc.)
-
-## Testing
-
-Tests are split into three categories:
-
-| Type | Command | Tests | Description |
-|------|---------|-------|-------------|
-| Structure | `./tests/scripts/run-tests.sh structure` | 97 | File structure, JSON validity, fixture validation, version sync, negative validation, JSON guard |
-| Fixture | `./tests/scripts/run-tests.sh e2e` | 20 | Creates expected outputs in sandbox and validates their structure |
-| Interactive | `./tests/scripts/run-tests.sh interactive` | 5 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) |
-
-**Note**: Structure and fixture tests are deterministic and run in CI. Interactive tests are qualitative smoke tests that verify the skill produces reasonable output with a real Claude instance. They are not CI-grade deterministic tests.
-
-## Roadmap
-
-### Planned: Interactive decision tree (v3.0)
-
-The current interview flow uses adaptive questions with category-based shortcuts. A future version will implement a full interactive decision tree with:
-- Visual flowchart-style navigation
-- Weighted scoring when multiple automation types partially match
-- Side-by-side comparison of alternatives with pros/cons
-- "Did you mean..." suggestions for ambiguous descriptions
-- Learning from previous automations to suggest patterns
-
-### Schema auto-update
-
-A daily GitHub Action checks the official Claude Code documentation for changes and opens issues when schemas need updating. Contributors can then update schemas without manually diffing docs.
+**Subagents for clean context** — Run in isolated context windows. Use them for code review (unbiased, separate from the code that was just written), deep investigation (reads many files without polluting your main context), or specialized analysis (security, performance, etc.).
 
 ---
 
-## /develop-cycle plugin
+## develop-cycle
 
 > A structured development workflow that guides Claude through analysis, implementation, validation, and a mandatory checkpoint before commit/push.
-
-### Installation
-
-```bash
-/plugin marketplace add elmisi/claude-code-automation
-/plugin install develop-cycle
-```
 
 ### Usage
 
@@ -272,16 +223,9 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 
 ---
 
-## /plan-cycle plugin 
+## plan-cycle
 
 > File-based planning with annotation pipeline. Creates persistent markdown plans with composable analysis skills.
-
-### Installation
-
-```bash
-/plugin marketplace add elmisi/claude-code-automation
-/plugin install plan-cycle
-```
 
 ### Commands
 
@@ -302,12 +246,13 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 ### Pipeline workflow
 
 ```
-/plan-cycle <request>          → writes plan + ops companion file
-/plan-cycle:plan-impact <plan> → annotates codebase-level issues
+/plan-cycle <request>           → writes plan + ops companion file
+/plan-cycle:plan-impact <plan>  → annotates codebase-level issues
 /plan-cycle:plan-quality <plan> → annotates quality violations
-"review the plan"              → processes all annotations, updates plan
+"review"                        → processes all annotations, updates plan
+"finalize"                      → verifies consistency, rewrites gaps
 ... repeat until approved ...
-"approved"                     → plan is ready
+"approved"                      → plan is ready for execution
 ```
 
 ### How it works
@@ -316,13 +261,51 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 2. **Write plan** — A detailed markdown plan with context, approach, code snippets, edge cases, and a task breakdown. A companion ops file is written alongside with operational instructions.
 3. **Analyze** — Run `/plan-cycle:plan-impact` and/or `/plan-cycle:plan-quality` to get automated annotations
 4. **Review** — Process all `> **NOTE**:` annotations, integrate them into the plan, remove resolved ones
-5. **Approve** — Iterate until the plan is right, then approve it
+5. **Finalize** — Verify the plan is self-contained (executable by a fresh agent in a new session without context), operative, coherent, and robust. Rewrites sections directly where gaps are found.
+6. **Approve** — Iterate until the plan is right, then approve it
 
-The ops companion file describes all operations (annotate, review, impact analysis, quality check) so any coding agent can work with the plan without the plugin installed.
+The ops companion file describes the three core operations (annotate, review, finalize) so any coding agent can work with the plan — the plugin skills handle the analysis passes (impact and quality).
 
-The key insight: a markdown file is **shared mutable state** between you and any number of agents. You can think at your own pace, point at the exact spot where something is wrong, and write the correction right there. This is fundamentally better than steering through chat messages.
+The key insight: a markdown file is **shared mutable state** between you and any number of agents. You can think at your own pace, point at the exact spot where something is wrong, and write the correction right there.
 
 Inspired by [Boris Tane's annotation cycle workflow](https://boristane.com/blog/how-i-use-claude-code/).
+
+---
+
+## takeaway
+
+> Structured feedback extraction for continuous improvement. Interviews the user, distills observations into portable principles.
+
+### Usage
+
+```bash
+/takeaway plan-cycle
+/takeaway develop-cycle
+/takeaway <any skill, tool, or workflow>
+```
+
+### How it works
+
+1. **Identify** — Classifies the target (skill, tool, plugin, workflow) and its scope (universal or project-specific)
+2. **Interview** — Extracts observations from the user with concrete examples
+3. **Evidence file** — Writes `takeaway-<target>-evidence.md`, the session retrospective with project-specific detail
+4. **Distillation** — Collapses patterns by root theme and strips project-specific vocabulary
+5. **Lessons file** — Writes `takeaway-<target>-lessons.md`, tool-agnostic principles an improving agent can consume
+6. **Iterate** — The user reviews and annotates both files until approved
+
+The two-file split is deliberate: evidence is traceable and project-bound, lessons are portable across projects and tools.
+
+---
+
+## Testing
+
+| Type | Command | Tests | Description |
+|------|---------|-------|-------------|
+| Structure | `./tests/scripts/run-tests.sh structure` | 113 | File structure, JSON validity, fixture validation, version sync, negative validation, JSON guard |
+| Fixture | `./tests/scripts/run-tests.sh e2e` | 20 | Creates expected outputs in sandbox and validates their structure |
+| Interactive | `./tests/scripts/run-tests.sh interactive` | 5 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) |
+
+Structure and fixture tests are deterministic and run in CI. Interactive tests are qualitative smoke tests that verify skills produce reasonable output with a real Claude instance — local only.
 
 ---
 
