@@ -20,6 +20,8 @@ The user's request: **$ARGUMENTS**
 3. You process every annotation, update the plan, and remove the resolved notes
 4. Repeat until the user approves
 
+The companion ops file defines operations (Annotate, Review, Finalize) that any participant — including you — can perform on the plan at any point in this session.
+
 **Critical rules:**
 - NEVER implement code. Only plan.
 - NEVER summarize the plan in chat. The file IS the deliverable.
@@ -58,6 +60,7 @@ If the slug cannot be derived (request too short or non-ASCII), fall back to `pl
    - Write it to the same directory as the plan, named `plan-{slug}-{timestamp}.ops.md`
    - The ops file uses the EXACT same slug and timestamp as the plan file
    - If the template cannot be read, skip this step (the plan works without it)
+   - **Study the ops template's content** — it defines operations (Annotate, Review, Finalize) that the user may ask you to perform at any point in this session. Internalize these definitions as part of your operational knowledge, not just as a file to copy.
 6. In the plan's "How to work with this plan" section, replace `{ops-filename}` with the actual ops filename.
 
 Store the chosen path — all subsequent references to "the plan file" use this path, not a hardcoded name.
