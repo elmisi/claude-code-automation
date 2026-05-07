@@ -34,9 +34,9 @@
     },
     {
       "name": "refactor-discovery",
-      "version": "1.0.0",
-      "source": "./plugin-refactor-discovery",
-      "description": "Research methodology to surface high-value refactor candidates. Discovers project areas, investigates in parallel with subagents, synthesizes cross-cutting findings, and produces a prioritized discovery document."
+      "version": "1.1.0",
+      "source": "./plugins/refactor-discovery",
+      "description": "Research methodology to surface non-obvious structural smell leads before promoting refactor candidates. Discovers project areas, investigates in parallel with subagents, synthesizes cross-cutting tensions, and produces a prioritized discovery document."
     }
   ]
 }

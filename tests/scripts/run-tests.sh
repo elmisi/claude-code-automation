@@ -54,6 +54,12 @@ run_structure_tests() {
     assert_file_exists "$PROJECT_ROOT/plugins/plan-cycle/.claude-plugin/plugin.json" \
         "STRUCT-111: plan-cycle Claude plugin.json exists"
 
+    assert_file_exists "$PROJECT_ROOT/plugins/refactor-discovery/.codex-plugin/plugin.json" \
+        "STRUCT-118: refactor-discovery Codex plugin.json exists"
+
+    assert_file_exists "$PROJECT_ROOT/plugins/refactor-discovery/.claude-plugin/plugin.json" \
+        "STRUCT-119: refactor-discovery Claude plugin.json exists"
+
     # Test: JSON files are valid
     log_info "Testing JSON validity..."
 
@@ -71,6 +77,12 @@ run_structure_tests() {
 
     assert_valid_json "$PROJECT_ROOT/plugins/plan-cycle/.claude-plugin/plugin.json" \
         "STRUCT-114: plan-cycle Claude plugin.json is valid JSON"
+
+    assert_valid_json "$PROJECT_ROOT/plugins/refactor-discovery/.codex-plugin/plugin.json" \
+        "STRUCT-120: refactor-discovery Codex plugin.json is valid JSON"
+
+    assert_valid_json "$PROJECT_ROOT/plugins/refactor-discovery/.claude-plugin/plugin.json" \
+        "STRUCT-121: refactor-discovery Claude plugin.json is valid JSON"
 
     # Test: SKILL.md has valid frontmatter
     log_info "Testing SKILL.md frontmatter..."
@@ -211,6 +223,10 @@ run_structure_tests() {
     local plan_ver_codex=$(jq -r '.version' "$PROJECT_ROOT/plugins/plan-cycle/.codex-plugin/plugin.json")
     local plan_ver_market=$(jq -r '.plugins[] | select(.name == "plan-cycle") | .version' "$PROJECT_ROOT/.claude-plugin/marketplace.json")
     local plan_codex_source=$(jq -r '.plugins[] | select(.name == "plan-cycle") | .source.path' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
+    local refactor_ver_claude=$(jq -r '.version' "$PROJECT_ROOT/plugins/refactor-discovery/.claude-plugin/plugin.json")
+    local refactor_ver_codex=$(jq -r '.version' "$PROJECT_ROOT/plugins/refactor-discovery/.codex-plugin/plugin.json")
+    local refactor_ver_market=$(jq -r '.plugins[] | select(.name == "refactor-discovery") | .version' "$PROJECT_ROOT/.claude-plugin/marketplace.json")
+    local refactor_codex_source=$(jq -r '.plugins[] | select(.name == "refactor-discovery") | .source.path' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
 
     if [ "$plan_ver_claude" == "$plan_ver_codex" ] && [ "$plan_ver_claude" == "$plan_ver_market" ]; then
         log_success "STRUCT-115: plan-cycle version sync — all manifests show $plan_ver_claude"
@@ -226,6 +242,21 @@ run_structure_tests() {
 
     assert_file_contains "$PROJECT_ROOT/plugins/plan-cycle/skills/plan-cycle/SKILL.md" \
         "../../ops-template.md" "STRUCT-117: plan-cycle uses portable ops template path"
+
+    if [ "$refactor_ver_claude" == "$refactor_ver_codex" ] && [ "$refactor_ver_claude" == "$refactor_ver_market" ]; then
+        log_success "STRUCT-122: refactor-discovery version sync — all manifests show $refactor_ver_claude"
+    else
+        log_fail "STRUCT-122: refactor-discovery version mismatch — Claude=$refactor_ver_claude, Codex=$refactor_ver_codex, marketplace=$refactor_ver_market"
+    fi
+
+    if [ "$refactor_codex_source" == "./plugins/refactor-discovery" ]; then
+        log_success "STRUCT-123: Codex marketplace points to plugins/refactor-discovery"
+    else
+        log_fail "STRUCT-123: refactor-discovery Codex marketplace source mismatch — $refactor_codex_source"
+    fi
+
+    assert_file_contains "$PROJECT_ROOT/plugins/refactor-discovery/skills/refactor-discovery/SKILL.md" \
+        "../../docs/methodology.md" "STRUCT-124: refactor-discovery uses portable methodology path"
 
     # ============================================
     # NEGATIVE VALIDATION (invalid configs must fail)

@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved `plan-cycle` from `plugin-plan/` to `plugins/plan-cycle/` so Claude Code and Codex can share one plugin source tree
 - Replaced Claude-specific skill path instructions with portable relative path guidance while keeping Claude Code resolution notes
 
+## [refactor-discovery 1.1.0] - 2026-05-07
+
+### Added
+- Codex marketplace support via `.agents/plugins/marketplace.json`
+- Codex plugin manifest at `plugins/refactor-discovery/.codex-plugin/plugin.json`
+- Stable `SL<N>` namespace for structural smell leads before promotion to refactor candidates
+- Discovery lenses for temporal coupling, change amplification, shotgun ceremony, semantic drift, asymmetric abstractions, hidden policy, test gravity, and negative space
+
+### Changed
+- Moved `refactor-discovery` from `plugin-refactor-discovery/` to `plugins/refactor-discovery/` so Claude Code and Codex can share one plugin source tree
+- Reworked the methodology from candidate-first to smell-led discovery, preserving uncertainty as `SL<N>` leads or `RT<N>` research tasks
+- Added a serial investigation fallback for runtimes that do not support plugin subagents
+
 ## [plan-cycle 1.5.1] - 2026-05-07
 
 ### Fixed

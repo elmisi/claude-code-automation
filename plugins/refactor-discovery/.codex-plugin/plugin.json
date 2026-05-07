@@ -1,0 +1,40 @@
+{
+  "name": "refactor-discovery",
+  "version": "1.1.0",
+  "description": "Research methodology to surface non-obvious structural smell leads before promoting refactor candidates. Discovers project areas, investigates in parallel when available, synthesizes cross-cutting tensions, and produces a prioritized discovery document.",
+  "author": {
+    "name": "elmisi"
+  },
+  "homepage": "https://github.com/elmisi/claude-code-automation",
+  "repository": "https://github.com/elmisi/claude-code-automation",
+  "license": "MIT",
+  "keywords": [
+    "refactor",
+    "discovery",
+    "code-quality",
+    "investigation",
+    "analysis",
+    "smells",
+    "methodology"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Refactor Discovery",
+    "shortDescription": "Surface structural smell leads before planning refactors",
+    "longDescription": "Investigate codebases with structural discovery lenses, preserve uncertainty as smell leads or research tasks, and promote only mature findings into refactor candidates.",
+    "developerName": "elmisi",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/elmisi/claude-code-automation",
+    "defaultPrompt": [
+      "Find non-obvious refactor smells in this codebase",
+      "Run refactor discovery on a specific module",
+      "Investigate structural smells around an error handling flow"
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

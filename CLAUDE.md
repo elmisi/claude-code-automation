@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A multi-plugin repository for Claude Code automation, with Codex marketplace support for `plan-cycle`:
+A multi-plugin repository for Claude Code automation, with Codex marketplace support for `plan-cycle` and `refactor-discovery`:
 
 | Plugin | Directory | Claude Code Command | Codex | Description |
 |--------|-----------|---------------------|-------|-------------|
@@ -12,9 +12,9 @@ A multi-plugin repository for Claude Code automation, with Codex marketplace sup
 | **develop-cycle** | `plugin-develop-cycle/` | `/develop-cycle` | - | Structured dev workflow with mandatory checkpoint before commit/push |
 | **plan-cycle** | `plugins/plan-cycle/` | `/plan-cycle`, `/plan-cycle:plan-impact`, `/plan-cycle:plan-quality` | `plan-cycle` skill | File-based planning with annotation pipeline |
 | **takeaway** | `plugin-takeaway/` | `/takeaway` | - | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
-| **refactor-discovery** | `plugin-refactor-discovery/` | `/refactor-discovery` | - | Research methodology: discovers areas, investigates in parallel with subagents, produces prioritized discovery document |
+| **refactor-discovery** | `plugins/refactor-discovery/` | `/refactor-discovery` | `refactor-discovery` skill | Smell-led methodology: surfaces structural leads, promotes mature refactor candidates, produces prioritized discovery document |
 
-The automate plugin is the core of this repo. develop-cycle, plan-cycle, takeaway, and refactor-discovery are self-contained plugins in their own directories. `plugins/plan-cycle/` is dual-packaged with both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
+The automate plugin is the core of this repo. develop-cycle, plan-cycle, takeaway, and refactor-discovery are self-contained plugins in their own directories. `plugins/plan-cycle/` and `plugins/refactor-discovery/` are dual-packaged with both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
 ## Architecture
 
@@ -77,7 +77,7 @@ The core creation workflow is in `plugin/skills/automate/SKILL.md`. Management c
 
 Marketplace and plugin manifests are product-specific:
 - **`.claude-plugin/marketplace.json`** (repo root) — Claude Code marketplace registry. Its `plugins[]` entries use `source` paths such as `./plugin` or `./plugins/plan-cycle`.
-- **`.agents/plugins/marketplace.json`** (repo root) — Codex marketplace registry. It currently exposes `plan-cycle` from `./plugins/plan-cycle`.
+- **`.agents/plugins/marketplace.json`** (repo root) — Codex marketplace registry. It currently exposes `plan-cycle` from `./plugins/plan-cycle` and `refactor-discovery` from `./plugins/refactor-discovery`.
 - **`plugin/.claude-plugin/plugin.json`** — Claude Code manifest for `automate`.
 - **`plugins/plan-cycle/.claude-plugin/plugin.json`** — Claude Code manifest for `plan-cycle`.
 - **`plugins/plan-cycle/.codex-plugin/plugin.json`** — Codex manifest for `plan-cycle`.

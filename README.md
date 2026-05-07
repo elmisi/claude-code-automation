@@ -1,11 +1,11 @@
 # claude-code-automation
 
-> Agent automation plugins for Claude Code, with shared Codex support for portable planning workflows.
+> Agent automation plugins for Claude Code, with shared Codex support for portable planning and discovery workflows.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml)
 
-This repository contains five Claude Code plugins. The `plan-cycle` plugin is also packaged for Codex from the same source tree.
+This repository contains five Claude Code plugins. `plan-cycle` and `refactor-discovery` are also packaged for Codex from shared source trees.
 
 | Plugin | Claude Code | Codex | Description |
 |--------|-------------|-------|-------------|
@@ -13,7 +13,7 @@ This repository contains five Claude Code plugins. The `plan-cycle` plugin is al
 | **develop-cycle** | `/develop-cycle` | - | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
 | **plan-cycle** | `/plan-cycle` | `plan-cycle` skill | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
 | **takeaway** | `/takeaway` | - | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
-| **refactor-discovery** | `/refactor-discovery` | - | Research methodology for surfacing refactor candidates. Discovers areas, investigates in parallel with subagents, produces a prioritized discovery document |
+| **refactor-discovery** | `/refactor-discovery` | `refactor-discovery` skill | Research methodology for surfacing non-obvious structural smell leads before promoting refactor candidates |
 
 ---
 
@@ -37,13 +37,14 @@ Restart Claude Code after installation to activate.
 
 This repository exposes a Codex marketplace at `.agents/plugins/marketplace.json`.
 
-Add `elmisi/claude-code-automation` as a Codex marketplace, then install `plan-cycle`. Codex reads the plugin from:
+Add `elmisi/claude-code-automation` as a Codex marketplace, then install `plan-cycle` or `refactor-discovery`. Codex reads the plugins from:
 
 ```text
 plugins/plan-cycle/.codex-plugin/plugin.json
+plugins/refactor-discovery/.codex-plugin/plugin.json
 ```
 
-The Claude Code and Codex manifests point to the same `plugins/plan-cycle/skills/` directory, so updates to the planning workflow are shared by both tools.
+The Claude Code and Codex manifests point to the same plugin skill directories, so workflow updates are shared by both tools.
 
 ## Updating
 
@@ -313,7 +314,7 @@ The two-file split is deliberate: evidence is traceable and project-bound, lesso
 
 ## refactor-discovery
 
-> Research methodology to surface high-value refactor candidates. Investigates the codebase systematically and produces a prioritized discovery document.
+> Research methodology to surface non-obvious structural smell leads, preserve uncertainty, and promote only mature findings into refactor candidates.
 
 ### Usage
 
@@ -331,14 +332,16 @@ The two-file split is deliberate: evidence is traceable and project-bound, lesso
 
 1. **Pin snapshot** — Anchors the entire pass to a commit SHA for reproducible evidence
 2. **Discover areas** — Analyzes the project structure and identifies 3-8 investigation areas optimized for parallel execution. When given a specific target, resolves it and discovers adjacent areas (inbound/outbound imports, shared types, tests) that must be investigated to avoid blind spots.
-3. **Parallel investigation** — Spawns one subagent per area. Each runs the full cycle: enumerate files, read for intent, scan for smells (grep seeds + semantic audits), capture commit-anchored evidence, apply three-state verdict (refactor candidate / acceptable as-is / looks messy, leave alone).
-4. **Synthesis** — Reads all per-area notes, merges cross-cutting findings, resolves layering conflicts, assigns stable IDs (`R<N>` refactor, `RT<N>` research task, `DI<N>` document-intent), builds dependency edges.
-5. **Discovery document** — Produces `docs/refactor-discovery/<date>/discovery.md` with executive summary, candidate list, prioritized roadmap (Do next / Do later / Do not do now), review heuristics, and open questions.
-6. **Self-checks** — Runs 9 coherence gates before reporting (every candidate cites a principle, has intent evidence, no dangling ID references, etc.).
+3. **Area investigation** — Spawns one subagent per area when available, with a serial fallback for runtimes that do not support plugin agents. Each area runs the full cycle: enumerate files, read for intent, scan with structural lenses, capture commit-anchored evidence, and triage into smell leads, promoted candidates, research tasks, or leave-alone verdicts.
+4. **Synthesis** — Reads all per-area notes, clusters leads, resolves layering conflicts, assigns stable IDs (`SL<N>` smell lead, `R<N>` refactor, `RT<N>` research task, `DI<N>` document-intent), and builds dependency edges.
+5. **Discovery document** — Produces `docs/refactor-discovery/<date>/discovery.md` with executive summary, investigation leads, promoted candidates, research tasks, prioritized roadmap (Do next / Do later / Do not do now), lens coverage, and open questions.
+6. **Self-checks** — Runs coherence gates before reporting: promoted candidates pass the why gate, leads state lens and promotion condition, temporal claims cite commit evidence, and dependency references resolve.
 
 ### Methodology
 
-The investigation is governed by 9 prioritized principles (readability > essentiality > cognitive load > abstraction via naming > tell-don't-ask > fail fast > CQS > least surprise > comments for "why"). Every candidate must cite at least one, and every smell must pass the "why" gate — understanding why the code is the way it is before proposing to change it.
+The investigation is governed by 9 prioritized principles (readability > essentiality > cognitive load > abstraction via naming > tell-don't-ask > fail fast > CQS > least surprise > comments for "why") plus eight discovery lenses: temporal coupling, change amplification, shotgun ceremony, semantic drift, asymmetric abstractions, hidden policy, test gravity, and negative space.
+
+Smells do not need to become advice immediately. The plugin records them as `SL<N>` leads until the "why" gate is strong enough to promote them to `R<N>` refactor candidates, or until missing runtime/domain evidence makes them `RT<N>` research tasks.
 
 The methodology reference (`docs/methodology.md` inside the plugin) defines the complete framework: principles, investigation discipline, scoring rules, cross-cutting signals, synthesis checks, anti-patterns to avoid, and output templates.
 
@@ -348,7 +351,7 @@ The methodology reference (`docs/methodology.md` inside the plugin) defines the 
 docs/refactor-discovery/
   registry.md                    # Index of all passes
   2026-05-07/
-    discovery.md                 # The deliverable — prioritized candidates
+    discovery.md                 # The deliverable — leads, candidates, research tasks
     area-api.md                  # Per-area investigation note
     area-components.md
     area-services.md
@@ -361,7 +364,7 @@ docs/refactor-discovery/
 
 | Type | Command | Tests | Description |
 |------|---------|-------|-------------|
-| Structure | `./tests/scripts/run-tests.sh structure` | 122 | File structure, JSON validity, marketplace manifests, fixture validation, version sync, negative validation, JSON guard |
+| Structure | `./tests/scripts/run-tests.sh structure` | 129 | File structure, JSON validity, marketplace manifests, fixture validation, version sync, negative validation, JSON guard |
 | Fixture | `./tests/scripts/run-tests.sh e2e` | 20 | Creates expected outputs in sandbox and validates their structure |
 | Interactive | `./tests/scripts/run-tests.sh interactive` | 5 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) |
 
