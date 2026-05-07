@@ -32,7 +32,7 @@ tests/
 ```bash
 ./tests/scripts/run-tests.sh structure
 ```
-Validates file structure, JSON/YAML syntax, frontmatter, schema presence, fixture validation against `validate-config.sh`, version sync across all 4 version files, and negative validation (rejects invalid configs). **39 tests.**
+Validates file structure, JSON/YAML syntax, frontmatter, marketplace manifests, schema presence, fixture validation against `validate-config.sh`, version sync, and negative validation.
 
 ### Fixture Tests (FREE, no Claude)
 ```bash
@@ -71,15 +71,16 @@ Runs everything: structure + fixture + interactive.
 
 | Type | Claude | Tokens | Speed | CI | What it tests |
 |------|--------|--------|-------|-----|---------------|
-| `structure` | No | Free | Fast | Yes | File existence, JSON validity, fixture validation, version sync, negative validation |
+| `structure` | No | Free | Fast | Yes | File existence, JSON validity, marketplace manifests, fixture validation, version sync, negative validation |
 | `fixture` | No | Free | Fast | Yes | Expected output structure in sandbox |
 | `interactive` | Yes | ~$0.10-0.50 | Slow | No | Actual file creation by Claude (qualitative) |
 
 ## Test Coverage
 
-### Structure Tests (39 tests)
+### Structure Tests
 - Plugin file structure (STRUCT-01 to STRUCT-03)
 - JSON validity (STRUCT-04 to STRUCT-05)
+- Codex marketplace and dual plan-cycle manifests (STRUCT-109 to STRUCT-117)
 - YAML frontmatter (STRUCT-06)
 - Required fields (STRUCT-07 to STRUCT-09)
 - SKILL.md content (STRUCT-10 to STRUCT-14)

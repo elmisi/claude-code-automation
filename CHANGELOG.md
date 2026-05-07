@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [plan-cycle 1.6.0] - 2026-05-07
+
+### Added
+- Codex marketplace support via `.agents/plugins/marketplace.json`
+- Codex plugin manifest at `plugins/plan-cycle/.codex-plugin/plugin.json`
+
+### Changed
+- Moved `plan-cycle` from `plugin-plan/` to `plugins/plan-cycle/` so Claude Code and Codex can share one plugin source tree
+- Replaced Claude-specific skill path instructions with portable relative path guidance while keeping Claude Code resolution notes
+
 ## [plan-cycle 1.5.1] - 2026-05-07
 
 ### Fixed

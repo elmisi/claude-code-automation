@@ -1,0 +1,40 @@
+{
+  "name": "plan-cycle",
+  "version": "1.6.0",
+  "description": "File-based planning with annotation pipeline. Creates persistent markdown plans, companion ops guide, and supports impact/quality analysis via composable skills.",
+  "author": {
+    "name": "elmisi"
+  },
+  "homepage": "https://github.com/elmisi/claude-code-automation",
+  "repository": "https://github.com/elmisi/claude-code-automation",
+  "license": "MIT",
+  "keywords": [
+    "planning",
+    "annotation",
+    "workflow",
+    "plan",
+    "architecture",
+    "pipeline",
+    "quality"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Plan Cycle",
+    "shortDescription": "Persistent file-based planning with review cycles",
+    "longDescription": "Create persistent markdown plans, companion operation guides, and impact or quality review annotations from the same planning workflow.",
+    "developerName": "elmisi",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/elmisi/claude-code-automation",
+    "defaultPrompt": [
+      "Create a file-based implementation plan",
+      "Review this plan for codebase impact",
+      "Check this plan against quality criteria"
+    ],
+    "brandColor": "#3B82F6",
+    "screenshots": []
+  }
+}

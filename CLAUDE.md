@@ -4,17 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A multi-plugin repository for Claude Code automation:
+A multi-plugin repository for Claude Code automation, with Codex marketplace support for `plan-cycle`:
 
-| Plugin | Directory | Command | Description |
-|--------|-----------|---------|-------------|
-| **automate** | `plugin/` | `/automate` | Expert advisor: interviews user, applies decision matrix, creates the right automation type |
-| **develop-cycle** | `plugin-develop-cycle/` | `/develop-cycle` | Structured dev workflow with mandatory checkpoint before commit/push |
-| **plan-cycle** | `plugin-plan/` | `/plan-cycle`, `/plan-cycle:plan-impact`, `/plan-cycle:plan-quality` | File-based planning with annotation pipeline |
-| **takeaway** | `plugin-takeaway/` | `/takeaway` | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
-| **refactor-discovery** | `plugin-refactor-discovery/` | `/refactor-discovery` | Research methodology: discovers areas, investigates in parallel with subagents, produces prioritized discovery document |
+| Plugin | Directory | Claude Code Command | Codex | Description |
+|--------|-----------|---------------------|-------|-------------|
+| **automate** | `plugin/` | `/automate` | - | Expert advisor: interviews user, applies decision matrix, creates the right automation type |
+| **develop-cycle** | `plugin-develop-cycle/` | `/develop-cycle` | - | Structured dev workflow with mandatory checkpoint before commit/push |
+| **plan-cycle** | `plugins/plan-cycle/` | `/plan-cycle`, `/plan-cycle:plan-impact`, `/plan-cycle:plan-quality` | `plan-cycle` skill | File-based planning with annotation pipeline |
+| **takeaway** | `plugin-takeaway/` | `/takeaway` | - | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
+| **refactor-discovery** | `plugin-refactor-discovery/` | `/refactor-discovery` | - | Research methodology: discovers areas, investigates in parallel with subagents, produces prioritized discovery document |
 
-The automate plugin is the core of this repo. develop-cycle, plan-cycle, takeaway, and refactor-discovery are self-contained plugins in their own directories.
+The automate plugin is the core of this repo. develop-cycle, plan-cycle, takeaway, and refactor-discovery are self-contained plugins in their own directories. `plugins/plan-cycle/` is dual-packaged with both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
 ## Architecture
 
@@ -75,9 +75,12 @@ The core creation workflow is in `plugin/skills/automate/SKILL.md`. Management c
 
 ## Plugin Packaging
 
-Two `.claude-plugin/` directories serve different purposes:
-- **`.claude-plugin/marketplace.json`** (repo root) — Marketplace registry entry, used by the plugin update system. Contains the `plugins[]` array with version and `"source": "./plugin"`.
-- **`plugin/.claude-plugin/plugin.json`** (inside `plugin/`) — Plugin metadata (name, version, description). This is the entry point Claude Code reads when the plugin is installed.
+Marketplace and plugin manifests are product-specific:
+- **`.claude-plugin/marketplace.json`** (repo root) — Claude Code marketplace registry. Its `plugins[]` entries use `source` paths such as `./plugin` or `./plugins/plan-cycle`.
+- **`.agents/plugins/marketplace.json`** (repo root) — Codex marketplace registry. It currently exposes `plan-cycle` from `./plugins/plan-cycle`.
+- **`plugin/.claude-plugin/plugin.json`** — Claude Code manifest for `automate`.
+- **`plugins/plan-cycle/.claude-plugin/plugin.json`** — Claude Code manifest for `plan-cycle`.
+- **`plugins/plan-cycle/.codex-plugin/plugin.json`** — Codex manifest for `plan-cycle`.
 
 ## Version Files (IMPORTANT)
 
@@ -88,6 +91,12 @@ When bumping version, update ALL these files:
 - `.claude-plugin/marketplace.json` — `"version"` field in `plugins[]` array
 
 The marketplace.json version is used by Claude Code's plugin update system. If out of sync, updates won't work.
+
+For self-contained plugins with their own versions, such as `plan-cycle`, bump the plugin's own manifest version in both product manifests and the matching marketplace entry:
+- `plugins/plan-cycle/.claude-plugin/plugin.json`
+- `plugins/plan-cycle/.codex-plugin/plugin.json`
+- `.claude-plugin/marketplace.json` entry for `plan-cycle`
+- `CHANGELOG.md`
 
 A GitHub Action (`auto-tag.yml`) automatically creates a git tag `v{VERSION}` when the VERSION file changes on main. **Do not create tags manually.**
 

@@ -56,7 +56,8 @@ As you read, keep a short trace of the checks you run — what you grepped, what
 If the slug cannot be derived (request too short or non-ASCII), fall back to `plan-{YYYYMMDD-HHMM}.md`.
 
 5. Copy the ops template alongside the plan:
-   - Read the ops template from `${CLAUDE_SKILL_DIR}/../../ops-template.md`
+   - Read the ops template from `../../ops-template.md` relative to this `SKILL.md`
+   - In Claude Code, this resolves as `${CLAUDE_SKILL_DIR}/../../ops-template.md`
    - Write it to the same directory as the plan, named `plan-{slug}-{timestamp}.ops.md`
    - The ops file uses the EXACT same slug and timestamp as the plan file
    - If the template cannot be read, skip this step (the plan works without it)

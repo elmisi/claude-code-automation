@@ -15,10 +15,11 @@ The plan file to review: **$ARGUMENTS**
 
 ## Step 1: Load criteria
 
-Read the code quality criteria from `${CLAUDE_SKILL_DIR}/code-quality.md`.
+Read the code quality criteria from `code-quality.md` in the same directory as this `SKILL.md`.
+In Claude Code, this resolves as `${CLAUDE_SKILL_DIR}/code-quality.md`.
 
 If the file is empty or contains no criteria (no `###` headings), stop and tell the user:
-"No criteria found in ${CLAUDE_SKILL_DIR}/code-quality.md. Add your criteria using `### Name` headings with descriptions below each."
+"No criteria found in code-quality.md next to this SKILL.md. Add your criteria using `### Name` headings with descriptions below each."
 
 ---
 

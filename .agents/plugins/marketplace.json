@@ -1,0 +1,20 @@
+{
+  "name": "elmisi",
+  "interface": {
+    "displayName": "Elmisi Automation"
+  },
+  "plugins": [
+    {
+      "name": "plan-cycle",
+      "source": {
+        "source": "local",
+        "path": "./plugins/plan-cycle"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -45,6 +45,15 @@ run_structure_tests() {
     assert_file_exists "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
         "STRUCT-03: SKILL.md exists"
 
+    assert_file_exists "$PROJECT_ROOT/.agents/plugins/marketplace.json" \
+        "STRUCT-109: Codex marketplace.json exists"
+
+    assert_file_exists "$PROJECT_ROOT/plugins/plan-cycle/.codex-plugin/plugin.json" \
+        "STRUCT-110: plan-cycle Codex plugin.json exists"
+
+    assert_file_exists "$PROJECT_ROOT/plugins/plan-cycle/.claude-plugin/plugin.json" \
+        "STRUCT-111: plan-cycle Claude plugin.json exists"
+
     # Test: JSON files are valid
     log_info "Testing JSON validity..."
 
@@ -53,6 +62,15 @@ run_structure_tests() {
 
     assert_valid_json "$PROJECT_ROOT/plugin/.claude-plugin/plugin.json" \
         "STRUCT-05: plugin.json is valid JSON"
+
+    assert_valid_json "$PROJECT_ROOT/.agents/plugins/marketplace.json" \
+        "STRUCT-112: Codex marketplace.json is valid JSON"
+
+    assert_valid_json "$PROJECT_ROOT/plugins/plan-cycle/.codex-plugin/plugin.json" \
+        "STRUCT-113: plan-cycle Codex plugin.json is valid JSON"
+
+    assert_valid_json "$PROJECT_ROOT/plugins/plan-cycle/.claude-plugin/plugin.json" \
+        "STRUCT-114: plan-cycle Claude plugin.json is valid JSON"
 
     # Test: SKILL.md has valid frontmatter
     log_info "Testing SKILL.md frontmatter..."
@@ -188,6 +206,26 @@ run_structure_tests() {
     else
         log_fail "STRUCT-33: version mismatch — VERSION=$ver_file, plugin.json=$ver_plugin, marketplace.json=$ver_market"
     fi
+
+    local plan_ver_claude=$(jq -r '.version' "$PROJECT_ROOT/plugins/plan-cycle/.claude-plugin/plugin.json")
+    local plan_ver_codex=$(jq -r '.version' "$PROJECT_ROOT/plugins/plan-cycle/.codex-plugin/plugin.json")
+    local plan_ver_market=$(jq -r '.plugins[] | select(.name == "plan-cycle") | .version' "$PROJECT_ROOT/.claude-plugin/marketplace.json")
+    local plan_codex_source=$(jq -r '.plugins[] | select(.name == "plan-cycle") | .source.path' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
+
+    if [ "$plan_ver_claude" == "$plan_ver_codex" ] && [ "$plan_ver_claude" == "$plan_ver_market" ]; then
+        log_success "STRUCT-115: plan-cycle version sync — all manifests show $plan_ver_claude"
+    else
+        log_fail "STRUCT-115: plan-cycle version mismatch — Claude=$plan_ver_claude, Codex=$plan_ver_codex, marketplace=$plan_ver_market"
+    fi
+
+    if [ "$plan_codex_source" == "./plugins/plan-cycle" ]; then
+        log_success "STRUCT-116: Codex marketplace points to plugins/plan-cycle"
+    else
+        log_fail "STRUCT-116: Codex marketplace source mismatch — $plan_codex_source"
+    fi
+
+    assert_file_contains "$PROJECT_ROOT/plugins/plan-cycle/skills/plan-cycle/SKILL.md" \
+        "../../ops-template.md" "STRUCT-117: plan-cycle uses portable ops template path"
 
     # ============================================
     # NEGATIVE VALIDATION (invalid configs must fail)

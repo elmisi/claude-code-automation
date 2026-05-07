@@ -1,23 +1,23 @@
 # claude-code-automation
 
-> Claude Code plugins for automation and structured development workflows.
+> Agent automation plugins for Claude Code, with shared Codex support for portable planning workflows.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml)
 
-This repository contains five plugins:
+This repository contains five Claude Code plugins. The `plan-cycle` plugin is also packaged for Codex from the same source tree.
 
-| Plugin | Command | Description |
-|--------|---------|-------------|
-| **automate** | `/automate` | Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.) |
-| **develop-cycle** | `/develop-cycle` | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
-| **plan-cycle** | `/plan-cycle` | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
-| **takeaway** | `/takeaway` | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
-| **refactor-discovery** | `/refactor-discovery` | Research methodology for surfacing refactor candidates. Discovers areas, investigates in parallel with subagents, produces a prioritized discovery document |
+| Plugin | Claude Code | Codex | Description |
+|--------|-------------|-------|-------------|
+| **automate** | `/automate` | - | Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.) |
+| **develop-cycle** | `/develop-cycle` | - | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
+| **plan-cycle** | `/plan-cycle` | `plan-cycle` skill | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
+| **takeaway** | `/takeaway` | - | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
+| **refactor-discovery** | `/refactor-discovery` | - | Research methodology for surfacing refactor candidates. Discovers areas, investigates in parallel with subagents, produces a prioritized discovery document |
 
 ---
 
-## Installation
+## Claude Code Installation
 
 ```bash
 # Add the marketplace (once)
@@ -32,6 +32,18 @@ This repository contains five plugins:
 ```
 
 Restart Claude Code after installation to activate.
+
+## Codex Installation
+
+This repository exposes a Codex marketplace at `.agents/plugins/marketplace.json`.
+
+Add `elmisi/claude-code-automation` as a Codex marketplace, then install `plan-cycle`. Codex reads the plugin from:
+
+```text
+plugins/plan-cycle/.codex-plugin/plugin.json
+```
+
+The Claude Code and Codex manifests point to the same `plugins/plan-cycle/skills/` directory, so updates to the planning workflow are shared by both tools.
 
 ## Updating
 
@@ -349,7 +361,7 @@ docs/refactor-discovery/
 
 | Type | Command | Tests | Description |
 |------|---------|-------|-------------|
-| Structure | `./tests/scripts/run-tests.sh structure` | 113 | File structure, JSON validity, fixture validation, version sync, negative validation, JSON guard |
+| Structure | `./tests/scripts/run-tests.sh structure` | 122 | File structure, JSON validity, marketplace manifests, fixture validation, version sync, negative validation, JSON guard |
 | Fixture | `./tests/scripts/run-tests.sh e2e` | 20 | Creates expected outputs in sandbox and validates their structure |
 | Interactive | `./tests/scripts/run-tests.sh interactive` | 5 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) |
 

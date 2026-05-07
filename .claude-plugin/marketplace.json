@@ -4,7 +4,7 @@
     "name": "elmisi"
   },
   "metadata": {
-    "description": "Plugins by elmisi",
+    "description": "Agent automation plugins for Claude Code and Codex",
     "homepage": "https://github.com/elmisi/claude-code-automation"
   },
   "plugins": [
@@ -22,8 +22,8 @@
     },
     {
       "name": "plan-cycle",
-      "version": "1.5.1",
-      "source": "./plugin-plan",
+      "version": "1.6.0",
+      "source": "./plugins/plan-cycle",
       "description": "File-based planning with annotation pipeline. Creates persistent markdown plans, companion ops guide, and supports impact/quality analysis via composable skills."
     },
     {
