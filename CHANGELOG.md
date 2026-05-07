@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [refactor-discovery 1.0.0] - 2026-05-07
+
+### Added
+- New plugin `refactor-discovery` (`/refactor-discovery`) — research methodology for surfacing high-value refactor candidates
+- Dynamic area discovery: analyzes project structure and identifies 3-8 areas optimized for parallel investigation
+- Scoped mode: accepts optional argument (directory, class, module, or concern) to focus investigation; auto-discovers adjacent areas via import/export analysis
+- Parallel investigation via `area-investigator` subagent — one per area, running the full Enumerate-Read-Smell-Evidence-Verdict cycle
+- Methodology reference (`docs/methodology.md`): 9 prioritized principles, investigation discipline with 10 "why" checks, scoring rules, cross-cutting signals, 16 anti-patterns, synthesis rules, output templates, 9 coherence gates
+- Three candidate namespaces: `R<N>` (refactor), `RT<N>` (research task — blocked on live evidence), `DI<N>` (document-intent — one-line comment micro-edit)
+- Synthesis step: cross-area merge, ceremony-counting escalation, layering consistency, dependency-edge graph
+- Discovery document output with executive summary, candidate list, prioritized roadmap, review heuristics, and annotation cycle
+- Registry tracking across passes for ID continuity
+
 ## [2.10.1] - 2026-05-06
 
 ### Added

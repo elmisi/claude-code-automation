@@ -1,0 +1,19 @@
+{
+  "name": "refactor-discovery",
+  "version": "1.0.0",
+  "description": "Research methodology to surface high-value refactor candidates. Discovers project areas, investigates in parallel with subagents, synthesizes cross-cutting findings, and produces a prioritized discovery document with stable IDs and dependency edges.",
+  "author": {
+    "name": "elmisi"
+  },
+  "repository": "https://github.com/elmisi/claude-code-automation",
+  "license": "MIT",
+  "keywords": [
+    "refactor",
+    "discovery",
+    "code-quality",
+    "investigation",
+    "analysis",
+    "parallel",
+    "methodology"
+  ]
+}

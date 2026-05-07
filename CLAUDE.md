@@ -12,8 +12,9 @@ A multi-plugin repository for Claude Code automation:
 | **develop-cycle** | `plugin-develop-cycle/` | `/develop-cycle` | Structured dev workflow with mandatory checkpoint before commit/push |
 | **plan-cycle** | `plugin-plan/` | `/plan-cycle`, `/plan-cycle:plan-impact`, `/plan-cycle:plan-quality` | File-based planning with annotation pipeline |
 | **takeaway** | `plugin-takeaway/` | `/takeaway` | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
+| **refactor-discovery** | `plugin-refactor-discovery/` | `/refactor-discovery` | Research methodology: discovers areas, investigates in parallel with subagents, produces prioritized discovery document |
 
-The automate plugin is the core of this repo. develop-cycle, plan-cycle, and takeaway are self-contained single-skill plugins in their own directories.
+The automate plugin is the core of this repo. develop-cycle, plan-cycle, takeaway, and refactor-discovery are self-contained plugins in their own directories.
 
 ## Architecture
 

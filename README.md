@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml)
 
-This repository contains four plugins:
+This repository contains five plugins:
 
 | Plugin | Command | Description |
 |--------|---------|-------------|
@@ -13,6 +13,7 @@ This repository contains four plugins:
 | **develop-cycle** | `/develop-cycle` | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
 | **plan-cycle** | `/plan-cycle` | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
 | **takeaway** | `/takeaway` | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
+| **refactor-discovery** | `/refactor-discovery` | Research methodology for surfacing refactor candidates. Discovers areas, investigates in parallel with subagents, produces a prioritized discovery document |
 
 ---
 
@@ -27,6 +28,7 @@ This repository contains four plugins:
 /plugin install develop-cycle
 /plugin install plan-cycle
 /plugin install takeaway
+/plugin install refactor-discovery
 ```
 
 Restart Claude Code after installation to activate.
@@ -294,6 +296,52 @@ Inspired by [Boris Tane's annotation cycle workflow](https://boristane.com/blog/
 6. **Iterate** — The user reviews and annotates both files until approved
 
 The two-file split is deliberate: evidence is traceable and project-bound, lessons are portable across projects and tools.
+
+---
+
+## refactor-discovery
+
+> Research methodology to surface high-value refactor candidates. Investigates the codebase systematically and produces a prioritized discovery document.
+
+### Usage
+
+```bash
+# Full project — discover all areas, investigate everything
+/refactor-discovery
+
+# Scoped — focus on a specific part, auto-extend to adjacent areas
+/refactor-discovery src/services/payment
+/refactor-discovery the UserService class
+/refactor-discovery error handling in the checkout flow
+```
+
+### How it works
+
+1. **Pin snapshot** — Anchors the entire pass to a commit SHA for reproducible evidence
+2. **Discover areas** — Analyzes the project structure and identifies 3-8 investigation areas optimized for parallel execution. When given a specific target, resolves it and discovers adjacent areas (inbound/outbound imports, shared types, tests) that must be investigated to avoid blind spots.
+3. **Parallel investigation** — Spawns one subagent per area. Each runs the full cycle: enumerate files, read for intent, scan for smells (grep seeds + semantic audits), capture commit-anchored evidence, apply three-state verdict (refactor candidate / acceptable as-is / looks messy, leave alone).
+4. **Synthesis** — Reads all per-area notes, merges cross-cutting findings, resolves layering conflicts, assigns stable IDs (`R<N>` refactor, `RT<N>` research task, `DI<N>` document-intent), builds dependency edges.
+5. **Discovery document** — Produces `docs/refactor-discovery/<date>/discovery.md` with executive summary, candidate list, prioritized roadmap (Do next / Do later / Do not do now), review heuristics, and open questions.
+6. **Self-checks** — Runs 9 coherence gates before reporting (every candidate cites a principle, has intent evidence, no dangling ID references, etc.).
+
+### Methodology
+
+The investigation is governed by 9 prioritized principles (readability > essentiality > cognitive load > abstraction via naming > tell-don't-ask > fail fast > CQS > least surprise > comments for "why"). Every candidate must cite at least one, and every smell must pass the "why" gate — understanding why the code is the way it is before proposing to change it.
+
+The methodology reference (`docs/methodology.md` inside the plugin) defines the complete framework: principles, investigation discipline, scoring rules, cross-cutting signals, synthesis checks, anti-patterns to avoid, and output templates.
+
+### Output structure
+
+```
+docs/refactor-discovery/
+  registry.md                    # Index of all passes
+  2026-05-07/
+    discovery.md                 # The deliverable — prioritized candidates
+    area-api.md                  # Per-area investigation note
+    area-components.md
+    area-services.md
+    ...
+```
 
 ---
 
