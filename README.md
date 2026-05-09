@@ -264,6 +264,7 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 /plan-cycle <request>           → writes plan + ops companion file
 /plan-cycle:plan-impact <plan>  → annotates codebase-level issues
 /plan-cycle:plan-quality <plan> → annotates quality violations
+"annotate"                      → adds only new > **NOTE**: lines
 "review"                        → processes all annotations, updates plan
 "finalize"                      → verifies consistency, rewrites gaps
 ... repeat until approved ...
@@ -279,7 +280,7 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 5. **Finalize** — Verify the plan is self-contained (executable by a fresh agent in a new session without context), operative, coherent, and robust. Rewrites sections directly where gaps are found.
 6. **Approve** — Iterate until the plan is right, then approve it
 
-The ops companion file describes the three core operations (annotate, review, finalize) so any coding agent can work with the plan — the plugin skills handle the analysis passes (impact and quality).
+The ops companion file describes the three core operations (annotate, review, finalize) so any coding agent can work with the plan — the plugin skills handle the analysis passes (impact and quality). Operation dispatch is literal: `annotate` only adds `> **NOTE**:` lines, while `review` is the operation that processes existing notes.
 
 The key insight: a markdown file is **shared mutable state** between you and any number of agents. You can think at your own pace, point at the exact spot where something is wrong, and write the correction right there.
 

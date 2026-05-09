@@ -3,6 +3,18 @@
 This file describes all available operations on the accompanying plan.
 Any coding agent can follow these instructions.
 
+## Operation Dispatch Rule
+
+Before touching the plan, identify the requested operation by exact user wording:
+
+- If the user says "annotate": perform only Annotate.
+- If the user says "review", "process annotations", "resolve notes", or "apply notes": perform Review.
+- If the user says "finalize": perform Finalize.
+
+Existing `> **NOTE**:` lines in the plan do not change the requested operation.
+For Annotate, never edit, remove, resolve, or rewrite existing plan content.
+Only insert new `> **NOTE**:` lines.
+
 ## Annotate
 
 Add inline annotations to signal improvements, gaps, or errors:
@@ -11,6 +23,14 @@ Add inline annotations to signal improvements, gaps, or errors:
 
 Place each annotation directly below the section or task it refers to.
 Do not modify the plan content — only add annotations.
+
+Annotate safety check:
+
+1. Read the plan.
+2. Decide where to add notes.
+3. Before editing, state: "Annotate mode: I will only add `> **NOTE**:` lines."
+4. After editing, verify the diff only adds `> **NOTE**:` lines and blank spacing needed for those notes.
+5. If the diff removes lines or modifies non-note text, revert and redo the Annotate operation.
 
 ## Review (process annotations)
 

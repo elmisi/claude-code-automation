@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [plan-cycle 1.6.1] - 2026-05-09
+
+### Fixed
+- Ops template now dispatches explicitly by requested operation wording, so `annotate` can only add `> **NOTE**:` lines even when unresolved notes already exist.
+- Added an Annotate safety check requiring agents to verify the diff does not rewrite plan content during annotation-only passes.
+
 ## [plan-cycle 1.6.0] - 2026-05-07
 
 ### Added
