@@ -26,9 +26,10 @@
           "Agent", "AskUserQuestion", "Bash", "CronCreate", "CronDelete", "CronList",
           "Edit", "EnterPlanMode", "EnterWorktree", "ExitPlanMode", "ExitWorktree",
           "Glob", "Grep", "ListMcpResourcesTool", "LSP", "Monitor", "NotebookEdit", "PowerShell",
-          "Read", "ReadMcpResourceTool", "SendMessage", "ShareOnboardingGuide", "Skill", "TaskCreate", "TaskGet",
+          "PushNotification", "Read", "ReadMcpResourceTool", "RemoteTrigger", "ScheduleWakeup",
+          "SendMessage", "ShareOnboardingGuide", "Skill", "TaskCreate", "TaskGet",
           "TaskList", "TaskOutput", "TaskStop", "TaskUpdate", "TeamCreate", "TeamDelete",
-          "TodoWrite", "ToolSearch", "WebFetch", "WebSearch", "Write"
+          "TodoWrite", "ToolSearch", "WaitForMcpServers", "WebFetch", "WebSearch", "Write"
         ],
         "note": "MCP tools can also be included as mcp__<server>__<tool>. Use Agent(type1, type2) to restrict which subagent types can be spawned.",
         "example": "Read, Grep, Glob, Bash"

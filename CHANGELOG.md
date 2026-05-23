@@ -85,6 +85,11 @@ In alternativa: cancella il vecchio `.ops.md` e ricopia il nuovo template dal pl
 - Discovery document output with executive summary, candidate list, prioritized roadmap, review heuristics, and annotation cycle
 - Registry tracking across passes for ID continuity
 
+## [2.10.2] - 2026-05-24
+
+### Added
+- Subagent schema: `PushNotification`, `RemoteTrigger`, `ScheduleWakeup`, `WaitForMcpServers` tools (closes #9). Updated `validate-config.sh`, `SKILL.md`, `claude-code-reference.md`, and root `CLAUDE.md` to match.
+
 ## [2.10.1] - 2026-05-06
 
 ### Added

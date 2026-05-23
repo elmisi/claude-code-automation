@@ -102,7 +102,7 @@ INVALID_HOOK_EVENTS=(
 VALID_HOOK_TYPES=("command" "http" "prompt" "agent")
 
 # Valid subagent tools
-VALID_TOOLS=("Agent" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronList" "Edit" "EnterPlanMode" "EnterWorktree" "ExitPlanMode" "ExitWorktree" "Glob" "Grep" "ListMcpResourcesTool" "LSP" "Monitor" "NotebookEdit" "PowerShell" "Read" "ReadMcpResourceTool" "SendMessage" "ShareOnboardingGuide" "Skill" "TaskCreate" "TaskGet" "TaskList" "TaskOutput" "TaskStop" "TaskUpdate" "TeamCreate" "TeamDelete" "TodoWrite" "ToolSearch" "WebFetch" "WebSearch" "Write")
+VALID_TOOLS=("Agent" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronList" "Edit" "EnterPlanMode" "EnterWorktree" "ExitPlanMode" "ExitWorktree" "Glob" "Grep" "ListMcpResourcesTool" "LSP" "Monitor" "NotebookEdit" "PowerShell" "PushNotification" "Read" "ReadMcpResourceTool" "RemoteTrigger" "ScheduleWakeup" "SendMessage" "ShareOnboardingGuide" "Skill" "TaskCreate" "TaskGet" "TaskList" "TaskOutput" "TaskStop" "TaskUpdate" "TeamCreate" "TeamDelete" "TodoWrite" "ToolSearch" "WaitForMcpServers" "WebFetch" "WebSearch" "Write")
 
 # Valid models
 VALID_MODELS=("opus" "sonnet" "haiku" "inherit")
