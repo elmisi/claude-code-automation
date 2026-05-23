@@ -642,10 +642,10 @@ run_structure_tests() {
 }
 
 # ============================================
-# plan-cycle PLUGIN TESTS (STRUCT-PC-01..19)
+# plan-cycle PLUGIN TESTS (STRUCT-PC-01..28)
 # ============================================
 run_plan_cycle_tests() {
-    log_section "plan-cycle Plugin Tests (STRUCT-PC-01..19)"
+    log_section "plan-cycle Plugin Tests (STRUCT-PC-01..28)"
 
     local plugin_dir="$PROJECT_ROOT/plugins/plan-cycle"
     local skills_dir="$plugin_dir/skills"
@@ -847,6 +847,77 @@ run_plan_cycle_tests() {
         log_success "STRUCT-PC-19: plan-quality documents the no-side-effect contract"
     else
         log_fail "STRUCT-PC-19: plan-quality missing 'never creates/writes' assertion"
+    fi
+
+    # STRUCT-PC-20: template has top-level Interpretation Log reviewer-surface section
+    local tmpl="$skills_dir/plan-cycle/templates/plan-template.md"
+    if grep -qE "^## Interpretation Log \*\(Reviewer surface\)\*" "$tmpl"; then
+        log_success "STRUCT-PC-20: template has Interpretation Log (Reviewer surface)"
+    else
+        log_fail "STRUCT-PC-20: template missing '## Interpretation Log *(Reviewer surface)*' section"
+    fi
+
+    # STRUCT-PC-21: template has top-level Decisions I Need From You reviewer-surface section
+    if grep -qE "^## Decisions I Need From You \*\(Reviewer surface\)\*" "$tmpl"; then
+        log_success "STRUCT-PC-21: template has Decisions I Need From You (Reviewer surface)"
+    else
+        log_fail "STRUCT-PC-21: template missing '## Decisions I Need From You *(Reviewer surface)*' section"
+    fi
+
+    # STRUCT-PC-22: template uses audience labels (at least 2 Reviewer, 2 Executor)
+    local reviewer_count exec_count
+    reviewer_count=$(grep -cE "^## .+\*\(Reviewer surface\)\*" "$tmpl")
+    exec_count=$(grep -cE "^## .+\*\(Executor surface\)\*" "$tmpl")
+    if [ "$reviewer_count" -ge 2 ] && [ "$exec_count" -ge 2 ]; then
+        log_success "STRUCT-PC-22: template has audience labels (Reviewer=$reviewer_count, Executor=$exec_count)"
+    else
+        log_fail "STRUCT-PC-22: template needs >=2 Reviewer + >=2 Executor labels (got R=$reviewer_count E=$exec_count)"
+    fi
+
+    # STRUCT-PC-23: template no longer has the old single '## Open Questions' section (split into two)
+    if grep -qE "^## Open Questions" "$tmpl"; then
+        log_fail "STRUCT-PC-23: template still has '## Open Questions' — split into Interpretation Log + Decisions I Need From You"
+    else
+        log_success "STRUCT-PC-23: template no longer has '## Open Questions' (correctly split)"
+    fi
+
+    # STRUCT-PC-24: SKILL.md cites the new 'Outcome-layer success' writing rule (Lesson 6)
+    if grep -q "Outcome-layer success" "$skills_dir/plan-cycle/SKILL.md"; then
+        log_success "STRUCT-PC-24: SKILL.md has Outcome-layer success rule"
+    else
+        log_fail "STRUCT-PC-24: SKILL.md missing Outcome-layer success rule (Lesson 6)"
+    fi
+
+    # STRUCT-PC-25: SKILL.md has Approval gate referencing unresolved-items inventory (Lesson 4)
+    if grep -qE "[Aa]pproval gate" "$skills_dir/plan-cycle/SKILL.md" && \
+       grep -qE "unresolved.items.*inventory|inventory.*unresolved" "$skills_dir/plan-cycle/SKILL.md"; then
+        log_success "STRUCT-PC-25: SKILL.md has Approval gate + unresolved-items inventory reference"
+    else
+        log_fail "STRUCT-PC-25: SKILL.md missing Approval gate or unresolved-items inventory reference"
+    fi
+
+    # STRUCT-PC-26: SKILL.md 'Verify before claim' extension covers tool persistence / config knobs (Lesson 5)
+    if grep -qE "persist|persists" "$skills_dir/plan-cycle/SKILL.md" && \
+       grep -qE "config knob|controls behaviour|controls behavior" "$skills_dir/plan-cycle/SKILL.md"; then
+        log_success "STRUCT-PC-26: SKILL.md Verify rule covers tool persistence + config knobs"
+    else
+        log_fail "STRUCT-PC-26: SKILL.md Verify rule missing tool persistence / config knob extension"
+    fi
+
+    # STRUCT-PC-27: ops plan-cycle-finalize has the Unresolved Items Inventory step
+    local finalize_block
+    finalize_block=$(awk '/^## plan-cycle-finalize/,/^## General/' "$ops")
+    if echo "$finalize_block" | grep -q "Unresolved Items Inventory"; then
+        log_success "STRUCT-PC-27: plan-cycle-finalize has Unresolved Items Inventory step"
+    else
+        log_fail "STRUCT-PC-27: plan-cycle-finalize missing Unresolved Items Inventory step"
+    fi
+
+    # STRUCT-PC-28: ops finalize cites the 11th rule (Outcome-layer success) for parity with SKILL.md
+    if echo "$finalize_block" | grep -q "Outcome-layer success"; then
+        log_success "STRUCT-PC-28: plan-cycle-finalize cites Outcome-layer success (11-rule parity)"
+    else
+        log_fail "STRUCT-PC-28: plan-cycle-finalize missing Outcome-layer success rule"
     fi
 }
 

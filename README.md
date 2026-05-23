@@ -373,7 +373,7 @@ docs/refactor-discovery/
 
 | Type | Command | Tests | Description |
 |------|---------|-------|-------------|
-| Structure | `./tests/scripts/run-tests.sh structure` | 166 | File structure, JSON validity, marketplace manifests, fixture validation, version sync, negative validation, JSON guard, plan-cycle plugin (STRUCT-PC-01..19) |
+| Structure | `./tests/scripts/run-tests.sh structure` | 175 | File structure, JSON validity, marketplace manifests, fixture validation, version sync, negative validation, JSON guard, plan-cycle plugin (STRUCT-PC-01..28) |
 | Fixture | `./tests/scripts/run-tests.sh e2e` | 20 | Creates expected outputs in sandbox and validates their structure |
 | Interactive | `./tests/scripts/run-tests.sh interactive` | 8 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) — includes INTERACTIVE-PC-A/B/C for plan-cycle |
 
