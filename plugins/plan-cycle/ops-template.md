@@ -1,61 +1,48 @@
 # Operations Guide
 
-This file describes all available operations on the accompanying plan.
-Any coding agent can follow these instructions.
+Operations available on the accompanying plan. Any coding agent can follow these instructions.
 
 ## Operation Dispatch Rule
 
-Before touching the plan, identify the requested operation by exact user wording:
+Identify the requested operation by the user's **exact** wording:
 
-- If the user says "annotate": perform only Annotate.
-- If the user says "review", "process annotations", "resolve notes", or "apply notes": perform Review.
-- If the user says "finalize": perform Finalize.
+- `plan-cycle-annotate` → run section `## plan-cycle-annotate`.
+- `plan-cycle-review` → run section `## plan-cycle-review`.
+- `plan-cycle-finalize` → run section `## plan-cycle-finalize`.
 
-Existing `> **NOTE**:` lines in the plan do not change the requested operation.
-For Annotate, never edit, remove, resolve, or rewrite existing plan content.
-Only insert new `> **NOTE**:` lines.
+**No aliases.** If wording doesn't exactly match one of the three, do NOT execute: reply
 
-## Annotate
+> Operazione non riconosciuta. Le operazioni valide su questo piano sono: `plan-cycle-annotate`, `plan-cycle-review`, `plan-cycle-finalize`.
 
-Add inline annotations to signal improvements, gaps, or errors:
+Existing `> **NOTE**:` lines don't change the requested operation. For `plan-cycle-annotate`, never edit/remove/resolve/rewrite existing plan content.
 
-> **NOTE**: your comment here
+## plan-cycle-annotate
 
-Place each annotation directly below the section or task it refers to.
-Do not modify the plan content — only add annotations.
+Add inline annotations below the section/task they refer to. Do NOT modify plan content — only add notes.
 
-Annotate safety check:
+**Format:** `> **NOTE**: [tag?] comment`. Tags: `[impact]` (plan-impact skill), `[quality: <criterion>]` (plan-quality skill), none (user). `plan-cycle-review` processes all uniformly.
 
-1. Read the plan.
-2. Decide where to add notes.
-3. Before editing, state: "Annotate mode: I will only add `> **NOTE**:` lines."
-4. After editing, verify the diff only adds `> **NOTE**:` lines and blank spacing needed for those notes.
-5. If the diff removes lines or modifies non-note text, revert and redo the Annotate operation.
+**Safety check:** before editing, state "plan-cycle-annotate mode: I will only add `> **NOTE**:` lines." After editing, verify the diff only adds notes + blank spacing; if it removes/modifies non-note text, revert and redo.
 
-## Review (process annotations)
+## plan-cycle-review
 
-1. Read the entire plan
-2. Find all lines matching `> **NOTE**:`
-3. For each annotation: understand the request, update the plan, remove the annotation
-4. If an annotation is unclear, keep it in place and ask for clarification
+1. Read the entire plan.
+2. Find all `> **NOTE**:` lines.
+3. For each: understand, update plan, remove annotation.
+4. If unclear, keep it and ask for clarification.
 
-## Finalize
+## plan-cycle-finalize
 
-Make the plan operative, self-contained, coherent, and robust — a fresh agent opening it in a new session must be able to execute it without any prior context.
+Make the plan operative, self-contained, coherent, robust — a fresh agent must execute it without prior context.
 
-1. Read the entire plan
-2. Check every section against these criteria:
-   - **Self-contained**: no references to "the file we discussed", "as mentioned above in chat", or any other implicit conversation context. Every reference must be concrete: file paths, function names, line numbers where relevant
-   - **Operative**: each task in the breakdown maps to specific changes in "Detailed Changes". No task says "handle the edge cases" without specifying which ones and how. Code snippets show target shape (interfaces, signatures), not just prose descriptions
-   - **Coherent**: no contradictions between sections. The task breakdown covers exactly what "Detailed Changes" describes — nothing more, nothing less. Dependencies between tasks are explicit and ordered correctly
-   - **Robust**: risks have concrete mitigations (not "be careful"). Failure modes describe what happens, not just that something "could fail". Assumptions that can be verified against today's code are verified (with visible trace); those that cannot are marked as such
-3. Fix every gap found — rewrite the section, don't annotate it
-4. Report: how many sections were updated and a one-line summary of what changed
+1. Read the entire plan.
+2. For each section, check ALL 10 rules: Self-contained, Operative, Numbers-not-adjectives, Exit clauses, Explicit degradation, Verify-before-claim, Enumerate-universals, Mark-unverifiable, Coherent, Robust.
+3. Rewrite every failing section — do not annotate.
+4. Report: sections updated count + one-line summary per section.
 
 ## General Principles
 
-- Annotate may only add `> **NOTE**:` annotations — it must not rewrite plan content
-- Review and Finalize rewrite plan content directly
-- Annotations are processed in a separate review pass
-- Multiple annotate passes can run before a single review pass
-- The plan is approved only when the owner explicitly says so
+- `plan-cycle-annotate` may only add `> **NOTE**:` annotations — never rewrites.
+- `plan-cycle-review` and `plan-cycle-finalize` rewrite plan content directly.
+- Multiple annotate passes can run before a single review pass.
+- The plan is approved only when the owner explicitly says so.

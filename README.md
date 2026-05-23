@@ -264,23 +264,29 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 /plan-cycle <request>           → writes plan + ops companion file
 /plan-cycle:plan-impact <plan>  → annotates codebase-level issues
 /plan-cycle:plan-quality <plan> → annotates quality violations
-"annotate"                      → adds only new > **NOTE**: lines
-"review"                        → processes all annotations, updates plan
-"finalize"                      → verifies consistency, rewrites gaps
+"plan-cycle-annotate"           → adds only new > **NOTE**: lines
+"plan-cycle-review"             → processes all annotations, updates plan
+"plan-cycle-finalize"           → verifies the 10 writing rules, rewrites gaps
 ... repeat until approved ...
 "approved"                      → plan is ready for execution
 ```
+
+> **v2.0.0 breaking change:** operation names changed from bare `annotate`/`review`/`finalize` to `plan-cycle-annotate`/`plan-cycle-review`/`plan-cycle-finalize`. **No aliases.** See [CHANGELOG](CHANGELOG.md#plan-cycle-200---2026-05-23) for migration command (1-min `sed` one-liner for existing `.ops.md` files). Existing plans with v1.6.x companion ops continue to recognize the old names — the companion file is authoritative for its plan.
 
 ### How it works
 
 1. **Research** — Claude reads the relevant codebase deeply before writing anything
 2. **Write plan** — A detailed markdown plan with context, approach, code snippets, edge cases, and a task breakdown. A companion ops file is written alongside with operational instructions.
 3. **Analyze** — Run `/plan-cycle:plan-impact` and/or `/plan-cycle:plan-quality` to get automated annotations
-4. **Review** — Process all `> **NOTE**:` annotations, integrate them into the plan, remove resolved ones
-5. **Finalize** — Verify the plan is self-contained (executable by a fresh agent in a new session without context), operative, coherent, and robust. Rewrites sections directly where gaps are found.
+4. **Review** — `plan-cycle-review` processes all `> **NOTE**:` annotations, integrates them into the plan, removes resolved ones
+5. **Finalize** — `plan-cycle-finalize` verifies the 10 unified writing rules (Self-contained, Operative, Numbers, Exit clauses, Explicit degradation, Verify, Enumerate universals, Mark unverifiable, Coherent, Robust). Rewrites sections directly where gaps are found.
 6. **Approve** — Iterate until the plan is right, then approve it
 
-The ops companion file describes the three core operations (annotate, review, finalize) so any coding agent can work with the plan — the plugin skills handle the analysis passes (impact and quality). Operation dispatch is literal: `annotate` only adds `> **NOTE**:` lines, while `review` is the operation that processes existing notes.
+The ops companion file describes the three core operations so any coding agent can work with the plan — the plugin skills handle the analysis passes (impact and quality). Annotations support optional source-tags: `[impact]` from plan-impact, `[quality: <criterion>]` from plan-quality, none from user — `plan-cycle-review` processes all uniformly.
+
+### Project-level quality criteria (opt-in)
+
+To customize `plan-quality` for your project, create `<project-root>/code-quality.md` with your own `### N. Name` criteria (start by copying `${CLAUDE_SKILL_DIR}/code-quality.md` from the plugin). The skill **never** writes to your project root — if the file exists it uses it, otherwise it falls back to the plugin default with a reminder. Commit / gitignore the file as you prefer (it's yours).
 
 The key insight: a markdown file is **shared mutable state** between you and any number of agents. You can think at your own pace, point at the exact spot where something is wrong, and write the correction right there.
 
@@ -365,9 +371,9 @@ docs/refactor-discovery/
 
 | Type | Command | Tests | Description |
 |------|---------|-------|-------------|
-| Structure | `./tests/scripts/run-tests.sh structure` | 129 | File structure, JSON validity, marketplace manifests, fixture validation, version sync, negative validation, JSON guard |
+| Structure | `./tests/scripts/run-tests.sh structure` | 166 | File structure, JSON validity, marketplace manifests, fixture validation, version sync, negative validation, JSON guard, plan-cycle plugin (STRUCT-PC-01..19) |
 | Fixture | `./tests/scripts/run-tests.sh e2e` | 20 | Creates expected outputs in sandbox and validates their structure |
-| Interactive | `./tests/scripts/run-tests.sh interactive` | 5 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) |
+| Interactive | `./tests/scripts/run-tests.sh interactive` | 8 | Runs actual Claude commands to test the skill end-to-end (consumes tokens) — includes INTERACTIVE-PC-A/B/C for plan-cycle |
 
 Structure and fixture tests are deterministic and run in CI. Interactive tests are qualitative smoke tests that verify skills produce reasonable output with a real Claude instance — local only.
 

@@ -1,52 +1,38 @@
 ---
 name: plan-quality
-description: Code quality review of a plan file. Reads the plan and checks proposed changes against the project's code quality criteria, annotating violations.
+description: Code quality review of a plan file. Checks proposed changes against project code-quality criteria; annotates violations.
 disable-model-invocation: true
 argument-hint: "path/to/plan-file.md"
 ---
 
 # Code Quality Review
 
-You are reviewing a plan file against the project's code quality criteria. Your job is to check whether the proposed implementations would satisfy the quality standards, and annotate where they wouldn't.
+Review a plan file against code-quality criteria. Annotate where proposed implementations would violate them.
 
-The plan file to review: **$ARGUMENTS**
+Plan file: **$ARGUMENTS**
 
----
+This skill performs a specialized `plan-cycle-annotate` pass. It only adds notes; it does not run `plan-cycle-review` or `plan-cycle-finalize`.
 
 ## Step 1: Load criteria
 
-Read the code quality criteria from `code-quality.md` in the same directory as this `SKILL.md`.
-In Claude Code, this resolves as `${CLAUDE_SKILL_DIR}/code-quality.md`.
+Project root = `${CLAUDE_PROJECT_DIR}` if set, else `git rev-parse --show-toplevel`, else cwd (warn `"Using cwd as project root: <path>"`).
 
-If the file is empty or contains no criteria (no `###` headings), stop and tell the user:
-"No criteria found in code-quality.md next to this SKILL.md. Add your criteria using `### Name` headings with descriptions below each."
+If `<project-root>/code-quality.md` exists: load it, print `"Using project criteria from <path>."` Otherwise load `${CLAUDE_SKILL_DIR}/code-quality.md` (default, 9 shipped criteria) and print:
 
----
+> Using default code-quality criteria (9 shipped rules). To customize, create `<project-root>/code-quality.md` (start by copying `${CLAUDE_SKILL_DIR}/code-quality.md`).
 
-## Step 2: Analyze the plan
+The skill **never** creates, copies, or modifies files in the project root. If the loaded file is empty or has no `###` headings, stop and tell the user to add criteria using `### N. Name` headings.
 
-For each proposed change in the plan (code snippets, interfaces, architectural decisions, function signatures):
-- Check it against EACH criterion from the loaded file
-- Consider whether the proposed shape would satisfy or violate the criterion
-- Focus on what's explicitly proposed — don't speculate about implementation details the plan leaves open
+## Step 2: Analyze and annotate
 
----
+For each proposed change (code snippets, interfaces, signatures), check against EACH criterion. Focus on what's explicit — don't speculate about details left open.
 
-## Step 3: Annotate violations
+For each violation, add an annotation below the relevant section. **Format:** defined in ops file `plan-cycle-annotate` section. Use `[quality: <criterion>]` prefix: `> **NOTE**: [quality: criterion-name] explanation + shape that would pass`. Cite criterion by name as in `###` heading. Be constructive.
 
-For each violation found, write an annotation directly in the plan file:
+## Threshold
 
-> **NOTE**: [quality: criterion-name] — explanation of how the proposed approach violates this criterion and what shape would satisfy it
+If you find more than 15 violations, stop annotating individual items. Write a summary at the top of "Detailed Changes":
 
-Place the annotation directly below the relevant section in the plan.
+> **NOTE**: [quality] This plan has significant quality issues (N found across M criteria). Consider revisiting. Top criteria: [list top 3-4].
 
----
-
-## Rules
-
-- ONLY add `> **NOTE**: [quality: ...] ...` annotations. Do not rewrite plan content.
-- Do not process or remove existing annotations.
-- Cite the specific criterion by name (as it appears in the `###` heading of code-quality.md).
-- Be constructive: don't just flag the violation, suggest the shape that would pass.
-- If a proposed change satisfies all criteria, move on — do not annotate "looks good."
-- At the end, report: how many criteria checked, how many violations found, which criteria triggered most.
+At the end, report: criteria checked, violations found, criteria triggered most.

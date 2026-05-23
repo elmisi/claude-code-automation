@@ -1,6 +1,6 @@
 {
   "name": "plan-cycle",
-  "version": "1.6.1",
+  "version": "2.0.0",
   "description": "File-based planning with annotation pipeline. Creates persistent markdown plans, companion ops guide, and supports impact/quality analysis via composable skills.",
   "author": {
     "name": "elmisi"

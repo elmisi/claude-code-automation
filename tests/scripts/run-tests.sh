@@ -636,6 +636,218 @@ run_structure_tests() {
     assert_validation_fails "$VALIDATE" subagent \
         "$(printf -- '---\nname: test\ndescription: test\nmodel: gpt-4o\n---\nContent')" \
         "STRUCT-81: reject non-Claude model ID"
+
+    # Run plan-cycle plugin tests as part of structure tier
+    run_plan_cycle_tests
+}
+
+# ============================================
+# plan-cycle PLUGIN TESTS (STRUCT-PC-01..19)
+# ============================================
+run_plan_cycle_tests() {
+    log_section "plan-cycle Plugin Tests (STRUCT-PC-01..19)"
+
+    local plugin_dir="$PROJECT_ROOT/plugins/plan-cycle"
+    local skills_dir="$plugin_dir/skills"
+    local ops="$plugin_dir/ops-template.md"
+
+    # STRUCT-PC-01: Frontmatter of the 3 SKILL.md files is valid and has required fields
+    for skill in plan-cycle plan-impact plan-quality; do
+        assert_valid_frontmatter "$skills_dir/$skill/SKILL.md" \
+            "STRUCT-PC-01: $skill SKILL.md frontmatter valid"
+        assert_file_contains "$skills_dir/$skill/SKILL.md" "disable-model-invocation: true" \
+            "STRUCT-PC-01b: $skill has disable-model-invocation: true"
+    done
+
+    # STRUCT-PC-02: argument-hint uses quoted "..." syntax in all 3 skills
+    for skill in plan-cycle plan-impact plan-quality; do
+        if grep -qE '^argument-hint:[[:space:]]+"[^"]+"[[:space:]]*$' "$skills_dir/$skill/SKILL.md"; then
+            log_success "STRUCT-PC-02: $skill argument-hint uses quoted syntax"
+        else
+            log_fail "STRUCT-PC-02: $skill argument-hint not quoted"
+        fi
+    done
+
+    # STRUCT-PC-03: ops-template.md has the 3 plan-cycle-* sections (no more, no less)
+    assert_file_contains "$ops" "^## plan-cycle-annotate" "STRUCT-PC-03a: plan-cycle-annotate section present"
+    assert_file_contains "$ops" "^## plan-cycle-review" "STRUCT-PC-03b: plan-cycle-review section present"
+    assert_file_contains "$ops" "^## plan-cycle-finalize" "STRUCT-PC-03c: plan-cycle-finalize section present"
+    local extra_pc_sections
+    extra_pc_sections=$(grep -cE "^## plan-cycle-(annotate|review|finalize)$" "$ops")
+    if [ "$extra_pc_sections" -eq 3 ]; then
+        log_success "STRUCT-PC-03d: exactly 3 plan-cycle-* sections in ops-template"
+    else
+        log_fail "STRUCT-PC-03d: expected 3 plan-cycle-* sections, found $extra_pc_sections"
+    fi
+
+    # STRUCT-PC-04: Dispatch rule does NOT contain legacy labels as dispatch targets
+    local dispatch_section
+    dispatch_section=$(awk '/^## Operation Dispatch Rule/,/^## plan-cycle-annotate/' "$ops")
+    if echo "$dispatch_section" | grep -qE '^- \*\*?(Annotate|Review|Finalize)\*\*?'; then
+        log_fail "STRUCT-PC-04: dispatch rule contains legacy labels"
+    else
+        log_success "STRUCT-PC-04: dispatch rule has no legacy labels"
+    fi
+
+    # STRUCT-PC-05: Version sync across 3 plan-cycle version files
+    local v_claude v_codex v_market
+    v_claude=$(jq -r '.version' "$plugin_dir/.claude-plugin/plugin.json")
+    v_codex=$(jq -r '.version' "$plugin_dir/.codex-plugin/plugin.json")
+    v_market=$(jq -r '.plugins[] | select(.name=="plan-cycle") | .version' "$PROJECT_ROOT/.claude-plugin/marketplace.json")
+    if [ "$v_claude" = "$v_codex" ] && [ "$v_codex" = "$v_market" ] && [ -n "$v_claude" ]; then
+        log_success "STRUCT-PC-05: version sync across 3 files ($v_claude)"
+    else
+        log_fail "STRUCT-PC-05: version mismatch (claude=$v_claude codex=$v_codex market=$v_market)"
+    fi
+    # Negative: Codex marketplace entry has NO version field
+    local codex_pc_has_version
+    codex_pc_has_version=$(jq -r '.plugins[] | select(.name=="plan-cycle") | has("version")' "$PROJECT_ROOT/.agents/plugins/marketplace.json" 2>/dev/null || echo "missing")
+    if [ "$codex_pc_has_version" = "false" ]; then
+        log_success "STRUCT-PC-05b: Codex marketplace plan-cycle entry has no version field"
+    else
+        log_fail "STRUCT-PC-05b: Codex marketplace plan-cycle entry should not have version field (got: $codex_pc_has_version)"
+    fi
+
+    # STRUCT-PC-06: code-quality.md has at least 9 numbered criteria
+    local crit_count
+    crit_count=$(grep -cE "^### [0-9]+\." "$skills_dir/plan-quality/code-quality.md")
+    if [ "$crit_count" -ge 9 ]; then
+        log_success "STRUCT-PC-06: code-quality.md has $crit_count numbered criteria (>=9)"
+    else
+        log_fail "STRUCT-PC-06: code-quality.md has $crit_count criteria, expected >=9"
+    fi
+
+    # STRUCT-PC-07: plan-quality references <project-root>/code-quality.md (opt-in pattern)
+    assert_file_contains "$skills_dir/plan-quality/SKILL.md" "<project-root>/code-quality.md" \
+        "STRUCT-PC-07: plan-quality uses opt-in <project-root>/code-quality.md"
+
+    # STRUCT-PC-08: plan-cycle references the plan-template + template file exists
+    assert_file_contains "$skills_dir/plan-cycle/SKILL.md" "templates/plan-template.md" \
+        "STRUCT-PC-08a: SKILL.md references templates/plan-template.md"
+    assert_file_exists "$skills_dir/plan-cycle/templates/plan-template.md" \
+        "STRUCT-PC-08b: templates/plan-template.md exists"
+
+    # STRUCT-PC-09: ops-template documents the annotation format with the 3 tag forms
+    assert_file_contains "$ops" "\[impact\]" "STRUCT-PC-09a: ops has [impact] tag"
+    assert_file_contains "$ops" "\[quality:" "STRUCT-PC-09b: ops has [quality:...] tag"
+    assert_file_contains "$ops" "^\*\*Format:" "STRUCT-PC-09c: ops has Format: line"
+
+    # STRUCT-PC-10: plan-cycle/SKILL.md line target (<=90)
+    local lines_skill
+    lines_skill=$(wc -l < "$skills_dir/plan-cycle/SKILL.md")
+    if [ "$lines_skill" -le 90 ]; then
+        log_success "STRUCT-PC-10: plan-cycle/SKILL.md is $lines_skill lines (<=90)"
+    else
+        log_fail "STRUCT-PC-10: plan-cycle/SKILL.md is $lines_skill lines, exceeds 90"
+    fi
+
+    # STRUCT-PC-11: ops-template.md line target (<=50)
+    local lines_ops
+    lines_ops=$(wc -l < "$ops")
+    if [ "$lines_ops" -le 50 ]; then
+        log_success "STRUCT-PC-11: ops-template.md is $lines_ops lines (<=50)"
+    else
+        log_fail "STRUCT-PC-11: ops-template.md is $lines_ops lines, exceeds 50"
+    fi
+
+    # STRUCT-PC-12: plan-impact + plan-quality point at ops format, don't re-implement
+    assert_file_contains "$skills_dir/plan-impact/SKILL.md" "ops file" \
+        "STRUCT-PC-12a: plan-impact references ops file"
+    assert_file_contains "$skills_dir/plan-quality/SKILL.md" "ops file" \
+        "STRUCT-PC-12b: plan-quality references ops file"
+    # Negative: should NOT contain the old "ONLY add" rule
+    if grep -q "ONLY add" "$skills_dir/plan-impact/SKILL.md"; then
+        log_fail "STRUCT-PC-12c: plan-impact still has 'ONLY add' rule"
+    else
+        log_success "STRUCT-PC-12c: plan-impact has no 'ONLY add' rule"
+    fi
+    if grep -q "ONLY add" "$skills_dir/plan-quality/SKILL.md"; then
+        log_fail "STRUCT-PC-12d: plan-quality still has 'ONLY add' rule"
+    else
+        log_success "STRUCT-PC-12d: plan-quality has no 'ONLY add' rule"
+    fi
+
+    # STRUCT-PC-13: Migration sed one-liner on v1.6.1 fixture produces compliant headers
+    local fixture="$PROJECT_ROOT/tests/fixtures/plan-cycle/ops-template-v1.6.1.md"
+    if [ -f "$fixture" ]; then
+        local tmpfile
+        tmpfile=$(mktemp)
+        cp "$fixture" "$tmpfile"
+        sed -i.bak -E 's/^## Annotate/## plan-cycle-annotate/; s/^## Review.*/## plan-cycle-review/; s/^## Finalize/## plan-cycle-finalize/; s/Annotate safety check/plan-cycle-annotate safety check/' "$tmpfile"
+        local has_all=true
+        grep -q "^## plan-cycle-annotate$" "$tmpfile" || has_all=false
+        grep -q "^## plan-cycle-review$" "$tmpfile" || has_all=false
+        grep -q "^## plan-cycle-finalize$" "$tmpfile" || has_all=false
+        if [ "$has_all" = "true" ]; then
+            log_success "STRUCT-PC-13: migration sed produces all 3 plan-cycle-* headers"
+        else
+            log_fail "STRUCT-PC-13: migration sed did not produce expected headers"
+        fi
+        rm -f "$tmpfile" "$tmpfile.bak"
+    else
+        log_fail "STRUCT-PC-13: fixture missing at $fixture"
+    fi
+
+    # STRUCT-PC-14: argument-hint exact value in plan-impact and plan-quality
+    assert_file_contains "$skills_dir/plan-impact/SKILL.md" 'argument-hint: "path/to/plan-file.md"' \
+        "STRUCT-PC-14a: plan-impact argument-hint exact value"
+    assert_file_contains "$skills_dir/plan-quality/SKILL.md" 'argument-hint: "path/to/plan-file.md"' \
+        "STRUCT-PC-14b: plan-quality argument-hint exact value"
+
+    # STRUCT-PC-15: plan-cycle/SKILL.md byte target (<=5000)
+    local bytes_skill
+    bytes_skill=$(wc -c < "$skills_dir/plan-cycle/SKILL.md")
+    if [ "$bytes_skill" -le 5000 ]; then
+        log_success "STRUCT-PC-15: plan-cycle/SKILL.md is $bytes_skill bytes (<=5000)"
+    else
+        log_fail "STRUCT-PC-15: plan-cycle/SKILL.md is $bytes_skill bytes, exceeds 5000"
+    fi
+
+    # STRUCT-PC-16: All 10 writing rules present in plan-cycle/SKILL.md
+    local missing=()
+    for rule in "Self-contained" "Operative" "Numbers" "Exit clauses" "Explicit degradation" "Verify" "Enumerate" "Mark unverifiable" "Coherent" "Robust"; do
+        if ! grep -q "$rule" "$skills_dir/plan-cycle/SKILL.md"; then
+            missing+=("$rule")
+        fi
+    done
+    if [ ${#missing[@]} -eq 0 ]; then
+        log_success "STRUCT-PC-16: all 10 writing rules present in plan-cycle/SKILL.md"
+    else
+        log_fail "STRUCT-PC-16: missing rules: ${missing[*]}"
+    fi
+
+    # STRUCT-PC-17: plan-cycle-finalize cites the same 10 rules (no drift)
+    local finalize_section
+    finalize_section=$(awk '/^## plan-cycle-finalize/,/^## General/' "$ops")
+    local missing_finalize=()
+    for rule in "Self-contained" "Operative" "Numbers" "Exit clauses" "Explicit degradation" "Verify" "Enumerate" "Mark" "Coherent" "Robust"; do
+        if ! echo "$finalize_section" | grep -q "$rule"; then
+            missing_finalize+=("$rule")
+        fi
+    done
+    if [ ${#missing_finalize[@]} -eq 0 ]; then
+        log_success "STRUCT-PC-17: plan-cycle-finalize cites all 10 rules"
+    else
+        log_fail "STRUCT-PC-17: finalize missing rules: ${missing_finalize[*]}"
+    fi
+
+    # STRUCT-PC-18: README plan-cycle section uses new names
+    local readme_pc
+    readme_pc=$(awk '/^## plan-cycle$/,/^## takeaway$/' "$PROJECT_ROOT/README.md")
+    if echo "$readme_pc" | grep -q 'plan-cycle-annotate' && \
+       echo "$readme_pc" | grep -q 'plan-cycle-review' && \
+       echo "$readme_pc" | grep -q 'plan-cycle-finalize'; then
+        log_success "STRUCT-PC-18: README plan-cycle section uses new operation names"
+    else
+        log_fail "STRUCT-PC-18: README plan-cycle section missing one or more new names"
+    fi
+
+    # STRUCT-PC-19: plan-quality documents the no-side-effect contract
+    if grep -qiE "never.*creates|never.*scriv|does not.*(create|write)" "$skills_dir/plan-quality/SKILL.md"; then
+        log_success "STRUCT-PC-19: plan-quality documents the no-side-effect contract"
+    else
+        log_fail "STRUCT-PC-19: plan-quality missing 'never creates/writes' assertion"
+    fi
 }
 
 # ============================================

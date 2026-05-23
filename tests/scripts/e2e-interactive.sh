@@ -310,6 +310,100 @@ Create ONLY the CLAUDE.md file in the project root."
 }
 
 # ============================================
+# plan-cycle SANDBOX SETUP
+# ============================================
+# Setup variant for plan-cycle tests: needs the plugin installed in the sandbox.
+# Local-only — the prerequisite `claude plugin install` step is verified before
+# running INTERACTIVE-PC-*; if not available, tests are skipped (not failed).
+setup_plan_cycle_sandbox() {
+    log_info "Setting up plan-cycle sandbox..."
+    rm -rf "$TEST_SANDBOX"
+    mkdir -p "$TEST_SANDBOX"
+    cd "$TEST_SANDBOX"
+    git init -q
+    echo "# plan-cycle test project" > README.md
+    git add . && git commit -q -m "init"
+
+    # Try to install the plan-cycle plugin from the local checkout.
+    # If `claude plugin install` is not available or fails, return 1 so callers
+    # can skip rather than fail.
+    if claude plugin install "$PROJECT_ROOT/plugins/plan-cycle" >/dev/null 2>&1; then
+        log_info "plan-cycle plugin installed in sandbox"
+        return 0
+    else
+        log_skip "plan-cycle plugin install not available — skipping INTERACTIVE-PC tests"
+        return 1
+    fi
+}
+
+# ============================================
+# INTERACTIVE E2E: plan-cycle (PC-A/B/C)
+# ============================================
+# INTERACTIVE-PC-A — /plan-cycle creates plan + .ops.md companion
+test_interactive_pc_a() {
+    log_section "INTERACTIVE-PC-A: /plan-cycle creates plan + ops"
+    setup_plan_cycle_sandbox || { cleanup_interactive_sandbox; return; }
+
+    cd "$TEST_SANDBOX"
+    timeout 180 claude -p "/plan-cycle test plan creation" --dangerously-skip-permissions >/tmp/pc_a.txt 2>&1
+
+    local plan_count ops_count
+    plan_count=$(find "$TEST_SANDBOX" -maxdepth 2 -name 'plan-*.md' -not -name '*.ops.md' | wc -l)
+    ops_count=$(find "$TEST_SANDBOX" -maxdepth 2 -name 'plan-*.ops.md' | wc -l)
+
+    if [ "$plan_count" -ge 1 ] && [ "$ops_count" -ge 1 ]; then
+        log_success "INTERACTIVE-PC-A: plan ($plan_count) + ops ($ops_count) created"
+    else
+        log_fail "INTERACTIVE-PC-A: expected at least 1 plan + 1 ops (got $plan_count/$ops_count)"
+    fi
+
+    cleanup_interactive_sandbox
+}
+
+# INTERACTIVE-PC-B — plan-cycle-review processes [impact] annotation
+test_interactive_pc_b() {
+    log_section "INTERACTIVE-PC-B: plan-cycle-review processes annotation"
+    setup_plan_cycle_sandbox || { cleanup_interactive_sandbox; return; }
+
+    cd "$TEST_SANDBOX"
+    cp "$PROJECT_ROOT/tests/fixtures/plan-cycle/plan-with-annotations.md" "$TEST_SANDBOX/plan-fixture.md"
+    cp "$PROJECT_ROOT/plugins/plan-cycle/ops-template.md" "$TEST_SANDBOX/plan-fixture.ops.md"
+
+    timeout 180 claude -p "plan-cycle-review on $TEST_SANDBOX/plan-fixture.md" --dangerously-skip-permissions >/tmp/pc_b.txt 2>&1
+
+    local remaining_notes
+    remaining_notes=$(grep -c '^> \*\*NOTE\*\*:' "$TEST_SANDBOX/plan-fixture.md" || echo 0)
+
+    if [ "$remaining_notes" -eq 0 ]; then
+        log_success "INTERACTIVE-PC-B: plan-cycle-review removed all annotations"
+    else
+        log_fail "INTERACTIVE-PC-B: $remaining_notes annotation(s) left after review"
+    fi
+
+    cleanup_interactive_sandbox
+}
+
+# INTERACTIVE-PC-C — old name "annotate" returns "Operazione non riconosciuta"
+test_interactive_pc_c() {
+    log_section "INTERACTIVE-PC-C: old name triggers 'unrecognized' message"
+    setup_plan_cycle_sandbox || { cleanup_interactive_sandbox; return; }
+
+    cd "$TEST_SANDBOX"
+    cp "$PROJECT_ROOT/tests/fixtures/plan-cycle/plan-with-annotations.md" "$TEST_SANDBOX/plan-fixture.md"
+    cp "$PROJECT_ROOT/plugins/plan-cycle/ops-template.md" "$TEST_SANDBOX/plan-fixture.ops.md"
+
+    timeout 180 claude -p "annotate on $TEST_SANDBOX/plan-fixture.md (note: use the literal word 'annotate' as the operation name)" --dangerously-skip-permissions >/tmp/pc_c.txt 2>&1
+
+    if grep -qiE "non riconosciuta|unrecognized|plan-cycle-annotate" /tmp/pc_c.txt; then
+        log_success "INTERACTIVE-PC-C: agent flagged old name 'annotate' as unrecognized"
+    else
+        log_fail "INTERACTIVE-PC-C: agent did not surface unrecognized-op message"
+    fi
+
+    cleanup_interactive_sandbox
+}
+
+# ============================================
 # MAIN
 # ============================================
 main() {
@@ -330,6 +424,9 @@ main() {
     test_interactive_subagent
     test_interactive_permissions
     test_interactive_claude_md
+    test_interactive_pc_a
+    test_interactive_pc_b
+    test_interactive_pc_c
 
     # Summary
     print_summary
@@ -342,9 +439,12 @@ case "${1:-all}" in
     subagent) test_interactive_subagent ;;
     permissions) test_interactive_permissions ;;
     claudemd) test_interactive_claude_md ;;
+    pc-a) test_interactive_pc_a ;;
+    pc-b) test_interactive_pc_b ;;
+    pc-c) test_interactive_pc_c ;;
     all) main ;;
     *)
-        echo "Usage: $0 [all|hook|skill|subagent|permissions|claudemd]"
+        echo "Usage: $0 [all|hook|skill|subagent|permissions|claudemd|pc-a|pc-b|pc-c]"
         exit 1
         ;;
 esac

@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [plan-cycle 2.0.0] - 2026-05-24
+
+### Changed (BREAKING)
+- Renamed operations: `Annotate → plan-cycle-annotate`, `Review → plan-cycle-review`, `Finalize → plan-cycle-finalize`. **Nessun alias**: i vecchi nomi non funzionano più sui nuovi `.ops.md`. Se l'utente usa "annotate"/"review"/"finalize" l'agente risponde con messaggio esplicito che elenca i nomi validi.
+- Consolidated operation definitions: `ops-template.md` è ora la single source of truth. `SKILL.md` Step 4 ("Operate on the plan") punta al file ops, non duplica le procedure.
+- `plan-quality`: cerca `<project-root>/code-quality.md` opt-in; se non esiste usa il default plugin (9 criteri) e mostra un reminder con istruzioni per crearlo. **La skill non scrive mai nella project root** (no copy-on-first-use, no side effect).
+- Unified writing rules e Finalize criteria in un set unico da **10 rules** (era 8 writing + 4 finalize disallineati): Self-contained, Operative, Numbers, Exit clauses, Explicit degradation, Verify, Enumerate universals, Mark unverifiable, Coherent, Robust.
+- Plan structure template estratto da `SKILL.md` in `skills/plan-cycle/templates/plan-template.md`. Paragrafi rationale verbose **eliminati** (non spostati: nessun caching automatico dei file referenziati, vedi review note).
+- SKILL principale riorganizzata in 4 step (Research → Setup files → Write plan → Operate) invece di 3.
+
+### Added
+- `plan-quality` threshold a 15 violazioni (parity con `plan-impact`).
+- Annotation sub-types (`[impact]`, `[quality: <criterion>]`) documentati canonicamente in `ops-template.md`.
+- Invariant "same-directory" per `.md` + `.ops.md` companion nel `templates/plan-template.md`.
+- 19 test strutturali (STRUCT-PC-01..19) in `tests/scripts/run-tests.sh` + 3 test interactive (INTERACTIVE-PC-A/B/C) in `tests/scripts/e2e-interactive.sh` (local-only, non in CI).
+- Fixture dir `tests/fixtures/plan-cycle/` per regression test.
+
+### Reduced
+- `skills/plan-cycle/SKILL.md`: -56% righe (169 → 74), -62% byte (9987 → 3791).
+- `ops-template.md`: -21% righe (61 → 48), -28% byte (3218 → 2328).
+- `skills/plan-impact/SKILL.md`: -24% righe (49 → 37), -27% byte (2484 → 1805).
+- `skills/plan-quality/SKILL.md`: -27% righe (52 → 38), -2% byte (2188 → 2134; saving limitato perché aggiunti opt-in resolution + threshold).
+
+### Migration
+I piani esistenti con `.ops.md` v1.6.x continuano a funzionare con i nomi vecchi (`annotate`/`review`/`finalize`) perché il companion ops resta authoritative per quel piano. Per usare i nomi nuovi su un piano esistente:
+
+```bash
+sed -i.bak -E 's/^## Annotate/## plan-cycle-annotate/; s/^## Review.*/## plan-cycle-review/; s/^## Finalize/## plan-cycle-finalize/; s/Annotate safety check/plan-cycle-annotate safety check/' <ops-file>
+```
+
+In alternativa: cancella il vecchio `.ops.md` e ricopia il nuovo template dal plugin.
+
 ## [plan-cycle 1.6.1] - 2026-05-09
 
 ### Fixed

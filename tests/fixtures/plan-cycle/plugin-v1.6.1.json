@@ -1,0 +1,5 @@
+{
+  "name": "plan-cycle",
+  "version": "1.6.1",
+  "description": "Regression fixture for STRUCT-PC-05 version sync test"
+}
