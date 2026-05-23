@@ -2,46 +2,55 @@
 
 ## How to work with this plan
 
-Read the entire plan before acting. Context, approach, edge cases, and open questions are all load-bearing.
+Sections labeled *(Reviewer surface)* require user input before approval — read them in full.
+Sections labeled *(Executor surface)* are the implementer's baseline — reviewers may skip.
 
-For operational instructions (how to annotate, review, finalize): see the companion file `{ops-filename}` in the same directory.
+For operations (annotate / review / finalize): see companion `{ops-filename}` in this directory.
 
-**Invariant:** keep this plan file and its `.ops.md` companion in the same directory. Moving one without the other breaks the link.
+**Invariant:** keep this `.md` and its `.ops.md` companion in the same directory.
 
-## Context
-<What exists today and why this change is needed. Reference specific files and code.>
+## Context *(Reviewer surface)*
+<What exists today, why this change is needed. Cite specific files and code.>
 
-## Approach
+## Interpretation Log *(Reviewer surface)*
+
+Every interpretive choice the planner made on the user's request. One entry per choice:
+
+- **Read "<phrase from request>" as <chosen reading>.**
+  - Alternatives considered: <Y>, <Z>.
+  - Consequence of each: <chosen → ...>; <Y → ...>; <Z → ...>.
+  - **Confirm or correct.**
+
+If no ambiguities detected, write `None detected.` — never leave the section empty.
+
+## Approach *(Reviewer surface)*
 <High-level strategy. What changes, what stays the same, and why this approach over alternatives.>
 
-## Detailed Changes
+## Decisions I Need From You *(Reviewer surface)*
 
-### <Area/Component 1>
-- What to change and why
-- Specific files to modify: `path/to/file.ts`
-- Code snippets showing the target shape (interface, signature) — not full implementation
+Planner uncertainty requiring user input. Each entry MUST be self-contained — no `see section X` references.
 
-### <Area/Component 2>
-...
+- **Q1: <situation in plain language>**
+  - Options: <A> / <B>
+  - Trade-offs: <A → consequence>; <B → consequence>
+  - Default if no answer: <choice>
 
-## Edge Cases and Risks
-<For each risk:
-- **Likelihood**: low/medium/high
-- **Impact**: what breaks and how badly
-- **Mitigation**: concrete action, not "be careful"
-- **Exit clause**: at what point do we abandon this approach and what's plan B>
+If no open decisions, write `None.` — never leave the section empty.
 
-## Failure Modes and Degradation
-<For each critical component:
-- What happens when it fails or is unavailable?
-- Degraded behavior (explicit, not "it should handle it gracefully")
-- Concrete thresholds: timeouts, retry counts, size limits, rate limits
-- Fallback strategy with specific steps>
+## Detailed Changes *(Executor surface)*
 
-## Open Questions
-<Anything you're unsure about, plus any unverifiable assumption on which a significant scope, risk, or design decision rests. Surface levers reviewers should probe — don't reserve only for "things I don't know at all".>
+### <Area/Component>
+- What to change and why.
+- Files: `path/to/file.ts`.
+- Target shape snippet (interface, signature) — not full implementation.
+- **User-visible success criterion:** user does X, observes Y. Infrastructure checks ("binary responds", "endpoint returns 200", "service starts") are pre-conditions, not completion evidence.
 
-## Task Breakdown
-- [ ] Task 1: description
-- [ ] Task 2: description
-- [ ] ...
+## Edge Cases and Risks *(Executor surface)*
+<Per risk: **Likelihood**, **Impact**, **Mitigation** (concrete), **Exit clause** (when to abandon and switch to what).>
+
+## Failure Modes and Degradation *(Executor surface)*
+<Per critical component: failure mode → degraded behaviour (explicit) → thresholds (timeouts, retries, limits) → fallback steps.>
+
+## Task Breakdown *(Executor surface)*
+- [ ] Task 1: description + inline outcome criterion.
+- [ ] Task 2: ...

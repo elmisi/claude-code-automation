@@ -36,16 +36,17 @@ Store the chosen plan path — all subsequent references use it.
 
 ## Step 3: Write the plan
 
-Use the template at `${CLAUDE_SKILL_DIR}/templates/plan-template.md` as starting structure. Replace `{ops-filename}` with the actual ops filename.
+Use the template at `${CLAUDE_SKILL_DIR}/templates/plan-template.md`. Replace `{ops-filename}`. The template uses **audience-labeled sections**: *(Reviewer surface)* must front-load every choice requiring user input; *(Executor surface)* holds implementation detail. Material outside the reviewer surface will not be approved. Populate `Interpretation Log` and `Decisions I Need From You` even when empty (`None detected.` / `None.`) — a silent absence is indistinguishable from a skipped section.
 
 **Writing rules** (each plan section must satisfy these):
 
-- **Self-contained** — no references to chat ("the file we discussed"). Cite paths.
+- **Self-contained** — no references to chat ("the file we discussed"). Cite paths. Decision prompts must carry their own context (situation, alternatives, trade-offs, default) — no `see section X` inside a prompt.
 - **Operative** — every task in breakdown maps to a concrete change in "Detailed Changes".
+- **Outcome-layer success** — for user-visible deliverables the criterion is "user does X, observes Y". Infrastructure proxies ("binary responds", "endpoint 200", "container up") are pre-conditions, never completion evidence.
 - **Numbers, not adjectives** — write "< 200ms p95", not "should be fast".
 - **Exit clauses** — for every key decision, state when to abandon it and switch to what.
 - **Explicit degradation** — what fails, what the user sees, concrete thresholds.
-- **Verify before claim** — check empirical claims today (grep/read/test); show the trace inline.
+- **Verify before claim** — check empirical claims today (grep/read/test); show the trace inline. Covers "tool X persists data at Y" and "config knob Z controls behaviour W" — verify via `--help`, scratch run, file inspection; never assert from training memory.
 - **Enumerate universals** — "no X does Y" requires naming the domain checked. Otherwise mark as `assumed:`.
 - **Mark unverifiable** — prefix with `assumed:` or `unverified:`; lift load-bearing ones into Open Questions.
 - **Coherent** — no contradictions across sections; task breakdown covers exactly what "Detailed Changes" describes.
@@ -64,6 +65,8 @@ Add annotations inline with `> **NOTE**: your comment`. Tell me when done.
 ## Step 4: Operate on the plan
 
 The user will request `plan-cycle-annotate`, `plan-cycle-review`, or `plan-cycle-finalize`. Their exact definitions live in the ops companion file you copied in Step 2 (and internalized). Follow that file — do not re-derive procedures here.
+
+**Approval gate:** before saying `Plan approved`, ensure `plan-cycle-finalize` has run and its unresolved-items inventory (TODOs, `assumed:`, `unverified:`) was surfaced with per-item choice (resolve / proceed knowingly with consequence stated). Approval over an unsurfaced inventory ships speculation into execution.
 
 Repeat until the user says approved ("looks good", "OK", "let's go"). Then say:
 

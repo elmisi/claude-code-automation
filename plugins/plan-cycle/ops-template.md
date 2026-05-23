@@ -36,9 +36,10 @@ Add inline annotations below the section/task they refer to. Do NOT modify plan 
 Make the plan operative, self-contained, coherent, robust — a fresh agent must execute it without prior context.
 
 1. Read the entire plan.
-2. For each section, check ALL 10 rules: Self-contained, Operative, Numbers-not-adjectives, Exit clauses, Explicit degradation, Verify-before-claim, Enumerate-universals, Mark-unverifiable, Coherent, Robust.
+2. For each section, check ALL 11 rules: Self-contained, Operative, Outcome-layer success, Numbers-not-adjectives, Exit clauses, Explicit degradation, Verify-before-claim, Enumerate-universals, Mark-unverifiable, Coherent, Robust.
 3. Rewrite every failing section — do not annotate.
 4. Report: sections updated count + one-line summary per section.
+5. **Unresolved Items Inventory** — list every remaining TODO, `assumed:`, `unverified:`. For each, prompt the user per item: *resolve before execution* or *proceed knowingly with consequence stated*. Approval is invalid without this step.
 
 ## General Principles
 

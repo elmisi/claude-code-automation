@@ -266,12 +266,14 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 /plan-cycle:plan-quality <plan> → annotates quality violations
 "plan-cycle-annotate"           → adds only new > **NOTE**: lines
 "plan-cycle-review"             → processes all annotations, updates plan
-"plan-cycle-finalize"           → verifies the 10 writing rules, rewrites gaps
+"plan-cycle-finalize"           → verifies the 11 writing rules, surfaces unresolved-items inventory
 ... repeat until approved ...
-"approved"                      → plan is ready for execution
+"approved"                      → plan is ready for execution (gated on inventory being surfaced)
 ```
 
-> **v2.0.0 breaking change:** operation names changed from bare `annotate`/`review`/`finalize` to `plan-cycle-annotate`/`plan-cycle-review`/`plan-cycle-finalize`. **No aliases.** See [CHANGELOG](CHANGELOG.md#plan-cycle-200---2026-05-23) for migration command (1-min `sed` one-liner for existing `.ops.md` files). Existing plans with v1.6.x companion ops continue to recognize the old names — the companion file is authoritative for its plan.
+> **v3.0.0 breaking change:** plan template restructured around the reviewer's actual attention surface. Every section is now labeled *(Reviewer surface)* or *(Executor surface)*. The old single `Open Questions` is split into two named top-level sections — `Interpretation Log` (interpretive choices on the request) and `Decisions I Need From You` (planner uncertainty) — both reviewer-surface. `plan-cycle-finalize` gained an `Unresolved Items Inventory` step that auto-lists every TODO / `assumed:` / `unverified:` and forces a per-item *resolve / proceed-knowingly* choice; approval cannot be signaled until this inventory has been surfaced. Existing plans keep working because their `.ops.md` companion is authoritative for that plan. See [CHANGELOG](CHANGELOG.md#plan-cycle-300---2026-05-24).
+>
+> **v2.0.0 breaking change** (prior): operation names changed from bare `annotate`/`review`/`finalize` to `plan-cycle-annotate`/`plan-cycle-review`/`plan-cycle-finalize`. **No aliases.** See [CHANGELOG](CHANGELOG.md#plan-cycle-200---2026-05-23) for the migration `sed` one-liner for existing `.ops.md` files.
 
 ### How it works
 
@@ -279,8 +281,8 @@ Pre-commit commands, test commands, and the main branch name are read from your 
 2. **Write plan** — A detailed markdown plan with context, approach, code snippets, edge cases, and a task breakdown. A companion ops file is written alongside with operational instructions.
 3. **Analyze** — Run `/plan-cycle:plan-impact` and/or `/plan-cycle:plan-quality` to get automated annotations
 4. **Review** — `plan-cycle-review` processes all `> **NOTE**:` annotations, integrates them into the plan, removes resolved ones
-5. **Finalize** — `plan-cycle-finalize` verifies the 10 unified writing rules (Self-contained, Operative, Numbers, Exit clauses, Explicit degradation, Verify, Enumerate universals, Mark unverifiable, Coherent, Robust). Rewrites sections directly where gaps are found.
-6. **Approve** — Iterate until the plan is right, then approve it
+5. **Finalize** — `plan-cycle-finalize` verifies the 11 unified writing rules (Self-contained, Operative, Outcome-layer success, Numbers, Exit clauses, Explicit degradation, Verify, Enumerate universals, Mark unverifiable, Coherent, Robust). Rewrites sections directly where gaps are found, then surfaces an `Unresolved Items Inventory` (every TODO / `assumed:` / `unverified:`) for per-item *resolve / proceed-knowingly* choice.
+6. **Approve** — Iterate until the plan is right; approval cannot be signaled until the inventory has been surfaced.
 
 The ops companion file describes the three core operations so any coding agent can work with the plan — the plugin skills handle the analysis passes (impact and quality). Annotations support optional source-tags: `[impact]` from plan-impact, `[quality: <criterion>]` from plan-quality, none from user — `plan-cycle-review` processes all uniformly.
 
