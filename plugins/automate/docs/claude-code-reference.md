@@ -3,7 +3,7 @@
 Last updated: 2026-04-04
 
 This file contains the reference documentation for Claude Code automation mechanisms.
-For the authoritative source of valid values, see the schema files in `plugin/schemas/`.
+For the authoritative source of valid values, see the schema files in `plugins/automate/schemas/`.
 
 ---
 

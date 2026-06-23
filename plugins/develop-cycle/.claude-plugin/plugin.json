@@ -1,6 +1,6 @@
 {
   "name": "develop-cycle",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push",
   "author": {
     "name": "elmisi"

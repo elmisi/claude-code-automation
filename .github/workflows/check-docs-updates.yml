@@ -44,7 +44,7 @@ jobs:
           echo ""
           echo "=== Checking hook events ==="
 
-          SCHEMA_EVENTS=$(jq -r '.validEvents[]' plugin/schemas/hooks.json | sort)
+          SCHEMA_EVENTS=$(jq -r '.validEvents[]' plugins/automate/schemas/hooks.json | sort)
           SCHEMA_EVENT_COUNT=$(echo "$SCHEMA_EVENTS" | wc -l)
           echo "Schema has $SCHEMA_EVENT_COUNT hook events"
 
@@ -59,7 +59,7 @@ jobs:
               NEW_EVENTS=$(comm -23 <(echo "$DOCS_EVENTS") <(echo "$SCHEMA_EVENTS") || true)
               if [ -n "$NEW_EVENTS" ]; then
                 DISCREPANCIES="${DISCREPANCIES}\n### New hook events in docs, missing from schema\n\n"
-                DISCREPANCIES="${DISCREPANCIES}The following events appear in the [hooks docs table](https://code.claude.com/docs/en/hooks) but not in \`plugin/schemas/hooks.json\`:\n"
+                DISCREPANCIES="${DISCREPANCIES}The following events appear in the [hooks docs table](https://code.claude.com/docs/en/hooks) but not in \`plugins/automate/schemas/hooks.json\`:\n"
                 while IFS= read -r event; do
                   DISCREPANCIES="${DISCREPANCIES}\n- \`$event\`"
                 done <<< "$NEW_EVENTS"
@@ -90,7 +90,7 @@ jobs:
           echo ""
           echo "=== Checking hook handler types ==="
 
-          SCHEMA_TYPES=$(jq -r '.validTypes[]' plugin/schemas/hooks.json | sort)
+          SCHEMA_TYPES=$(jq -r '.validTypes[]' plugins/automate/schemas/hooks.json | sort)
           echo "Schema types: $(echo $SCHEMA_TYPES | tr '\n' ' ')"
 
           if [ -s /tmp/docs/hooks.html ]; then
@@ -114,7 +114,7 @@ jobs:
           echo ""
           echo "=== Checking tools reference ==="
 
-          SCHEMA_TOOLS=$(jq -r '.frontmatter.optional.tools.validValues[]' plugin/schemas/subagents.json | sort)
+          SCHEMA_TOOLS=$(jq -r '.frontmatter.optional.tools.validValues[]' plugins/automate/schemas/subagents.json | sort)
           SCHEMA_TOOL_COUNT=$(echo "$SCHEMA_TOOLS" | wc -l)
           echo "Schema has $SCHEMA_TOOL_COUNT tools"
 
@@ -129,7 +129,7 @@ jobs:
               NEW_TOOLS=$(comm -23 <(echo "$DOCS_TOOLS") <(echo "$SCHEMA_TOOLS") || true)
               if [ -n "$NEW_TOOLS" ]; then
                 DISCREPANCIES="${DISCREPANCIES}\n### New tools in docs, missing from schema\n\n"
-                DISCREPANCIES="${DISCREPANCIES}The following tools appear in the [tools reference table](https://code.claude.com/docs/en/tools-reference) but not in \`plugin/schemas/subagents.json\`:\n"
+                DISCREPANCIES="${DISCREPANCIES}The following tools appear in the [tools reference table](https://code.claude.com/docs/en/tools-reference) but not in \`plugins/automate/schemas/subagents.json\`:\n"
                 while IFS= read -r tool; do
                   DISCREPANCIES="${DISCREPANCIES}\n- \`$tool\`"
                 done <<< "$NEW_TOOLS"
@@ -199,8 +199,8 @@ jobs:
           ## Action Required
 
           1. Review the documentation pages linked above
-          2. Update the relevant schema files in \`plugin/schemas/\`
-          3. Update \`plugin/scripts/validate-config.sh\` if validation logic changed
+          2. Update the relevant schema files in \`plugins/automate/schemas/\`
+          3. Update \`plugins/automate/scripts/validate-config.sh\` if validation logic changed
           4. Update \`SKILL.md\` inline lists if events/tools changed
           5. Run \`./tests/scripts/run-tests.sh structure\` to verify
 

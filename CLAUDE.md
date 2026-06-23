@@ -8,10 +8,10 @@ A multi-plugin repository for Claude Code automation, with Codex marketplace sup
 
 | Plugin | Directory | Claude Code Command | Codex | Description |
 |--------|-----------|---------------------|-------|-------------|
-| **automate** | `plugin/` | `/automate` | - | Expert advisor: interviews user, applies decision matrix, creates the right automation type |
-| **develop-cycle** | `plugin-develop-cycle/` | `/develop-cycle` | - | Structured dev workflow with mandatory checkpoint before commit/push |
+| **automate** | `plugins/automate/` | `/automate` | - | Expert advisor: interviews user, applies decision matrix, creates the right automation type |
+| **develop-cycle** | `plugins/develop-cycle/` | `/develop-cycle` | - | Structured dev workflow with mandatory checkpoint before commit/push |
 | **plan-cycle** | `plugins/plan-cycle/` | `/plan-cycle`, `/plan-cycle:plan-impact`, `/plan-cycle:plan-quality` | `plan-cycle` skill | File-based planning with annotation pipeline |
-| **takeaway** | `plugin-takeaway/` | `/takeaway` | - | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
+| **takeaway** | `plugins/takeaway/` | `/takeaway` | - | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
 | **refactor-discovery** | `plugins/refactor-discovery/` | `/refactor-discovery` | `refactor-discovery` skill | Smell-led methodology: surfaces structural leads, promotes mature refactor candidates, produces prioritized discovery document |
 
 The automate plugin is the core of this repo. develop-cycle, plan-cycle, takeaway, and refactor-discovery are self-contained plugins in their own directories. `plugins/plan-cycle/` and `plugins/refactor-discovery/` are dual-packaged with both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
@@ -36,7 +36,7 @@ When Claude Code changes (new hook events, new tools, etc.), update the **schema
 
 ### SKILL.md Internals
 
-The core creation workflow is in `plugin/skills/automate/SKILL.md`. Management commands are separate skills under `plugin/skills/automate-*/SKILL.md` for faster execution (each loads only its own content instead of the full 800+ line creation workflow).
+The core creation workflow is in `plugins/automate/skills/automate/SKILL.md`. Management commands are separate skills under `plugins/automate/skills/automate-*/SKILL.md` for faster execution (each loads only its own content instead of the full 800+ line creation workflow).
 
 **Main skill (`/automate`):**
 1. **Registry Bootstrap**: Checks if the registry exists. If not, scans for files with `created-by: automate` markers and rebuilds the registry (handles reinstallation after uninstall).
@@ -55,30 +55,30 @@ The core creation workflow is in `plugin/skills/automate/SKILL.md`. Management c
 | `/automate-import` | Medium AI | Reads file, resolves conflicts, creates, registers |
 | `/automate-cleanup` | Medium AI | Lists all, options keep/remove, cleans up |
 
-**Shared context**: `plugin/docs/shared-context.md` contains registry bootstrap, merge algorithm, schema refs, file markers, and deletion procedures. Skills that need shared procedures reference this file.
+**Shared context**: `plugins/automate/docs/shared-context.md` contains registry bootstrap, merge algorithm, schema refs, file markers, and deletion procedures. Skills that need shared procedures reference this file.
 
-**Two-Level Validation**: SKILL.md loads schemas at Step 0, validates against them at Step 5, and `plugin/scripts/validate-config.sh` provides external validation.
+**Two-Level Validation**: SKILL.md loads schemas at Step 0, validates against them at Step 5, and `plugins/automate/scripts/validate-config.sh` provides external validation.
 
 **Registry System**: All automations tracked in `~/.claude/automations-registry.json` with metadata (id, name, type, scope, path, timestamps).
 
 ### Key Directories
 
-- `plugin/skills/automate/` — Main creation workflow skill
-- `plugin/skills/automate-*/` — Management command skills (list, edit, delete, export, import, verify, cleanup, help)
-- `plugin/schemas/` — Source of truth for valid configurations (hooks events, skill frontmatter, subagent tools/models, permission patterns, custom command limits, MCP servers, LSP servers, agent teams)
-- `plugin/templates/` — Ready-to-use templates (hook variants, skill, subagent, permissions, custom command, MCP server, LSP server, agent team)
-- `plugin/docs/shared-context.md` — Shared procedures for management skills (registry bootstrap, merge algorithm, deletion procedures)
-- `plugin/docs/claude-code-reference.md` — Reference copy; Step 0 fetches live docs from code.claude.com and diffs against this
+- `plugins/automate/skills/automate/` — Main creation workflow skill
+- `plugins/automate/skills/automate-*/` — Management command skills (list, edit, delete, export, import, verify, cleanup, help)
+- `plugins/automate/schemas/` — Source of truth for valid configurations (hooks events, skill frontmatter, subagent tools/models, permission patterns, custom command limits, MCP servers, LSP servers, agent teams)
+- `plugins/automate/templates/` — Ready-to-use templates (hook variants, skill, subagent, permissions, custom command, MCP server, LSP server, agent team)
+- `plugins/automate/docs/shared-context.md` — Shared procedures for management skills (registry bootstrap, merge algorithm, deletion procedures)
+- `plugins/automate/docs/claude-code-reference.md` — Reference copy; Step 0 fetches live docs from code.claude.com and diffs against this
 - `tests/fixtures/` — Expected-output examples used by fixture tests
-- `plugin/scripts/validate-config.sh` — External validation script (also used in CI)
-- `plugin/scripts/guard-json-config.sh` — Hook handler that validates JSON config files before/after writes (prevents malformed JSON from breaking Claude Code settings, `.mcp.json`, etc.)
+- `plugins/automate/scripts/validate-config.sh` — External validation script (also used in CI)
+- `plugins/automate/scripts/guard-json-config.sh` — Hook handler that validates JSON config files before/after writes (prevents malformed JSON from breaking Claude Code settings, `.mcp.json`, etc.)
 
 ## Plugin Packaging
 
 Marketplace and plugin manifests are product-specific:
-- **`.claude-plugin/marketplace.json`** (repo root) — Claude Code marketplace registry. Its `plugins[]` entries use `source` paths such as `./plugin` or `./plugins/plan-cycle`.
+- **`.claude-plugin/marketplace.json`** (repo root) — Claude Code marketplace registry. Its `plugins[]` entries use `source` paths such as `./plugins/automate` or `./plugins/plan-cycle`.
 - **`.agents/plugins/marketplace.json`** (repo root) — Codex marketplace registry. It currently exposes `plan-cycle` from `./plugins/plan-cycle` and `refactor-discovery` from `./plugins/refactor-discovery`.
-- **`plugin/.claude-plugin/plugin.json`** — Claude Code manifest for `automate`.
+- **`plugins/automate/.claude-plugin/plugin.json`** — Claude Code manifest for `automate`.
 - **`plugins/plan-cycle/.claude-plugin/plugin.json`** — Claude Code manifest for `plan-cycle`.
 - **`plugins/plan-cycle/.codex-plugin/plugin.json`** — Codex manifest for `plan-cycle`.
 
@@ -87,7 +87,7 @@ Marketplace and plugin manifests are product-specific:
 When bumping version, update ALL these files:
 - `VERSION` — main version file
 - `CHANGELOG.md` — add entry at top
-- `plugin/.claude-plugin/plugin.json` — `"version"` field
+- `plugins/automate/.claude-plugin/plugin.json` — `"version"` field
 - `.claude-plugin/marketplace.json` — `"version"` field in `plugins[]` array
 
 The marketplace.json version is used by Claude Code's plugin update system. If out of sync, updates won't work.
@@ -129,7 +129,7 @@ Test helpers are in `tests/scripts/helpers.sh` (assertions, sandbox management, 
 ### Validation Script
 
 ```bash
-plugin/scripts/validate-config.sh <type> <content>
+plugins/automate/scripts/validate-config.sh <type> <content>
 # <type>: hooks, skill, subagent, permissions, custom-commands, mcp-servers, lsp-servers, agent-team
 # <content>: JSON/YAML string, file path, or '-' for stdin
 # Exit codes: 0=valid, 1=invalid config, 2=usage error
@@ -137,7 +137,7 @@ plugin/scripts/validate-config.sh <type> <content>
 
 ## Schemas — Critical Constraints
 
-Schemas in `plugin/schemas/` define what's valid. Key gotchas:
+Schemas in `plugins/automate/schemas/` define what's valid. Key gotchas:
 
 - **Hook events**: 29 valid events (`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PostToolBatch`, `SessionStart`, `SessionEnd`, `UserPromptSubmit`, `UserPromptExpansion`, `PermissionRequest`, `PermissionDenied`, `Notification`, `Stop`, `StopFailure`, `PreCompact`, `PostCompact`, `SubagentStart`, `SubagentStop`, `TeammateIdle`, `TaskCreated`, `TaskCompleted`, `ConfigChange`, `InstructionsLoaded`, `WorktreeCreate`, `WorktreeRemove`, `Elicitation`, `ElicitationResult`, `CwdChanged`, `FileChanged`, `Setup`). NEVER use `PreCommit`, `PostCommit`, `PreBash`, `PostBash`, `BeforeToolUse`, `AfterToolUse` — they don't exist.
 - **Hook exit codes**: `0` = allow, `2` = block (stderr becomes feedback), anything else = allow but log error. Exit code 1 does NOT block.
@@ -191,17 +191,17 @@ All auto-created files include origin markers:
 
 ## Adding a New Automation Type
 
-1. Create schema in `plugin/schemas/[type].json`
-2. Create template in `plugin/templates/[type].json` (or `.md`)
+1. Create schema in `plugins/automate/schemas/[type].json`
+2. Create template in `plugins/automate/templates/[type].json` (or `.md`)
 3. Add `validate_[type]()` function in `validate-config.sh` and wire it into the `case` statement
 4. Create fixture files in `tests/fixtures/`
 5. Add structure + E2E test assertions in `run-tests.sh`
 6. Update SKILL.md: decision matrix, Step 0 schema loading, Step 4 creation, combinations
-7. Update `plugin/docs/claude-code-reference.md`
+7. Update `plugins/automate/docs/claude-code-reference.md`
 
 ## Updating Schemas (When Claude Code Changes)
 
-When Anthropic adds new hook events, tools, etc.: update the **schema** → update `validate-config.sh` → update SKILL.md inline lists → update `plugin/docs/claude-code-reference.md` → add structure tests if needed.
+When Anthropic adds new hook events, tools, etc.: update the **schema** → update `validate-config.sh` → update SKILL.md inline lists → update `plugins/automate/docs/claude-code-reference.md` → add structure tests if needed.
 
 ## GitHub Actions
 

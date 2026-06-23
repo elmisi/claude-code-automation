@@ -25,7 +25,7 @@ jobs:
 
       - name: Validate fixtures against schemas
         run: |
-          SCRIPT="./plugin/scripts/validate-config.sh"
+          SCRIPT="./plugins/automate/scripts/validate-config.sh"
           chmod +x "$SCRIPT"
 
           echo "Validating hook fixture..."

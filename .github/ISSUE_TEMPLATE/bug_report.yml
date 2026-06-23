@@ -60,7 +60,7 @@ body:
     id: plugin-version
     attributes:
       label: Plugin version
-      description: "Version of claude-code-automation (check plugin/.claude-plugin/plugin.json)"
+      description: "Version of claude-code-automation (check plugins/automate/.claude-plugin/plugin.json)"
       placeholder: "e.g., 1.5.1"
     validations:
       required: false
