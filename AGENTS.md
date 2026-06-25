@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository packages Claude Code automation plugins, plus Codex support for `plan-cycle` and `refactor-discovery`. Core plugin assets live under `plugins/automate/`: `schemas/` are the source of truth, `templates/` provide starting files, `skills/` contains `SKILL.md` workflows, `scripts/` contains validators and helpers, and `docs/` holds reference material. Additional plugins live under `plugins/develop-cycle/`, `plugins/takeaway/`, `plugins/plan-cycle/`, and `plugins/refactor-discovery/`. Tests live in `tests/`, with fixtures in `tests/fixtures/` and runners in `tests/scripts/`.
+This repository packages Claude Code automation plugins, plus Codex support for `plan-cycle` and `refactor-discovery`. Core plugin assets live under `plugins/automate/`: `schemas/` are the source of truth, `templates/` provide starting files, `skills/` contains `SKILL.md` workflows, `scripts/` contains validators and helpers, and `docs/` holds reference material. Additional plugins live under `plugins/takeaway/`, `plugins/plan-cycle/`, and `plugins/refactor-discovery/`. Tests live in `tests/`, with fixtures in `tests/fixtures/` and runners in `tests/scripts/`.
 
 ## Build, Test, and Development Commands
 

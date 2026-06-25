@@ -5,12 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml)
 
-This repository contains five Claude Code plugins. `plan-cycle` and `refactor-discovery` are also packaged for Codex from shared source trees.
+This repository contains four Claude Code plugins. `plan-cycle` and `refactor-discovery` are also packaged for Codex from shared source trees.
 
 | Plugin | Claude Code | Codex | Description |
 |--------|-------------|-------|-------------|
 | **automate** | `/automate` | - | Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.) |
-| **develop-cycle** | `/develop-cycle` | - | Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push |
 | **plan-cycle** | `/plan-cycle` | `plan-cycle` skill | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
 | **takeaway** | `/takeaway` | - | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
 | **refactor-discovery** | `/refactor-discovery` | `refactor-discovery` skill | Research methodology for surfacing non-obvious structural smell leads before promoting refactor candidates |
@@ -25,7 +24,6 @@ This repository contains five Claude Code plugins. `plan-cycle` and `refactor-di
 
 # Install the plugin(s) you want
 /plugin install automate
-/plugin install develop-cycle
 /plugin install plan-cycle
 /plugin install takeaway
 /plugin install refactor-discovery
@@ -209,35 +207,6 @@ All automations created by this plugin are tracked in a registry (`~/.claude/aut
 
 ---
 
-## develop-cycle
-
-> A structured development workflow that guides Claude through analysis, implementation, validation, and a mandatory checkpoint before commit/push.
-
-### Usage
-
-```bash
-/develop-cycle add user authentication with JWT tokens
-/develop-cycle fix the race condition in the payment queue
-/develop-cycle refactor the API layer to use dependency injection
-```
-
-### How it works
-
-The workflow has 6 phases:
-
-1. **Analysis and Planning** — Understand the task, study the codebase, clarify ambiguities, propose an approach, define the plan
-2. **Setup** — Create a working branch from the main branch
-3. **Implementation** — Write code and tests following the approved plan
-4. **Validation** — Run pre-commit/lint and tests. **Mandatory checkpoint**: Claude stops and waits for your explicit OK before committing
-5. **Iteration** — If you request changes, Claude applies them and re-validates
-6. **Finalization** — Commit, push, and update docs if needed (only after your approval)
-
-The key feature is the **mandatory checkpoint** after validation passes. Claude will never commit or push autonomously — it always stops to show you the results and waits for your explicit approval.
-
-Pre-commit commands, test commands, and the main branch name are read from your project's `CLAUDE.md` file, so the workflow adapts to any project.
-
----
-
 ## plan-cycle
 
 > File-based planning with annotation pipeline. Creates persistent markdown plans with composable analysis skills.
@@ -304,7 +273,7 @@ Inspired by [Boris Tane's annotation cycle workflow](https://boristane.com/blog/
 
 ```bash
 /takeaway plan-cycle
-/takeaway develop-cycle
+/takeaway automate
 /takeaway <any skill, tool, or workflow>
 ```
 

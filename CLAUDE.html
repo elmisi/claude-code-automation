@@ -266,14 +266,6 @@ marketplace support for <code>plan-cycle</code> and
 the right automation type</td>
 </tr>
 <tr class="even">
-<td><strong>develop-cycle</strong></td>
-<td><code>plugins/develop-cycle/</code></td>
-<td><code>/develop-cycle</code></td>
-<td>-</td>
-<td>Structured dev workflow with mandatory checkpoint before
-commit/push</td>
-</tr>
-<tr class="odd">
 <td><strong>plan-cycle</strong></td>
 <td><code>plugins/plan-cycle/</code></td>
 <td><code>/plan-cycle</code>, <code>/plan-cycle:plan-impact</code>,
@@ -281,7 +273,7 @@ commit/push</td>
 <td><code>plan-cycle</code> skill</td>
 <td>File-based planning with annotation pipeline</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>takeaway</strong></td>
 <td><code>plugins/takeaway/</code></td>
 <td><code>/takeaway</code></td>
@@ -289,7 +281,7 @@ commit/push</td>
 <td>Structured feedback extraction — interviews user, identifies
 patterns, produces agent-ready improvements</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>refactor-discovery</strong></td>
 <td><code>plugins/refactor-discovery/</code></td>
 <td><code>/refactor-discovery</code></td>
@@ -299,9 +291,9 @@ refactor candidates, produces prioritized discovery document</td>
 </tr>
 </tbody>
 </table>
-<p>The automate plugin is the core of this repo. develop-cycle,
-plan-cycle, takeaway, and refactor-discovery are self-contained plugins
-in their own directories. <code>plugins/plan-cycle/</code> and
+<p>The automate plugin is the core of this repo. plan-cycle, takeaway,
+and refactor-discovery are self-contained plugins in their own
+directories. <code>plugins/plan-cycle/</code> and
 <code>plugins/refactor-discovery/</code> are dual-packaged with both
 <code>.claude-plugin/plugin.json</code> and
 <code>.codex-plugin/plugin.json</code>.</p>
@@ -465,21 +457,24 @@ Constraints</h2>
 <p>Schemas in <code>plugins/automate/schemas/</code> define what’s
 valid. Key gotchas:</p>
 <ul>
-<li><strong>Hook events</strong>: 29 valid events
+<li><strong>Hook events</strong>: 30 valid events
 (<code>PreToolUse</code>, <code>PostToolUse</code>,
 <code>PostToolUseFailure</code>, <code>PostToolBatch</code>,
 <code>SessionStart</code>, <code>SessionEnd</code>,
 <code>UserPromptSubmit</code>, <code>UserPromptExpansion</code>,
 <code>PermissionRequest</code>, <code>PermissionDenied</code>,
-<code>Notification</code>, <code>Stop</code>, <code>StopFailure</code>,
-<code>PreCompact</code>, <code>PostCompact</code>,
-<code>SubagentStart</code>, <code>SubagentStop</code>,
-<code>TeammateIdle</code>, <code>TaskCreated</code>,
-<code>TaskCompleted</code>, <code>ConfigChange</code>,
-<code>InstructionsLoaded</code>, <code>WorktreeCreate</code>,
-<code>WorktreeRemove</code>, <code>Elicitation</code>,
-<code>ElicitationResult</code>, <code>CwdChanged</code>,
-<code>FileChanged</code>, <code>Setup</code>). NEVER use
+<code>Notification</code>, <code>MessageDisplay</code>,
+<code>Stop</code>, <code>StopFailure</code>, <code>PreCompact</code>,
+<code>PostCompact</code>, <code>SubagentStart</code>,
+<code>SubagentStop</code>, <code>TeammateIdle</code>,
+<code>TaskCreated</code>, <code>TaskCompleted</code>,
+<code>ConfigChange</code>, <code>InstructionsLoaded</code>,
+<code>WorktreeCreate</code>, <code>WorktreeRemove</code>,
+<code>Elicitation</code>, <code>ElicitationResult</code>,
+<code>CwdChanged</code>, <code>FileChanged</code>, <code>Setup</code>).
+<code>MessageDisplay</code> fires while assistant text streams to the
+user — non-blocking, no matcher, can replace shown text via
+<code>hookSpecificOutput.displayContent</code> (display only). NEVER use
 <code>PreCommit</code>, <code>PostCommit</code>, <code>PreBash</code>,
 <code>PostBash</code>, <code>BeforeToolUse</code>,
 <code>AfterToolUse</code> — they don’t exist.</li>
