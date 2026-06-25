@@ -38,11 +38,11 @@ schemas/        templates/
  truth)           points)
 ```
 
-- **Schemas** (`plugin/schemas/*.json`) are the single source of truth. They define which hook events exist, which frontmatter fields are required, which tools a subagent can use, and so on. SKILL.md loads these schemas at Step 0 and validates against them at Step 5.
+- **Schemas** (`plugins/automate/schemas/*.json`) are the single source of truth. They define which hook events exist, which frontmatter fields are required, which tools a subagent can use, and so on. SKILL.md loads these schemas at Step 0 and validates against them at Step 5.
 
-- **Templates** (`plugin/templates/`) are ready-to-use starting points for each automation type. They conform to the schemas and give users a working baseline that SKILL.md customizes during the creation workflow.
+- **Templates** (`plugins/automate/templates/`) are ready-to-use starting points for each automation type. They conform to the schemas and give users a working baseline that SKILL.md customizes during the creation workflow.
 
-- **SKILL.md** (`plugin/skills/automate/SKILL.md`) is the orchestrator. It reads schemas to know what is valid, uses templates as a starting point, interviews the user, applies the decision matrix, creates the files, and validates them.
+- **SKILL.md** (`plugins/automate/skills/automate/SKILL.md`) is the orchestrator. It reads schemas to know what is valid, uses templates as a starting point, interviews the user, applies the decision matrix, creates the files, and validates them.
 
 When Claude Code changes (new hook events, new tools, etc.), you update the **schema first**, then adjust templates and SKILL.md to match.
 
@@ -51,7 +51,7 @@ When Claude Code changes (new hook events, new tools, etc.), you update the **sc
 There are two levels of validation:
 
 1. **In-process**: SKILL.md loads schemas at Step 0 and checks generated configurations at Step 5.
-2. **External**: `plugin/scripts/validate-config.sh` can validate any configuration from the command line, CI, or other scripts.
+2. **External**: `plugins/automate/scripts/validate-config.sh` can validate any configuration from the command line, CI, or other scripts.
 
 ## How to Add a New Automation Type
 
@@ -59,15 +59,15 @@ Follow these steps in order:
 
 ### 1. Create the schema
 
-Create `plugin/schemas/[type].json` defining all valid values, required fields, and constraints for the new automation type. Look at existing schemas (e.g., `hooks.json`, `skills.json`) for the expected format.
+Create `plugins/automate/schemas/[type].json` defining all valid values, required fields, and constraints for the new automation type. Look at existing schemas (e.g., `hooks.json`, `skills.json`) for the expected format.
 
 ### 2. Create the template
 
-Create `plugin/templates/[type].json` (or `.md` for Markdown-based types like skills and subagents). The template should be a minimal, working example that conforms to the schema.
+Create `plugins/automate/templates/[type].json` (or `.md` for Markdown-based types like skills and subagents). The template should be a minimal, working example that conforms to the schema.
 
 ### 3. Add validation
 
-Add a `validate_[type]()` function in `plugin/scripts/validate-config.sh`. The function should:
+Add a `validate_[type]()` function in `plugins/automate/scripts/validate-config.sh`. The function should:
 - Parse the content (JSON with `jq`, or text with `grep`/`sed` for Markdown)
 - Check all required fields
 - Validate values against the schema's allowed set
@@ -87,7 +87,7 @@ Update `tests/scripts/run-tests.sh`:
 
 ### 6. Update SKILL.md
 
-Update `plugin/skills/automate/SKILL.md` in these sections:
+Update `plugins/automate/skills/automate/SKILL.md` in these sections:
 - **Decision matrix**: Add a row for the new type with the "when to use" guidance
 - **Step 0 (Load schemas)**: Add the new schema to the list of schemas loaded at startup
 - **Step 4 (Create)**: Add a creation section with the file paths, format, and schema-based validation rules
@@ -95,7 +95,7 @@ Update `plugin/skills/automate/SKILL.md` in these sections:
 
 ### 7. Update reference docs
 
-Update `plugin/docs/claude-code-reference.md` with documentation for the new automation type, including configuration format, valid values, and examples.
+Update `plugins/automate/docs/claude-code-reference.md` with documentation for the new automation type, including configuration format, valid values, and examples.
 
 ## How to Update Schemas (When Claude Code Adds New Features)
 
@@ -107,15 +107,15 @@ Visit [code.claude.com](https://code.claude.com) and review the latest documenta
 
 ### 2. Update the relevant schema
 
-Edit the appropriate file in `plugin/schemas/` to add new valid values, fields, or constraints. For example, if a new hook event is added, update `hooks.json` and the `VALID_HOOK_EVENTS` array in `validate-config.sh`.
+Edit the appropriate file in `plugins/automate/schemas/` to add new valid values, fields, or constraints. For example, if a new hook event is added, update `hooks.json` and the `VALID_HOOK_EVENTS` array in `validate-config.sh`.
 
 ### 3. Update SKILL.md references
 
-Update `plugin/skills/automate/SKILL.md` so it knows about the new valid values. This includes any inline lists of valid events, tools, models, etc.
+Update `plugins/automate/skills/automate/SKILL.md` so it knows about the new valid values. This includes any inline lists of valid events, tools, models, etc.
 
 ### 4. Update reference docs
 
-Update `plugin/docs/claude-code-reference.md` to reflect the changes.
+Update `plugins/automate/docs/claude-code-reference.md` to reflect the changes.
 
 ### 5. Add structure tests if needed
 
@@ -151,8 +151,8 @@ Run the full suite (all three tiers):
 Before submitting a PR, verify the following:
 
 - [ ] Schemas are updated (if changing valid values or adding a new type)
-- [ ] Schema changes are reflected in `plugin/skills/automate/SKILL.md`
-- [ ] Schema changes are reflected in `plugin/docs/claude-code-reference.md`
+- [ ] Schema changes are reflected in `plugins/automate/skills/automate/SKILL.md`
+- [ ] Schema changes are reflected in `plugins/automate/docs/claude-code-reference.md`
 - [ ] `validate-config.sh` is updated (if adding a new type or changing validation rules)
 - [ ] Structure tests pass: `./tests/scripts/run-tests.sh structure`
 - [ ] E2E fixture tests pass: `./tests/scripts/run-tests.sh e2e`
@@ -161,7 +161,7 @@ Before submitting a PR, verify the following:
 - [ ] Version is bumped in all 4 version files (if this is a release):
   - `VERSION`
   - `CHANGELOG.md`
-  - `plugin/.claude-plugin/plugin.json`
+  - `plugins/automate/.claude-plugin/plugin.json`
   - `.claude-plugin/marketplace.json`
 
 ## Code of Conduct

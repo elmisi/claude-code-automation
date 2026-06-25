@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.3] - 2026-06-24
+
+PATCH bumps (packaging/location only, no behavior change): automate 2.10.2 → 2.10.3, develop-cycle 1.0.0 → 1.0.1, takeaway 1.1.0 → 1.1.1. `plan-cycle` and `refactor-discovery` unchanged (not moved).
+
+### Changed
+- **Unified plugin directory layout under `plugins/`.** Moved `plugin/` → `plugins/automate/`, `plugin-develop-cycle/` → `plugins/develop-cycle/`, and `plugin-takeaway/` → `plugins/takeaway/` (via `git mv`, history preserved). All five plugins now live under a single `plugins/` root. Updated `source` paths in `.claude-plugin/marketplace.json` and all live path references in `tests/scripts/run-tests.sh`, `CLAUDE.md`, `CONTRIBUTING.md`, `AGENTS.md`, `README.md`, and `.github/` workflows/templates.
+- **No Codex impact:** the only Codex-packaged plugins (`plan-cycle`, `refactor-discovery`) were already under `plugins/` and were not moved; `.agents/plugins/marketplace.json` and both `.codex-plugin/` manifests are unchanged.
+- Regenerated committed `.html` renders (`CLAUDE.html`, `plugins/automate/skills/automate/SKILL.html`, `plugins/automate/docs/claude-code-reference.html`, `tests/TEST.html`) from their `.md` sources via `pandoc -s --metadata title=" "` — refreshing both the moved paths and long-stale content (e.g. `CLAUDE.html` still described an old single-plugin layout).
+
 ## [plan-cycle 3.0.0] - 2026-05-24
 
 Distilled from `takeaway-plan-cycle-lessons.md` — restructures the plan around the reviewer's actual attention surface to catch intent-divergence before code is written.

@@ -234,10 +234,10 @@
 </header>
 <h1 id="claude-code-reference-documentation">Claude Code Reference
 Documentation</h1>
-<p>Last updated: 2026-02-06</p>
+<p>Last updated: 2026-04-04</p>
 <p>This file contains the reference documentation for Claude Code
 automation mechanisms. For the authoritative source of valid values, see
-the schema files in <code>plugin/schemas/</code>.</p>
+the schema files in <code>plugins/automate/schemas/</code>.</p>
 <hr />
 <h2 id="overview">Overview</h2>
 <p>Claude Code offers several automation mechanisms:</p>
@@ -304,7 +304,7 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <tr class="even">
 <td><code>SessionEnd</code></td>
 <td>Session ends</td>
-<td><code>clear</code>, <code>logout</code>,
+<td><code>clear</code>, <code>resume</code>, <code>logout</code>,
 <code>prompt_input_exit</code>,
 <code>bypass_permissions_disabled</code>, <code>other</code></td>
 </tr>
@@ -338,7 +338,7 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <td><code>Notification</code></td>
 <td>Claude needs attention</td>
 <td><code>permission_prompt</code>, <code>idle_prompt</code>,
-<code>auth_success</code></td>
+<code>auth_success</code>, <code>elicitation_dialog</code></td>
 </tr>
 <tr class="odd">
 <td><code>Stop</code></td>
@@ -346,8 +346,21 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <td>(no matcher)</td>
 </tr>
 <tr class="even">
+<td><code>StopFailure</code></td>
+<td>Turn ends due to API error</td>
+<td><code>rate_limit</code>, <code>authentication_failed</code>,
+<code>billing_error</code>, <code>invalid_request</code>,
+<code>server_error</code>, <code>max_output_tokens</code>,
+<code>unknown</code> (output ignored)</td>
+</tr>
+<tr class="odd">
 <td><code>PreCompact</code></td>
 <td>Before context compaction</td>
+<td><code>manual</code>, <code>auto</code></td>
+</tr>
+<tr class="even">
+<td><code>PostCompact</code></td>
+<td>After context compaction completes</td>
 <td><code>manual</code>, <code>auto</code></td>
 </tr>
 <tr class="odd">
@@ -362,6 +375,88 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <td>Agent type (e.g. <code>code-reviewer</code>,
 <code>general-purpose</code>)</td>
 </tr>
+<tr class="odd">
+<td><code>TeammateIdle</code></td>
+<td>Teammate about to go idle</td>
+<td>Agent name (exit 2 only)</td>
+</tr>
+<tr class="even">
+<td><code>TaskCreated</code></td>
+<td>Task being created via TaskCreate</td>
+<td>(no matcher, exit 2 blocks)</td>
+</tr>
+<tr class="odd">
+<td><code>TaskCompleted</code></td>
+<td>Task being marked completed</td>
+<td>(no matcher, exit 2 blocks)</td>
+</tr>
+<tr class="even">
+<td><code>ConfigChange</code></td>
+<td>Config file changed</td>
+<td><code>user_settings</code>, <code>project_settings</code>,
+<code>local_settings</code>, <code>policy_settings</code>,
+<code>skills</code></td>
+</tr>
+<tr class="odd">
+<td><code>InstructionsLoaded</code></td>
+<td>When CLAUDE.md or rules files loaded</td>
+<td><code>session_start</code>, <code>nested_traversal</code>,
+<code>path_glob_match</code>, <code>include</code>, <code>compact</code>
+(exit code ignored)</td>
+</tr>
+<tr class="even">
+<td><code>WorktreeCreate</code></td>
+<td>When a worktree is being created</td>
+<td>(no matcher, any non-zero fails)</td>
+</tr>
+<tr class="odd">
+<td><code>WorktreeRemove</code></td>
+<td>When a worktree is being removed</td>
+<td>(no matcher)</td>
+</tr>
+<tr class="even">
+<td><code>Elicitation</code></td>
+<td>When MCP server requests user input</td>
+<td>MCP server name (regex)</td>
+</tr>
+<tr class="odd">
+<td><code>ElicitationResult</code></td>
+<td>After user responds to MCP elicitation</td>
+<td>MCP server name (regex)</td>
+</tr>
+<tr class="even">
+<td><code>CwdChanged</code></td>
+<td>Working directory changes (e.g. cd)</td>
+<td>(no matcher)</td>
+</tr>
+<tr class="odd">
+<td><code>FileChanged</code></td>
+<td>Watched file changes on disk</td>
+<td>Filename basename (e.g. <code>.envrc</code>, <code>.env</code>)</td>
+</tr>
+<tr class="even">
+<td><code>PermissionDenied</code></td>
+<td>User denies a permission request</td>
+<td>Tool name (non-blocking, informational)</td>
+</tr>
+<tr class="odd">
+<td><code>PostToolBatch</code></td>
+<td>After full batch of parallel tool calls resolves</td>
+<td>(no matcher, can block next model call)</td>
+</tr>
+<tr class="even">
+<td><code>UserPromptExpansion</code></td>
+<td>User-typed slash command expands into prompt</td>
+<td>Command name (can block expansion)</td>
+</tr>
+<tr class="odd">
+<td><code>Setup</code></td>
+<td>Fires with <code>--init-only</code> or
+<code>--init</code>/<code>--maintenance</code> in <code>-p</code>
+mode</td>
+<td><code>init</code>, <code>maintenance</code> (command type only,
+cannot block)</td>
+</tr>
 </tbody>
 </table>
 <h3 id="invalid-events-do-not-use">Invalid Events (DO NOT USE)</h3>
@@ -370,6 +465,8 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <code>PostBash</code> - <code>PreEdit</code>, <code>PostEdit</code> -
 <code>BeforeToolUse</code>, <code>AfterToolUse</code></p>
 <h3 id="hook-types">Hook Types</h3>
+<p>All events support all 4 handler types (except <code>Setup</code>
+which only supports <code>command</code>):</p>
 <table>
 <thead>
 <tr class="header">
@@ -390,6 +487,10 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <td><code>agent</code></td>
 <td>Multi-turn verification with tool access</td>
 </tr>
+<tr class="even">
+<td><code>http</code></td>
+<td>Send POST to URL endpoint</td>
+</tr>
 </tbody>
 </table>
 <h3 id="hook-handler-fields">Hook Handler Fields</h3>
@@ -408,14 +509,27 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 </thead>
 <tbody>
 <tr class="odd">
+<td><code>if</code></td>
+<td>string</td>
+<td>Permission rule syntax filter — only runs hook when matching
+(e.g. <code>Bash(git *)</code>)</td>
+</tr>
+<tr class="even">
 <td><code>async</code></td>
 <td>boolean</td>
 <td>Run in background, <code>command</code> type only</td>
 </tr>
+<tr class="odd">
+<td><code>shell</code></td>
+<td>string</td>
+<td>Shell to use: <code>bash</code> (default) or <code>powershell</code>
+(Windows, requires <code>CLAUDE_CODE_USE_POWERSHELL_TOOL=1</code>)</td>
+</tr>
 <tr class="even">
 <td><code>timeout</code></td>
 <td>integer</td>
-<td>Per-hook timeout in milliseconds</td>
+<td>Per-hook timeout in seconds (defaults: 600 for command, 30 for
+prompt, 60 for agent)</td>
 </tr>
 <tr class="odd">
 <td><code>statusMessage</code></td>
@@ -427,6 +541,27 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <td>string</td>
 <td>Model override for <code>prompt</code> and <code>agent</code> hook
 types</td>
+</tr>
+<tr class="odd">
+<td><code>url</code></td>
+<td>string</td>
+<td>URL for POST request (<code>http</code> type only)</td>
+</tr>
+<tr class="even">
+<td><code>headers</code></td>
+<td>object</td>
+<td>HTTP headers with env var interpolation (<code>http</code> type
+only)</td>
+</tr>
+<tr class="odd">
+<td><code>allowedEnvVars</code></td>
+<td>array</td>
+<td>Env var names allowed in headers (<code>http</code> type only)</td>
+</tr>
+<tr class="even">
+<td><code>once</code></td>
+<td>boolean</td>
+<td>If true, runs only once per session then removed</td>
 </tr>
 </tbody>
 </table>
@@ -456,15 +591,21 @@ types</td>
 <h3 id="advanced-capabilities">Advanced Capabilities</h3>
 <ul>
 <li><strong>PreToolUse <code>updatedInput</code></strong>: Hooks on
-<code>PreToolUse</code> can return a JSON object with an
-<code>updatedInput</code> key on stdout. This allows hooks to modify the
-tool’s input before execution (e.g., rewriting file paths, adding
-flags).</li>
+<code>PreToolUse</code> can return JSON with
+<code>hookSpecificOutput.updatedInput</code> to modify tool inputs
+before execution, <code>additionalContext</code> to add context, and
+<code>permissionDecision</code>
+(<code>allow</code>/<code>deny</code>/<code>ask</code>).</li>
 <li><strong>PermissionRequest <code>decision</code></strong>: Hooks on
-<code>PermissionRequest</code> can return a JSON object with a
-<code>decision</code> key (<code>"allow"</code> or <code>"deny"</code>)
-on stdout. This allows hooks to programmatically control permission
-decisions without user interaction.</li>
+<code>PermissionRequest</code> can return JSON with
+<code>hookSpecificOutput.decision.behavior</code>
+(<code>allow</code>/<code>deny</code>), <code>updatedInput</code>,
+<code>updatedPermissions</code>, <code>message</code>, and
+<code>interrupt</code>.</li>
+<li><strong>PostToolUse <code>updatedMCPToolOutput</code></strong>:
+Hooks on <code>PostToolUse</code> can return
+<code>hookSpecificOutput.updatedMCPToolOutput</code> to replace MCP tool
+output.</li>
 </ul>
 <h3 id="hook-input-stdin">Hook Input (stdin)</h3>
 <p>Hook commands receive a <strong>JSON object via stdin</strong>
@@ -525,6 +666,10 @@ set environment variables for subsequent hooks</td>
 <td>Root directory of the plugin that registered the hook</td>
 </tr>
 <tr class="odd">
+<td><code>CLAUDE_PLUGIN_DATA</code></td>
+<td>Directory for plugin persistent data (survives plugin updates)</td>
+</tr>
+<tr class="even">
 <td><code>CLAUDE_CODE_REMOTE</code></td>
 <td>Set to <code>1</code> when running in a remote/headless
 environment</td>
@@ -607,6 +752,51 @@ context</td>
 <td>Object defining hooks scoped to this skill (same structure as global
 hooks)</td>
 </tr>
+<tr class="even">
+<td><code>argument-hint</code></td>
+<td>No</td>
+<td>Hint for autocomplete (e.g. <code>[issue-number]</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>user-invocable</code></td>
+<td>No</td>
+<td><code>false</code> to hide from <code>/</code> menu (only Claude
+invokes)</td>
+</tr>
+<tr class="even">
+<td><code>allowed-tools</code></td>
+<td>No</td>
+<td>Tools allowed without permission when skill is active</td>
+</tr>
+<tr class="odd">
+<td><code>model</code></td>
+<td>No</td>
+<td>Model to use when skill is active</td>
+</tr>
+<tr class="even">
+<td><code>agent</code></td>
+<td>No</td>
+<td>Subagent type for <code>context: fork</code>
+(e.g. <code>Explore</code>, <code>Plan</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>effort</code></td>
+<td>No</td>
+<td>Effort level: <code>low</code>, <code>medium</code>,
+<code>high</code>, <code>max</code> (Opus 4.6 only)</td>
+</tr>
+<tr class="even">
+<td><code>paths</code></td>
+<td>No</td>
+<td>Glob patterns that limit when skill is activated (comma-separated or
+YAML list)</td>
+</tr>
+<tr class="odd">
+<td><code>shell</code></td>
+<td>No</td>
+<td>Shell for
+<code>!</code>command`<code>blocks:</code>bash<code>(default) or</code>powershell`</td>
+</tr>
 </tbody>
 </table>
 <h3 id="variables">Variables</h3>
@@ -621,6 +811,22 @@ hooks)</td>
 <tr class="odd">
 <td><code>$ARGUMENTS</code></td>
 <td>Replaced with user input after <code>/skill-name</code></td>
+</tr>
+<tr class="even">
+<td><code>$ARGUMENTS[N]</code></td>
+<td>Access argument by 0-based index</td>
+</tr>
+<tr class="odd">
+<td><code>$N</code></td>
+<td>Shorthand for <code>$ARGUMENTS[N]</code></td>
+</tr>
+<tr class="even">
+<td><code>${CLAUDE_SESSION_ID}</code></td>
+<td>Current session ID</td>
+</tr>
+<tr class="odd">
+<td><code>${CLAUDE_SKILL_DIR}</code></td>
+<td>Directory containing SKILL.md</td>
 </tr>
 </tbody>
 </table>
@@ -670,18 +876,30 @@ class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><
 <tr class="odd">
 <td><code>tools</code></td>
 <td>No</td>
-<td><code>Read</code>, <code>Grep</code>, <code>Glob</code>,
-<code>Bash</code>, <code>Edit</code>, <code>Write</code>,
-<code>WebFetch</code>, <code>WebSearch</code>, <code>Task</code>,
-<code>NotebookEdit</code>, <code>AskUserQuestion</code>,
-<code>TaskOutput</code>, <code>ExitPlanMode</code>,
-<code>MCPSearch</code></td>
+<td><code>Agent</code>, <code>AskUserQuestion</code>, <code>Bash</code>,
+<code>CronCreate</code>, <code>CronDelete</code>, <code>CronList</code>,
+<code>Edit</code>, <code>EnterPlanMode</code>,
+<code>EnterWorktree</code>, <code>ExitPlanMode</code>,
+<code>ExitWorktree</code>, <code>Glob</code>, <code>Grep</code>,
+<code>ListMcpResourcesTool</code>, <code>LSP</code>,
+<code>Monitor</code>, <code>NotebookEdit</code>,
+<code>PowerShell</code>, <code>PushNotification</code>,
+<code>Read</code>, <code>ReadMcpResourceTool</code>,
+<code>RemoteTrigger</code>, <code>ScheduleWakeup</code>,
+<code>SendMessage</code>, <code>ShareOnboardingGuide</code>,
+<code>Skill</code>, <code>TaskCreate</code>, <code>TaskGet</code>,
+<code>TaskList</code>, <code>TaskOutput</code>, <code>TaskStop</code>,
+<code>TaskUpdate</code>, <code>TeamCreate</code>,
+<code>TeamDelete</code>, <code>TodoWrite</code>,
+<code>ToolSearch</code>, <code>WaitForMcpServers</code>,
+<code>WebFetch</code>, <code>WebSearch</code>, <code>Write</code></td>
 </tr>
 <tr class="even">
 <td><code>model</code></td>
 <td>No</td>
 <td><code>opus</code>, <code>sonnet</code>, <code>haiku</code>,
-<code>inherit</code> (default: inherit)</td>
+<code>inherit</code>, or full model ID
+(e.g. <code>claude-opus-4-6</code>). Default: <code>inherit</code></td>
 </tr>
 <tr class="odd">
 <td><code>disallowedTools</code></td>
@@ -691,12 +909,14 @@ class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><
 <tr class="even">
 <td><code>permissionMode</code></td>
 <td>No</td>
-<td>Permission mode for the agent’s tool usage</td>
+<td><code>default</code>, <code>acceptEdits</code>,
+<code>dontAsk</code>, <code>bypassPermissions</code>,
+<code>plan</code></td>
 </tr>
 <tr class="odd">
 <td><code>skills</code></td>
 <td>No</td>
-<td>List of skills available to the agent</td>
+<td>Skills to preload into subagent context at startup</td>
 </tr>
 <tr class="even">
 <td><code>hooks</code></td>
@@ -706,7 +926,42 @@ class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><
 <tr class="odd">
 <td><code>memory</code></td>
 <td>No</td>
-<td>Persistent memory configuration for the agent</td>
+<td>Persistent memory scope: <code>user</code>, <code>project</code>,
+<code>local</code></td>
+</tr>
+<tr class="even">
+<td><code>maxTurns</code></td>
+<td>No</td>
+<td>Maximum number of agentic turns</td>
+</tr>
+<tr class="odd">
+<td><code>mcpServers</code></td>
+<td>No</td>
+<td>MCP servers scoped to this subagent (name reference or inline
+definition)</td>
+</tr>
+<tr class="even">
+<td><code>background</code></td>
+<td>No</td>
+<td>Always run as background task
+(<code>true</code>/<code>false</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>isolation</code></td>
+<td>No</td>
+<td><code>worktree</code> for isolated git worktree</td>
+</tr>
+<tr class="even">
+<td><code>effort</code></td>
+<td>No</td>
+<td>Effort level: <code>low</code>, <code>medium</code>,
+<code>high</code>, <code>max</code> (Opus 4.6 only)</td>
+</tr>
+<tr class="odd">
+<td><code>initialPrompt</code></td>
+<td>No</td>
+<td>Auto-submitted as first user turn when running as main session agent
+(via <code>--agent</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -736,6 +991,14 @@ class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><
 <td><code>Bash</code></td>
 <td>Shell command execution agent</td>
 </tr>
+<tr class="odd">
+<td><code>statusline-setup</code></td>
+<td>Configure status line settings</td>
+</tr>
+<tr class="even">
+<td><code>Claude Code Guide</code></td>
+<td>Answer questions about Claude Code features</td>
+</tr>
 </tbody>
 </table>
 <p><strong>Use for</strong>: - Tasks requiring separate/clean context -
@@ -758,7 +1021,12 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="
 <p>Format: <code>ToolName(argument_pattern)</code></p>
 <p>Examples: - <code>Bash(git commit *)</code> - Allow git commit with
 any message - <code>Bash(npm test)</code> - Allow npm test -
-<code>Edit(*.test.js)</code> - Allow editing test files</p>
+<code>Edit(*.test.js)</code> - Allow editing test files -
+<code>Agent(Explore)</code> - Match spawning the Explore subagent -
+<code>Agent(my-custom-agent)</code> - Match a specific custom subagent -
+<code>Skill(commit)</code> - Match invoking a specific skill -
+<code>Skill(name *)</code> - Match skills by name prefix -
+<code>MCPSearch</code> - Match MCP tool search capability</p>
 <p><strong>Use for</strong>: Controlling what Claude can do at the tool
 level</p>
 <p><strong>Warning</strong>: Does NOT work with
@@ -828,12 +1096,81 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="
 optional <code>args</code> and <code>env</code></td>
 </tr>
 <tr class="even">
+<td><code>http</code></td>
+<td><code>url</code></td>
+<td>Communicates via streamable HTTP (recommended). Requires
+<code>url</code>, optional <code>headers</code>,
+<code>headersHelper</code>, and <code>oauth</code></td>
+</tr>
+<tr class="odd">
 <td><code>sse</code></td>
 <td><code>url</code></td>
-<td>Communicates via Server-Sent Events. Requires <code>url</code></td>
+<td>Communicates via Server-Sent Events. Requires <code>url</code>
+(deprecated, use <code>http</code> instead)</td>
+</tr>
+<tr class="even">
+<td><code>ws</code></td>
+<td><code>url</code></td>
+<td>Communicates via WebSocket. Requires <code>url</code>, optional
+<code>headers</code>, <code>env</code>, <code>oauth</code></td>
 </tr>
 </tbody>
 </table>
+<h3 id="additional-fields">Additional Fields</h3>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 23%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>headersHelper</code></td>
+<td>string</td>
+<td>Shell command that outputs JSON headers on stdout (10s timeout, runs
+on each connection)</td>
+</tr>
+<tr class="even">
+<td><code>oauth.clientId</code></td>
+<td>string</td>
+<td>Pre-configured OAuth client ID</td>
+</tr>
+<tr class="odd">
+<td><code>oauth.callbackPort</code></td>
+<td>number</td>
+<td>Fixed port for OAuth callback URL</td>
+</tr>
+<tr class="even">
+<td><code>oauth.authServerMetadataUrl</code></td>
+<td>string</td>
+<td>Override OAuth metadata discovery URL (must use
+<code>https://</code>, v2.1.64+)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="features">Features</h3>
+<ul>
+<li><strong>Channels</strong>: MCP servers can push messages into
+sessions via <code>claude/channel</code> capability (enable with
+<code>--channels</code> flag)</li>
+<li><strong>Resources</strong>: MCP servers expose resources accessible
+via <code>@</code> mentions</li>
+<li><strong>Prompts</strong>: MCP prompts appear as
+<code>/mcp__servername__promptname</code> commands</li>
+<li><strong>Tool Search</strong>: Deferred tool loading when MCP tools
+exceed 10% of context (enabled by default)</li>
+<li><strong>Elicitation</strong>: MCP servers can request structured
+input from users mid-task</li>
+<li><strong>Dynamic Updates</strong>: Supports <code>list_changed</code>
+notifications for dynamic tool updates</li>
+</ul>
 <h3 id="tool-naming">Tool Naming</h3>
 <p>MCP tools are exposed with the naming convention:
 <code>mcp__&lt;server&gt;__&lt;tool&gt;</code></p>
@@ -881,14 +1218,18 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href=
 </tbody>
 </table>
 <p><strong>Use for</strong>: Code intelligence features such as
-diagnostics, hover information, and completions integrated into Claude
-Code’s workflow</p>
+diagnostics, hover information, completions, go-to-definition, find
+references, list symbols, find implementations, and trace call
+hierarchies integrated into Claude Code’s workflow</p>
 <p><strong>Limitation</strong>: The language server binary must be
 installed separately on the system. Claude Code does not install
 language servers automatically.</p>
 <hr />
 <h2 id="agent-teams">Agent Teams</h2>
 <p>Location: <code>~/.claude/teams/{team-name}/config.json</code></p>
+<p>Teams are orchestrated via natural language, not declarative JSON
+config. You define the team structure and agents, then describe
+delegation and coordination in natural language instructions.</p>
 <h3 id="structure-7">Structure</h3>
 <div class="sourceCode" id="cb11"><pre
 class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
@@ -907,13 +1248,8 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href=
 <span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;tools&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Read&quot;</span><span class="ot">,</span> <span class="st">&quot;Edit&quot;</span><span class="ot">,</span> <span class="st">&quot;Write&quot;</span><span class="ot">,</span> <span class="st">&quot;Bash&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
 <span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;model&quot;</span><span class="fu">:</span> <span class="st">&quot;sonnet&quot;</span></span>
 <span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;settings&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;displayMode&quot;</span><span class="fu">:</span> <span class="st">&quot;split&quot;</span><span class="fu">,</span></span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;delegateMode&quot;</span><span class="fu">:</span> <span class="st">&quot;auto&quot;</span><span class="fu">,</span></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;requirePlanApproval&quot;</span><span class="fu">:</span> <span class="kw">true</span></span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <h3 id="required-fields-1">Required Fields</h3>
 <table>
 <thead>
@@ -938,6 +1274,8 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href=
 </tbody>
 </table>
 <h3 id="settings">Settings</h3>
+<p>The <code>teammateMode</code> setting in <code>settings.json</code>
+controls how teammates run:</p>
 <table>
 <colgroup>
 <col style="width: 40%" />
@@ -951,24 +1289,21 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href=
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>displayMode</code></td>
-<td>How agent outputs are displayed (<code>split</code>,
-<code>sequential</code>, <code>unified</code>)</td>
-</tr>
-<tr class="even">
-<td><code>delegateMode</code></td>
-<td>How tasks are delegated to agents (<code>auto</code>,
-<code>manual</code>)</td>
-</tr>
-<tr class="odd">
-<td><code>requirePlanApproval</code></td>
-<td>Whether the orchestrator must get approval before delegating</td>
+<td><code>teammateMode</code></td>
+<td>How teammates are executed: <code>in-process</code>,
+<code>tmux</code>, or <code>auto</code></td>
 </tr>
 </tbody>
 </table>
+<p>Delegation strategy and plan approval are controlled via natural
+language instructions to the orchestrator, not via JSON settings.</p>
 <p><strong>Use for</strong>: Parallel multi-agent orchestration where
 multiple Claude instances work on different parts of a task
 simultaneously</p>
+<p><strong>Hooks</strong>: <code>TeammateIdle</code> (teammate about to
+go idle), <code>TaskCreated</code> (task being created),
+<code>TaskCompleted</code> (task marked complete). Exit 2 blocks the
+action and sends feedback.</p>
 <p><strong>Warning</strong>: This is an experimental feature. You must
 set the environment variable
 <code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code> to enable it.</p>

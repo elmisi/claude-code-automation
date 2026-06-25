@@ -15,5 +15,5 @@
 - [ ] I have updated CHANGELOG.md
 - [ ] I have updated the version in all 4 version files (if applicable)
 - [ ] Schema changes are reflected in SKILL.md
-- [ ] Schema changes are reflected in plugin/docs/claude-code-reference.md
+- [ ] Schema changes are reflected in plugins/automate/docs/claude-code-reference.md
 - [ ] New fixtures validate against their schema via validate-config.sh

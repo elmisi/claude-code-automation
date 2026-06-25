@@ -100,14 +100,14 @@ If ANY component fails:
 ## Step 0: Load validation schemas
 
 Read the schema files from this plugin to know what values are valid:
-- `plugin/schemas/hooks.json` - Valid hook events, types, matchers
-- `plugin/schemas/skills.json` - Skill frontmatter requirements
-- `plugin/schemas/subagents.json` - Subagent configuration
-- `plugin/schemas/permissions.json` - Permission patterns
-- `plugin/schemas/custom-commands.json` - Custom command format
-- `plugin/schemas/mcp-servers.json` - MCP server configuration
-- `plugin/schemas/lsp-servers.json` - LSP server configuration
-- `plugin/schemas/agent-teams.json` - Agent team configuration
+- `plugins/automate/schemas/hooks.json` - Valid hook events, types, matchers
+- `plugins/automate/schemas/skills.json` - Skill frontmatter requirements
+- `plugins/automate/schemas/subagents.json` - Subagent configuration
+- `plugins/automate/schemas/permissions.json` - Permission patterns
+- `plugins/automate/schemas/custom-commands.json` - Custom command format
+- `plugins/automate/schemas/mcp-servers.json` - MCP server configuration
+- `plugins/automate/schemas/lsp-servers.json` - LSP server configuration
+- `plugins/automate/schemas/agent-teams.json` - Agent team configuration
 
 **CRITICAL: Only use values listed in these schemas. Never invent event names or fields.**
 

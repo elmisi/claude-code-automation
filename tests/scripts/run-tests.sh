@@ -39,10 +39,10 @@ run_structure_tests() {
     assert_file_exists "$PROJECT_ROOT/.claude-plugin/marketplace.json" \
         "STRUCT-01: marketplace.json exists"
 
-    assert_file_exists "$PROJECT_ROOT/plugin/.claude-plugin/plugin.json" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/.claude-plugin/plugin.json" \
         "STRUCT-02: plugin.json exists"
 
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "STRUCT-03: SKILL.md exists"
 
     assert_file_exists "$PROJECT_ROOT/.agents/plugins/marketplace.json" \
@@ -66,7 +66,7 @@ run_structure_tests() {
     assert_valid_json "$PROJECT_ROOT/.claude-plugin/marketplace.json" \
         "STRUCT-04: marketplace.json is valid JSON"
 
-    assert_valid_json "$PROJECT_ROOT/plugin/.claude-plugin/plugin.json" \
+    assert_valid_json "$PROJECT_ROOT/plugins/automate/.claude-plugin/plugin.json" \
         "STRUCT-05: plugin.json is valid JSON"
 
     assert_valid_json "$PROJECT_ROOT/.agents/plugins/marketplace.json" \
@@ -87,77 +87,77 @@ run_structure_tests() {
     # Test: SKILL.md has valid frontmatter
     log_info "Testing SKILL.md frontmatter..."
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "STRUCT-06: SKILL.md has valid frontmatter"
 
     # Test: Required fields in plugin.json
     log_info "Testing required fields..."
 
-    assert_json_has_key "$PROJECT_ROOT/plugin/.claude-plugin/plugin.json" \
+    assert_json_has_key "$PROJECT_ROOT/plugins/automate/.claude-plugin/plugin.json" \
         ".name" "STRUCT-07: plugin.json has name"
 
-    assert_json_has_key "$PROJECT_ROOT/plugin/.claude-plugin/plugin.json" \
+    assert_json_has_key "$PROJECT_ROOT/plugins/automate/.claude-plugin/plugin.json" \
         ".version" "STRUCT-08: plugin.json has version"
 
-    assert_json_has_key "$PROJECT_ROOT/plugin/.claude-plugin/plugin.json" \
+    assert_json_has_key "$PROJECT_ROOT/plugins/automate/.claude-plugin/plugin.json" \
         ".description" "STRUCT-09: plugin.json has description"
 
     # Test: SKILL.md contains required sections
     log_info "Testing SKILL.md content..."
 
-    assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "disable-model-invocation" "STRUCT-10: SKILL.md has disable-model-invocation"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "AskUserQuestion" "STRUCT-11: SKILL.md references AskUserQuestion"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         '\$ARGUMENTS' "STRUCT-12: SKILL.md uses \$ARGUMENTS"
 
     # Test: Decision matrix is present
-    assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "Hook.*Skill.*Subagent" "STRUCT-13: SKILL.md has decision matrix"
 
     # Test: All automation types are documented
     for type in "Hook" "Skill" "Subagent" "Permissions" "CLAUDE.md" "Custom"; do
-        assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+        assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
             "$type" "STRUCT-14: SKILL.md documents $type"
     done
 
     # Test: New schema files exist
     log_info "Testing new schema files..."
 
-    assert_file_exists "$PROJECT_ROOT/plugin/schemas/mcp-servers.json" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/schemas/mcp-servers.json" \
         "STRUCT-15: mcp-servers.json schema exists"
 
-    assert_file_exists "$PROJECT_ROOT/plugin/schemas/lsp-servers.json" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/schemas/lsp-servers.json" \
         "STRUCT-16: lsp-servers.json schema exists"
 
-    assert_file_exists "$PROJECT_ROOT/plugin/schemas/agent-teams.json" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/schemas/agent-teams.json" \
         "STRUCT-17: agent-teams.json schema exists"
 
     # Test: New schema files are valid JSON
     log_info "Testing new schema JSON validity..."
 
-    assert_valid_json "$PROJECT_ROOT/plugin/schemas/mcp-servers.json" \
+    assert_valid_json "$PROJECT_ROOT/plugins/automate/schemas/mcp-servers.json" \
         "STRUCT-18: mcp-servers.json is valid JSON"
 
-    assert_valid_json "$PROJECT_ROOT/plugin/schemas/lsp-servers.json" \
+    assert_valid_json "$PROJECT_ROOT/plugins/automate/schemas/lsp-servers.json" \
         "STRUCT-19: lsp-servers.json is valid JSON"
 
-    assert_valid_json "$PROJECT_ROOT/plugin/schemas/agent-teams.json" \
+    assert_valid_json "$PROJECT_ROOT/plugins/automate/schemas/agent-teams.json" \
         "STRUCT-20: agent-teams.json is valid JSON"
 
     # Test: SKILL.md documents new automation types
     log_info "Testing SKILL.md documents new types..."
 
-    assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "MCP Server" "STRUCT-21: SKILL.md documents MCP Server"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "LSP Server" "STRUCT-22: SKILL.md documents LSP Server"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "Agent Team" "STRUCT-23: SKILL.md documents Agent Team"
 
     # ============================================
@@ -165,7 +165,7 @@ run_structure_tests() {
     # ============================================
     log_info "Validating fixtures against schemas..."
 
-    local VALIDATE="$PROJECT_ROOT/plugin/scripts/validate-config.sh"
+    local VALIDATE="$PROJECT_ROOT/plugins/automate/scripts/validate-config.sh"
     chmod +x "$VALIDATE"
 
     assert_validation_passes "$VALIDATE" hooks \
@@ -210,7 +210,7 @@ run_structure_tests() {
     log_info "Testing version sync..."
 
     local ver_file=$(cat "$PROJECT_ROOT/VERSION" | tr -d '[:space:]')
-    local ver_plugin=$(jq -r '.version' "$PROJECT_ROOT/plugin/.claude-plugin/plugin.json")
+    local ver_plugin=$(jq -r '.version' "$PROJECT_ROOT/plugins/automate/.claude-plugin/plugin.json")
     local ver_market=$(jq -r '.plugins[0].version' "$PROJECT_ROOT/.claude-plugin/marketplace.json")
 
     if [ "$ver_file" == "$ver_plugin" ] && [ "$ver_file" == "$ver_market" ]; then
@@ -419,7 +419,7 @@ run_structure_tests() {
     log_info "Testing schema contents are up-to-date..."
 
     # Verify hooks schema has all 29 events
-    local hook_events=$(jq '.validEvents | length' "$PROJECT_ROOT/plugin/schemas/hooks.json")
+    local hook_events=$(jq '.validEvents | length' "$PROJECT_ROOT/plugins/automate/schemas/hooks.json")
     if [ "$hook_events" -eq 29 ]; then
         log_success "STRUCT-64: hooks schema has 29 events"
     else
@@ -427,32 +427,32 @@ run_structure_tests() {
     fi
 
     # Verify hooks schema has http type
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/hooks.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/hooks.json" \
         '"http"' "STRUCT-65: hooks schema includes http type"
 
     # Verify subagent schema has Agent tool
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
         '"Agent"' "STRUCT-66: subagent schema includes Agent tool"
 
     # Verify subagent schema has new fields
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
         '"maxTurns"' "STRUCT-67: subagent schema has maxTurns field"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
         '"isolation"' "STRUCT-68: subagent schema has isolation field"
 
     # Verify MCP schema has http type
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/mcp-servers.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/mcp-servers.json" \
         '"http"' "STRUCT-69: MCP schema includes http type"
 
     # Verify skills schema has new fields
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/skills.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/skills.json" \
         '"user-invocable"' "STRUCT-70: skills schema has user-invocable field"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/skills.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/skills.json" \
         '"allowed-tools"' "STRUCT-71: skills schema has allowed-tools field"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/skills.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/skills.json" \
         '"agent"' "STRUCT-72: skills schema has agent field"
 
     # ============================================
@@ -460,7 +460,7 @@ run_structure_tests() {
     # ============================================
     log_info "Testing JSON config guard script..."
 
-    local GUARD="$PROJECT_ROOT/plugin/scripts/guard-json-config.sh"
+    local GUARD="$PROJECT_ROOT/plugins/automate/scripts/guard-json-config.sh"
     chmod +x "$GUARD"
 
     # Test: valid JSON Write to settings.json → allow
@@ -508,7 +508,7 @@ run_structure_tests() {
     fi
 
     # Test: SKILL.md has guard hooks in frontmatter
-    assert_file_contains "$PROJECT_ROOT/plugin/skills/automate/SKILL.md" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "guard-json-config.sh" "STRUCT-78: SKILL.md has JSON guard hooks"
 
     # ============================================
@@ -517,59 +517,59 @@ run_structure_tests() {
     log_info "Testing management skill structure..."
 
     # automate-help
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-help/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate-help/SKILL.md" \
         "STRUCT-82: automate-help SKILL.md exists"
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-help/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate-help/SKILL.md" \
         "STRUCT-83: automate-help has valid frontmatter"
 
     # automate-list
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-list/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate-list/SKILL.md" \
         "STRUCT-84: automate-list SKILL.md exists"
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-list/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate-list/SKILL.md" \
         "STRUCT-85: automate-list has valid frontmatter"
 
     # automate-verify
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-verify/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate-verify/SKILL.md" \
         "STRUCT-86: automate-verify SKILL.md exists"
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-verify/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate-verify/SKILL.md" \
         "STRUCT-87: automate-verify has valid frontmatter"
 
     # automate-export
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-export/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate-export/SKILL.md" \
         "STRUCT-88: automate-export SKILL.md exists"
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-export/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate-export/SKILL.md" \
         "STRUCT-89: automate-export has valid frontmatter"
 
     # automate-import
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-import/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate-import/SKILL.md" \
         "STRUCT-90: automate-import SKILL.md exists"
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-import/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate-import/SKILL.md" \
         "STRUCT-91: automate-import has valid frontmatter"
 
     # automate-delete
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-delete/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate-delete/SKILL.md" \
         "STRUCT-92: automate-delete SKILL.md exists"
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-delete/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate-delete/SKILL.md" \
         "STRUCT-93: automate-delete has valid frontmatter"
 
     # automate-edit
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-edit/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate-edit/SKILL.md" \
         "STRUCT-94: automate-edit SKILL.md exists"
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-edit/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate-edit/SKILL.md" \
         "STRUCT-95: automate-edit has valid frontmatter"
 
     # automate-cleanup
-    assert_file_exists "$PROJECT_ROOT/plugin/skills/automate-cleanup/SKILL.md" \
+    assert_file_exists "$PROJECT_ROOT/plugins/automate/skills/automate-cleanup/SKILL.md" \
         "STRUCT-96: automate-cleanup SKILL.md exists"
 
-    assert_valid_frontmatter "$PROJECT_ROOT/plugin/skills/automate-cleanup/SKILL.md" \
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate-cleanup/SKILL.md" \
         "STRUCT-97: automate-cleanup has valid frontmatter"
 
     # ============================================
@@ -581,27 +581,27 @@ run_structure_tests() {
         '{"hooks":{"PermissionDenied":[{"matcher":"Bash","hooks":[{"type":"command","command":"echo denied"}]}]}}' \
         "STRUCT-98: accept PermissionDenied hook event"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/hooks.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/hooks.json" \
         '"PermissionDenied"' "STRUCT-99: hooks schema includes PermissionDenied event"
 
     assert_validation_passes "$VALIDATE" subagent \
         "$(printf -- '---\nname: test\ndescription: test\ntools: SendMessage, TeamCreate, TeamDelete\n---\nContent')" \
         "STRUCT-100: accept SendMessage, TeamCreate, TeamDelete tools in subagent"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
         '"SendMessage"' "STRUCT-101: subagent schema includes SendMessage tool"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
         '"TeamCreate"' "STRUCT-102: subagent schema includes TeamCreate tool"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
         '"TeamDelete"' "STRUCT-103: subagent schema includes TeamDelete tool"
 
     assert_validation_passes "$VALIDATE" subagent \
         "$(printf -- '---\nname: test\ndescription: test\ntools: Monitor\n---\nContent')" \
         "STRUCT-104: accept Monitor tool in subagent"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/subagents.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
         '"Monitor"' "STRUCT-105: subagent schema includes Monitor tool"
 
     # ============================================
@@ -613,7 +613,7 @@ run_structure_tests() {
         '{"hooks":{"Setup":[{"matcher":"init","hooks":[{"type":"command","command":"npm install"}]}]}}' \
         "STRUCT-106: accept Setup hook event"
 
-    assert_file_contains "$PROJECT_ROOT/plugin/schemas/hooks.json" \
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/hooks.json" \
         '"Setup"' "STRUCT-107: hooks schema includes Setup event"
 
     assert_validation_passes "$VALIDATE" hooks \

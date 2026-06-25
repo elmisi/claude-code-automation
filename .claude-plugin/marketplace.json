@@ -10,14 +10,14 @@
   "plugins": [
     {
       "name": "automate",
-      "version": "2.10.2",
-      "source": "./plugin",
+      "version": "2.10.3",
+      "source": "./plugins/automate",
       "description": "Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.)"
     },
     {
       "name": "develop-cycle",
-      "version": "1.0.0",
-      "source": "./plugin-develop-cycle",
+      "version": "1.0.1",
+      "source": "./plugins/develop-cycle",
       "description": "Structured development workflow with analysis, implementation, validation, and mandatory checkpoint before commit/push"
     },
     {
@@ -28,8 +28,8 @@
     },
     {
       "name": "takeaway",
-      "version": "1.1.0",
-      "source": "./plugin-takeaway",
+      "version": "1.1.1",
+      "source": "./plugins/takeaway",
       "description": "Structured feedback extraction from skill/tool usage. Interviews the user, distills observations into portable principles, and produces two files — a project-specific evidence retrospective and a tool-agnostic lessons document an improving agent can consume."
     },
     {
