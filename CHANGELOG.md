@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.0] - 2026-06-25
+
+MINOR bump for `automate` 2.10.3 → 2.11.0 (new hook event support). Closes #10.
+
+### Added
+- **`MessageDisplay` hook event** added to the schema (30 valid events, was 29). Fires while assistant message text streams to the user — display-only and observational: no matcher support, non-blocking (exit 2 shows stderr only), supports all four handler types, 10s default timeout. Hooks can replace the shown text via `hookSpecificOutput.displayContent` (display only — does not change the transcript or Claude's context). Added a `displayContent` capability entry. Sourced from the official hooks docs at code.claude.com.
+- New structure test `STRUCT-125` (accepts `MessageDisplay`); `STRUCT-64` event-count assertion updated 29 → 30.
+
+### Fixed
+- `SKILL.md`'s "ONLY use these valid events" list was missing `PostToolBatch`, `UserPromptExpansion`, and `Setup` (already valid in the schema). Added them alongside `MessageDisplay` so the list is exhaustive again.
+
+### Changed
+- Updated schema (`plugins/automate/schemas/hooks.json`), `validate-config.sh`, `SKILL.md`, `plugins/automate/docs/claude-code-reference.md`, `CLAUDE.md`, and `README.md` to reflect the new event.
+
 ## [2.10.3] - 2026-06-24
 
 PATCH bumps (packaging/location only, no behavior change): automate 2.10.2 → 2.10.3, develop-cycle 1.0.0 → 1.0.1, takeaway 1.1.0 → 1.1.1. `plan-cycle` and `refactor-discovery` unchanged (not moved).

@@ -328,6 +328,10 @@ run_structure_tests() {
         '{"hooks":{"ElicitationResult":[{"hooks":[{"type":"command","command":"exit 0"}]}]}}' \
         "STRUCT-48: accept ElicitationResult hook event"
 
+    assert_validation_passes "$VALIDATE" hooks \
+        '{"hooks":{"MessageDisplay":[{"hooks":[{"type":"command","command":"cat >> /tmp/messages.log"}]}]}}' \
+        "STRUCT-125: accept MessageDisplay hook event"
+
     # ============================================
     # HTTP HOOK TYPE TESTS
     # ============================================
@@ -418,12 +422,12 @@ run_structure_tests() {
     # ============================================
     log_info "Testing schema contents are up-to-date..."
 
-    # Verify hooks schema has all 29 events
+    # Verify hooks schema has all 30 events
     local hook_events=$(jq '.validEvents | length' "$PROJECT_ROOT/plugins/automate/schemas/hooks.json")
-    if [ "$hook_events" -eq 29 ]; then
-        log_success "STRUCT-64: hooks schema has 29 events"
+    if [ "$hook_events" -eq 30 ]; then
+        log_success "STRUCT-64: hooks schema has 30 events"
     else
-        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 29)"
+        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 30)"
     fi
 
     # Verify hooks schema has http type
