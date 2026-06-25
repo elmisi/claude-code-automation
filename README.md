@@ -5,13 +5,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml)
 
-This repository contains four Claude Code plugins. `plan-cycle` and `refactor-discovery` are also packaged for Codex from shared source trees.
+This repository contains four Claude Code plugins. `plan-cycle`, `refactor-discovery`, and `takeaway` are also packaged for Codex from shared source trees.
 
 | Plugin | Claude Code | Codex | Description |
 |--------|-------------|-------|-------------|
 | **automate** | `/automate` | - | Expert advisor that helps you decide and create the right Claude Code automation (skills, hooks, subagents, permissions, etc.) |
 | **plan-cycle** | `/plan-cycle` | `plan-cycle` skill | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
-| **takeaway** | `/takeaway` | - | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
+| **takeaway** | `/takeaway` | `takeaway` skill | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
 | **refactor-discovery** | `/refactor-discovery` | `refactor-discovery` skill | Research methodology for surfacing non-obvious structural smell leads before promoting refactor candidates |
 
 ---
@@ -35,11 +35,12 @@ Restart Claude Code after installation to activate.
 
 This repository exposes a Codex marketplace at `.agents/plugins/marketplace.json`.
 
-Add `elmisi/claude-code-automation` as a Codex marketplace, then install `plan-cycle` or `refactor-discovery`. Codex reads the plugins from:
+Add `elmisi/claude-code-automation` as a Codex marketplace, then install `plan-cycle`, `refactor-discovery`, or `takeaway`. Codex reads the plugins from:
 
 ```text
 plugins/plan-cycle/.codex-plugin/plugin.json
 plugins/refactor-discovery/.codex-plugin/plugin.json
+plugins/takeaway/.codex-plugin/plugin.json
 ```
 
 The Claude Code and Codex manifests point to the same plugin skill directories, so workflow updates are shared by both tools.

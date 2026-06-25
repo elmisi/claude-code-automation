@@ -1,0 +1,38 @@
+{
+  "name": "takeaway",
+  "version": "1.2.0",
+  "description": "Structured feedback extraction from skill/tool usage. Interviews the user, distills observations into portable principles, and produces two files — a project-specific evidence retrospective and a tool-agnostic lessons document an improving agent can consume.",
+  "author": {
+    "name": "elmisi"
+  },
+  "homepage": "https://github.com/elmisi/claude-code-automation",
+  "repository": "https://github.com/elmisi/claude-code-automation",
+  "license": "MIT",
+  "keywords": [
+    "feedback",
+    "retrospective",
+    "improvement",
+    "meta",
+    "self-improvement"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Takeaway",
+    "shortDescription": "Distill portable lessons from skill or tool usage",
+    "longDescription": "Interview the user about a usage session, capture concrete evidence, then distill it into portable, tool-agnostic lessons an improving agent can apply anywhere.",
+    "developerName": "elmisi",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/elmisi/claude-code-automation",
+    "defaultPrompt": [
+      "Extract lessons from using a skill or workflow",
+      "Run a takeaway retrospective on a tool",
+      "Distill portable, tool-agnostic lessons from this session"
+    ],
+    "brandColor": "#7C3AED",
+    "screenshots": []
+  }
+}

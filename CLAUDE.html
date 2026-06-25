@@ -237,8 +237,8 @@
 working with code in this repository.</p>
 <h2 id="project-overview">Project Overview</h2>
 <p>A multi-plugin repository for Claude Code automation, with Codex
-marketplace support for <code>plan-cycle</code> and
-<code>refactor-discovery</code>:</p>
+marketplace support for <code>plan-cycle</code>,
+<code>refactor-discovery</code>, and <code>takeaway</code>:</p>
 <table>
 <colgroup>
 <col style="width: 13%" />
@@ -277,7 +277,7 @@ the right automation type</td>
 <td><strong>takeaway</strong></td>
 <td><code>plugins/takeaway/</code></td>
 <td><code>/takeaway</code></td>
-<td>-</td>
+<td><code>takeaway</code> skill</td>
 <td>Structured feedback extraction — interviews user, identifies
 patterns, produces agent-ready improvements</td>
 </tr>
@@ -293,8 +293,9 @@ refactor candidates, produces prioritized discovery document</td>
 </table>
 <p>The automate plugin is the core of this repo. plan-cycle, takeaway,
 and refactor-discovery are self-contained plugins in their own
-directories. <code>plugins/plan-cycle/</code> and
-<code>plugins/refactor-discovery/</code> are dual-packaged with both
+directories. <code>plugins/plan-cycle/</code>,
+<code>plugins/refactor-discovery/</code>, and
+<code>plugins/takeaway/</code> are dual-packaged with both
 <code>.claude-plugin/plugin.json</code> and
 <code>.codex-plugin/plugin.json</code>.</p>
 <h2 id="architecture">Architecture</h2>
@@ -394,15 +395,18 @@ entries use <code>source</code> paths such as
 <code>./plugins/automate</code> or <code>./plugins/plan-cycle</code>. -
 <strong><code>.agents/plugins/marketplace.json</code></strong> (repo
 root) — Codex marketplace registry. It currently exposes
-<code>plan-cycle</code> from <code>./plugins/plan-cycle</code> and
+<code>plan-cycle</code> from <code>./plugins/plan-cycle</code>,
 <code>refactor-discovery</code> from
-<code>./plugins/refactor-discovery</code>. -
+<code>./plugins/refactor-discovery</code>, and <code>takeaway</code>
+from <code>./plugins/takeaway</code>. -
 <strong><code>plugins/automate/.claude-plugin/plugin.json</code></strong>
 — Claude Code manifest for <code>automate</code>. -
 <strong><code>plugins/plan-cycle/.claude-plugin/plugin.json</code></strong>
 — Claude Code manifest for <code>plan-cycle</code>. -
 <strong><code>plugins/plan-cycle/.codex-plugin/plugin.json</code></strong>
-— Codex manifest for <code>plan-cycle</code>.</p>
+— Codex manifest for <code>plan-cycle</code>. -
+<strong><code>plugins/takeaway/.codex-plugin/plugin.json</code></strong>
+— Codex manifest for <code>takeaway</code>.</p>
 <h2 id="version-files-important">Version Files (IMPORTANT)</h2>
 <p>When bumping version, update ALL these files: - <code>VERSION</code>
 — main version file - <code>CHANGELOG.md</code> — add entry at top -
