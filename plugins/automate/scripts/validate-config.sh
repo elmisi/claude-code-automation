@@ -82,6 +82,7 @@ VALID_HOOK_EVENTS=(
     "PostToolBatch"
     "UserPromptExpansion"
     "Setup"
+    "MessageDisplay"
 )
 
 # Invalid/non-existent hook events (common mistakes)

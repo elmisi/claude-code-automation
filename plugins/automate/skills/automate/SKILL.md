@@ -427,6 +427,7 @@ Same pattern:
 - `PostToolUseFailure` - After a tool fails
 - `PermissionRequest` - When permission dialog appears
 - `Notification` - When Claude needs attention (matchers: permission_prompt, idle_prompt)
+- `MessageDisplay` - While assistant text streams to the user (no matcher; non-blocking; replace shown text via hookSpecificOutput.displayContent — display only; 10s timeout)
 - `Stop` - When Claude finishes responding (no matcher)
 - `StopFailure` - When turn ends due to API error (matchers: rate_limit, authentication_failed, billing_error, invalid_request, server_error, max_output_tokens, unknown; output ignored)
 - `PreCompact` - Before context compaction (matchers: manual, auto)
@@ -444,6 +445,9 @@ Same pattern:
 - `CwdChanged` - When working directory changes, e.g. cd (no matcher; useful for direnv)
 - `FileChanged` - When a watched file changes on disk (matchers: filename basename, e.g. .envrc, .env)
 - `PermissionDenied` - When user denies a permission request (matchers: tool name; non-blocking, informational)
+- `PostToolBatch` - After a full batch of parallel tool calls resolves (no matcher; can block next model call or add context)
+- `UserPromptExpansion` - When a user-typed slash command expands into a prompt (matchers: command name; can block expansion or add context)
+- `Setup` - Fires with `--init-only`, or `--init`/`--maintenance` in `-p` mode (matchers: init, maintenance; command type only, cannot block)
 
 **NEVER use these (they don't exist):**
 - PreCommit, PostCommit, PreBash, PostBash, PreEdit, PostEdit, BeforeToolUse, AfterToolUse

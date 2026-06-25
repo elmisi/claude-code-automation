@@ -79,7 +79,7 @@ Automations created by `/automate` continue to work independently after uninstal
 
 > An expert advisor that helps you decide and create the right automation for your needs.
 
-**Schemas updated: May 2026** — 29 hook events, 4 hook handler types, MCP/LSP Servers, Agent Teams, full model IDs.
+**Schemas updated: June 2026** — 30 hook events, 4 hook handler types, MCP/LSP Servers, Agent Teams, full model IDs.
 
 ### Why this plugin?
 

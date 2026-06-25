@@ -59,6 +59,7 @@ Location: `.claude/settings.json` or `~/.claude/settings.json`
 | `PostToolUseFailure` | After tool fails | Same as PreToolUse |
 | `PermissionRequest` | Permission dialog appears | Tool names |
 | `Notification` | Claude needs attention | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog` |
+| `MessageDisplay` | While assistant text streams to the user (display-only) | (no matcher, non-blocking; replace shown text via `hookSpecificOutput.displayContent`, 10s timeout) |
 | `Stop` | Claude finishes responding | (no matcher) |
 | `StopFailure` | Turn ends due to API error | `rate_limit`, `authentication_failed`, `billing_error`, `invalid_request`, `server_error`, `max_output_tokens`, `unknown` (output ignored) |
 | `PreCompact` | Before context compaction | `manual`, `auto` |
