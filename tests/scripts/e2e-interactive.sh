@@ -339,22 +339,23 @@ setup_plan_cycle_sandbox() {
 # ============================================
 # INTERACTIVE E2E: plan-cycle (PC-A/B/C)
 # ============================================
-# INTERACTIVE-PC-A — /plan-cycle creates plan + .ops.md companion
+# INTERACTIVE-PC-A — /plan-cycle creates a self-contained plan (operations appendix embedded)
 test_interactive_pc_a() {
-    log_section "INTERACTIVE-PC-A: /plan-cycle creates plan + ops"
+    log_section "INTERACTIVE-PC-A: /plan-cycle creates self-contained plan"
     setup_plan_cycle_sandbox || { cleanup_interactive_sandbox; return; }
 
     cd "$TEST_SANDBOX"
     timeout 180 claude -p "/plan-cycle test plan creation" --dangerously-skip-permissions >/tmp/pc_a.txt 2>&1
 
-    local plan_count ops_count
+    local plan_count plan_file appendix_ok=0
     plan_count=$(find "$TEST_SANDBOX" -maxdepth 2 -name 'plan-*.md' -not -name '*.ops.md' | wc -l)
-    ops_count=$(find "$TEST_SANDBOX" -maxdepth 2 -name 'plan-*.ops.md' | wc -l)
+    plan_file=$(find "$TEST_SANDBOX" -maxdepth 2 -name 'plan-*.md' -not -name '*.ops.md' | head -1)
+    [ -n "$plan_file" ] && grep -q "## Operations Guide" "$plan_file" && appendix_ok=1
 
-    if [ "$plan_count" -ge 1 ] && [ "$ops_count" -ge 1 ]; then
-        log_success "INTERACTIVE-PC-A: plan ($plan_count) + ops ($ops_count) created"
+    if [ "$plan_count" -ge 1 ] && [ "$appendix_ok" -eq 1 ]; then
+        log_success "INTERACTIVE-PC-A: plan ($plan_count) created with embedded Operations Guide appendix"
     else
-        log_fail "INTERACTIVE-PC-A: expected at least 1 plan + 1 ops (got $plan_count/$ops_count)"
+        log_fail "INTERACTIVE-PC-A: expected >=1 plan with embedded appendix (got plan=$plan_count appendix=$appendix_ok)"
     fi
 
     cleanup_interactive_sandbox
@@ -367,7 +368,6 @@ test_interactive_pc_b() {
 
     cd "$TEST_SANDBOX"
     cp "$PROJECT_ROOT/tests/fixtures/plan-cycle/plan-with-annotations.md" "$TEST_SANDBOX/plan-fixture.md"
-    cp "$PROJECT_ROOT/plugins/plan-cycle/ops-template.md" "$TEST_SANDBOX/plan-fixture.ops.md"
 
     timeout 180 claude -p "plan-cycle-review on $TEST_SANDBOX/plan-fixture.md" --dangerously-skip-permissions >/tmp/pc_b.txt 2>&1
 
@@ -390,7 +390,6 @@ test_interactive_pc_c() {
 
     cd "$TEST_SANDBOX"
     cp "$PROJECT_ROOT/tests/fixtures/plan-cycle/plan-with-annotations.md" "$TEST_SANDBOX/plan-fixture.md"
-    cp "$PROJECT_ROOT/plugins/plan-cycle/ops-template.md" "$TEST_SANDBOX/plan-fixture.ops.md"
 
     timeout 180 claude -p "annotate on $TEST_SANDBOX/plan-fixture.md (note: use the literal word 'annotate' as the operation name)" --dangerously-skip-permissions >/tmp/pc_c.txt 2>&1
 

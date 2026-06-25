@@ -27,7 +27,7 @@ The skill **never** creates, copies, or modifies files in the project root. If t
 
 For each proposed change (code snippets, interfaces, signatures), check against EACH criterion. Focus on what's explicit — don't speculate about details left open.
 
-For each violation, add an annotation below the relevant section. **Format:** defined in ops file `plan-cycle-annotate` section. Use `[quality: <criterion>]` prefix: `> **NOTE**: [quality: criterion-name] explanation + shape that would pass`. Cite criterion by name as in `###` heading. Be constructive.
+For each violation, add an annotation below the relevant section. **Format:** defined in the plan's Operations Guide appendix, `plan-cycle-annotate` section. Use `[quality: <criterion>]` prefix: `> **NOTE**: [quality: criterion-name] explanation + shape that would pass`. Cite criterion by name as in `###` heading. Be constructive.
 
 ## Threshold
 
