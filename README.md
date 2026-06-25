@@ -230,7 +230,7 @@ All automations created by this plugin are tracked in a registry (`~/.claude/aut
 ### Pipeline workflow
 
 ```
-/plan-cycle <request>           → writes plan + ops companion file
+/plan-cycle <request>           → writes a self-contained plan (operations appendix embedded)
 /plan-cycle:plan-impact <plan>  → annotates codebase-level issues
 /plan-cycle:plan-quality <plan> → annotates quality violations
 "plan-cycle-annotate"           → adds only new > **NOTE**: lines
@@ -240,6 +240,8 @@ All automations created by this plugin are tracked in a registry (`~/.claude/aut
 "approved"                      → plan is ready for execution (gated on inventory being surfaced)
 ```
 
+> **v4.0.0 breaking change:** the operations guide is no longer a separate `.ops.md` companion file — it is now embedded as an **Operations Guide** appendix at the bottom of every plan, so each plan is a single self-contained file. Existing v3.x plans keep working: they continue to rely on their already-written `.ops.md` companion (still self-contained and authoritative for that plan); only new plans get the embedded appendix. See [CHANGELOG](CHANGELOG.md#plan-cycle-400---2026-06-25).
+>
 > **v3.0.0 breaking change:** plan template restructured around the reviewer's actual attention surface. Every section is now labeled *(Reviewer surface)* or *(Executor surface)*. The old single `Open Questions` is split into two named top-level sections — `Interpretation Log` (interpretive choices on the request) and `Decisions I Need From You` (planner uncertainty) — both reviewer-surface. `plan-cycle-finalize` gained an `Unresolved Items Inventory` step that auto-lists every TODO / `assumed:` / `unverified:` and forces a per-item *resolve / proceed-knowingly* choice; approval cannot be signaled until this inventory has been surfaced. Existing plans keep working because their `.ops.md` companion is authoritative for that plan. See [CHANGELOG](CHANGELOG.md#plan-cycle-300---2026-05-24).
 >
 > **v2.0.0 breaking change** (prior): operation names changed from bare `annotate`/`review`/`finalize` to `plan-cycle-annotate`/`plan-cycle-review`/`plan-cycle-finalize`. **No aliases.** See [CHANGELOG](CHANGELOG.md#plan-cycle-200---2026-05-23) for the migration `sed` one-liner for existing `.ops.md` files.
@@ -247,13 +249,13 @@ All automations created by this plugin are tracked in a registry (`~/.claude/aut
 ### How it works
 
 1. **Research** — Claude reads the relevant codebase deeply before writing anything
-2. **Write plan** — A detailed markdown plan with context, approach, code snippets, edge cases, and a task breakdown. A companion ops file is written alongside with operational instructions.
+2. **Write plan** — A detailed markdown plan with context, approach, code snippets, edge cases, and a task breakdown. The plan ends with an embedded **Operations Guide** appendix carrying the operational instructions.
 3. **Analyze** — Run `/plan-cycle:plan-impact` and/or `/plan-cycle:plan-quality` to get automated annotations
 4. **Review** — `plan-cycle-review` processes all `> **NOTE**:` annotations, integrates them into the plan, removes resolved ones
 5. **Finalize** — `plan-cycle-finalize` verifies the 11 unified writing rules (Self-contained, Operative, Outcome-layer success, Numbers, Exit clauses, Explicit degradation, Verify, Enumerate universals, Mark unverifiable, Coherent, Robust). Rewrites sections directly where gaps are found, then surfaces an `Unresolved Items Inventory` (every TODO / `assumed:` / `unverified:`) for per-item *resolve / proceed-knowingly* choice.
 6. **Approve** — Iterate until the plan is right; approval cannot be signaled until the inventory has been surfaced.
 
-The ops companion file describes the three core operations so any coding agent can work with the plan — the plugin skills handle the analysis passes (impact and quality). Annotations support optional source-tags: `[impact]` from plan-impact, `[quality: <criterion>]` from plan-quality, none from user — `plan-cycle-review` processes all uniformly.
+The plan's Operations Guide appendix describes the three core operations so any coding agent can work with the plan — the plugin skills handle the analysis passes (impact and quality). Annotations support optional source-tags: `[impact]` from plan-impact, `[quality: <criterion>]` from plan-quality, none from user — `plan-cycle-review` processes all uniformly.
 
 ### Project-level quality criteria (opt-in)
 

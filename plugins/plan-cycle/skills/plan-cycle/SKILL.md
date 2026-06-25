@@ -28,7 +28,6 @@ Keep a short trace of checks (what you grepped, opened, the result, the surface 
 1. Derive a slug from the user's request (lowercase, hyphens, max 5 words). Example: "improve plan-cycle plugin" → `improve-plan-cycle`. Fallback if non-derivable: `plan-{timestamp}.md`.
 2. Generate a timestamp `YYYYMMDD-HHMM` (local time).
 3. Plan path: `plan-{slug}-{timestamp}.md`. Place in `docs/` if it exists in the project root, otherwise in the project root.
-4. Copy the ops template alongside: read `${CLAUDE_SKILL_DIR}/../../ops-template.md` and write it to the same directory as the plan, named `plan-{slug}-{timestamp}.ops.md`. **Study its content** — it defines operations (`plan-cycle-annotate`, `plan-cycle-review`, `plan-cycle-finalize`) the user may request later. Internalize those definitions as part of your session knowledge.
 
 Store the chosen plan path — all subsequent references use it.
 
@@ -36,7 +35,7 @@ Store the chosen plan path — all subsequent references use it.
 
 ## Step 3: Write the plan
 
-Use the template at `${CLAUDE_SKILL_DIR}/templates/plan-template.md`. Replace `{ops-filename}`. The template uses **audience-labeled sections**: *(Reviewer surface)* must front-load every choice requiring user input; *(Executor surface)* holds implementation detail. Material outside the reviewer surface will not be approved. Populate `Interpretation Log` and `Decisions I Need From You` even when empty (`None detected.` / `None.`) — a silent absence is indistinguishable from a skipped section.
+Use the template at `${CLAUDE_SKILL_DIR}/templates/plan-template.md`. Keep its **Operations Guide** appendix verbatim at the bottom of the plan — it defines the operations (`plan-cycle-annotate`, `plan-cycle-review`, `plan-cycle-finalize`) the user may request later; internalize those definitions as part of your session knowledge. The template uses **audience-labeled sections**: *(Reviewer surface)* must front-load every choice requiring user input; *(Executor surface)* holds implementation detail. Material outside the reviewer surface will not be approved. Populate `Interpretation Log` and `Decisions I Need From You` even when empty (`None detected.` / `None.`) — a silent absence is indistinguishable from a skipped section.
 
 **Writing rules** (each plan section must satisfy these):
 
@@ -64,7 +63,7 @@ Add annotations inline with `> **NOTE**: your comment`. Tell me when done.
 
 ## Step 4: Operate on the plan
 
-The user will request `plan-cycle-annotate`, `plan-cycle-review`, or `plan-cycle-finalize`. Their exact definitions live in the ops companion file you copied in Step 2 (and internalized). Follow that file — do not re-derive procedures here.
+The user will request `plan-cycle-annotate`, `plan-cycle-review`, or `plan-cycle-finalize`. Their exact definitions live in the **Operations Guide** appendix at the bottom of the plan file (internalized in Step 3). Follow it — do not re-derive procedures here.
 
 **Approval gate:** before saying `Plan approved`, ensure `plan-cycle-finalize` has run and its unresolved-items inventory (TODOs, `assumed:`, `unverified:`) was surfaced with per-item choice (resolve / proceed knowingly with consequence stated). Approval over an unsurfaced inventory ships speculation into execution.
 

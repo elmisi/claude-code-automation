@@ -26,7 +26,7 @@ This skill performs a specialized `plan-cycle-annotate` pass. It only adds notes
    - Assess **architectural symmetry** — does it break uniform patterns?
 4. For each issue, add an annotation below the relevant section.
 
-**Annotation format:** defined in the ops file's `plan-cycle-annotate` section. Use the `[impact]` prefix: `> **NOTE**: [impact] description and what to address`.
+**Annotation format:** defined in the plan's Operations Guide appendix, `plan-cycle-annotate` section. Use the `[impact]` prefix: `> **NOTE**: [impact] description and what to address`.
 
 ## Threshold
 

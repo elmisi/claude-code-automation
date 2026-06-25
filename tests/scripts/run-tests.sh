@@ -240,8 +240,8 @@ run_structure_tests() {
         log_fail "STRUCT-116: Codex marketplace source mismatch — $plan_codex_source"
     fi
 
-    assert_file_contains "$PROJECT_ROOT/plugins/plan-cycle/skills/plan-cycle/SKILL.md" \
-        "../../ops-template.md" "STRUCT-117: plan-cycle uses portable ops template path"
+    assert_file_contains "$PROJECT_ROOT/plugins/plan-cycle/skills/plan-cycle/templates/plan-template.md" \
+        "## Operations Guide" "STRUCT-117: plan template embeds the Operations Guide appendix"
 
     if [ "$refactor_ver_claude" == "$refactor_ver_codex" ] && [ "$refactor_ver_claude" == "$refactor_ver_market" ]; then
         log_success "STRUCT-122: refactor-discovery version sync — all manifests show $refactor_ver_claude"
@@ -653,7 +653,9 @@ run_plan_cycle_tests() {
 
     local plugin_dir="$PROJECT_ROOT/plugins/plan-cycle"
     local skills_dir="$plugin_dir/skills"
-    local ops="$plugin_dir/ops-template.md"
+    # Operations guide now lives as an appendix inside the plan template (was a
+    # standalone ops-template.md companion before v4.0.0). Validate it there.
+    local ops="$skills_dir/plan-cycle/templates/plan-template.md"
 
     # STRUCT-PC-01: Frontmatter of the 3 SKILL.md files is valid and has required fields
     for skill in plan-cycle plan-impact plan-quality; do
@@ -679,7 +681,7 @@ run_plan_cycle_tests() {
     local extra_pc_sections
     extra_pc_sections=$(grep -cE "^## plan-cycle-(annotate|review|finalize)$" "$ops")
     if [ "$extra_pc_sections" -eq 3 ]; then
-        log_success "STRUCT-PC-03d: exactly 3 plan-cycle-* sections in ops-template"
+        log_success "STRUCT-PC-03d: exactly 3 plan-cycle-* sections in plan template appendix"
     else
         log_fail "STRUCT-PC-03d: expected 3 plan-cycle-* sections, found $extra_pc_sections"
     fi
@@ -745,20 +747,18 @@ run_plan_cycle_tests() {
         log_fail "STRUCT-PC-10: plan-cycle/SKILL.md is $lines_skill lines, exceeds 90"
     fi
 
-    # STRUCT-PC-11: ops-template.md line target (<=50)
-    local lines_ops
-    lines_ops=$(wc -l < "$ops")
-    if [ "$lines_ops" -le 50 ]; then
-        log_success "STRUCT-PC-11: ops-template.md is $lines_ops lines (<=50)"
+    # STRUCT-PC-11: ops-template.md folded into the plan template (no separate companion file)
+    if [ ! -f "$plugin_dir/ops-template.md" ]; then
+        log_success "STRUCT-PC-11: ops-template.md removed (operations folded into plan template appendix)"
     else
-        log_fail "STRUCT-PC-11: ops-template.md is $lines_ops lines, exceeds 50"
+        log_fail "STRUCT-PC-11: ops-template.md still exists — should be folded into the plan template appendix"
     fi
 
-    # STRUCT-PC-12: plan-impact + plan-quality point at ops format, don't re-implement
-    assert_file_contains "$skills_dir/plan-impact/SKILL.md" "ops file" \
-        "STRUCT-PC-12a: plan-impact references ops file"
-    assert_file_contains "$skills_dir/plan-quality/SKILL.md" "ops file" \
-        "STRUCT-PC-12b: plan-quality references ops file"
+    # STRUCT-PC-12: plan-impact + plan-quality point at the appendix format, don't re-implement
+    assert_file_contains "$skills_dir/plan-impact/SKILL.md" "Operations Guide appendix" \
+        "STRUCT-PC-12a: plan-impact references Operations Guide appendix"
+    assert_file_contains "$skills_dir/plan-quality/SKILL.md" "Operations Guide appendix" \
+        "STRUCT-PC-12b: plan-quality references Operations Guide appendix"
     # Negative: should NOT contain the old "ONLY add" rule
     if grep -q "ONLY add" "$skills_dir/plan-impact/SKILL.md"; then
         log_fail "STRUCT-PC-12c: plan-impact still has 'ONLY add' rule"
