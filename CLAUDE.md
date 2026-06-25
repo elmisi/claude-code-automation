@@ -9,12 +9,11 @@ A multi-plugin repository for Claude Code automation, with Codex marketplace sup
 | Plugin | Directory | Claude Code Command | Codex | Description |
 |--------|-----------|---------------------|-------|-------------|
 | **automate** | `plugins/automate/` | `/automate` | - | Expert advisor: interviews user, applies decision matrix, creates the right automation type |
-| **develop-cycle** | `plugins/develop-cycle/` | `/develop-cycle` | - | Structured dev workflow with mandatory checkpoint before commit/push |
 | **plan-cycle** | `plugins/plan-cycle/` | `/plan-cycle`, `/plan-cycle:plan-impact`, `/plan-cycle:plan-quality` | `plan-cycle` skill | File-based planning with annotation pipeline |
 | **takeaway** | `plugins/takeaway/` | `/takeaway` | - | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
 | **refactor-discovery** | `plugins/refactor-discovery/` | `/refactor-discovery` | `refactor-discovery` skill | Smell-led methodology: surfaces structural leads, promotes mature refactor candidates, produces prioritized discovery document |
 
-The automate plugin is the core of this repo. develop-cycle, plan-cycle, takeaway, and refactor-discovery are self-contained plugins in their own directories. `plugins/plan-cycle/` and `plugins/refactor-discovery/` are dual-packaged with both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
+The automate plugin is the core of this repo. plan-cycle, takeaway, and refactor-discovery are self-contained plugins in their own directories. `plugins/plan-cycle/` and `plugins/refactor-discovery/` are dual-packaged with both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
 ## Architecture
 
