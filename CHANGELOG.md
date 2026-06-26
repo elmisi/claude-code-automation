@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **`develop-cycle` plugin** removed — no longer used. Deleted `plugins/develop-cycle/`, its entry in `.claude-plugin/marketplace.json` (so it is no longer installable), and all live references in `CLAUDE.md`, `AGENTS.md`, and `README.md`. No version bump: the `automate` package that `VERSION` tracks is unaffected. Git history and historical CHANGELOG entries are preserved.
 
+## [takeaway 1.2.0] - 2026-06-25
+
+### Added
+- **Codex packaging for `takeaway`.** Added `plugins/takeaway/.codex-plugin/plugin.json` (with the Codex `interface` block) and a `takeaway` entry in the Codex marketplace `.agents/plugins/marketplace.json` (source `./plugins/takeaway`, no version field — version lives in the manifest). `takeaway` is now dual-packaged for Claude Code and Codex, like `plan-cycle` and `refactor-discovery`.
+- Structure tests `STRUCT-126..130` mirroring the refactor-discovery dual-package checks (Codex manifest exists + valid JSON, version sync across the three manifests, Codex marketplace source path, Codex entry has no version field).
+
+### Changed
+- **Content audit for portability.** Generalized the skill's Step 1 ("Identify the target") so it no longer assumes a Claude-Code-specific plugin layout (`SKILL.md` / `plugin.json` / hook / `/command` syntax); it now reads naturally on both Claude Code and Codex. The rest of the skill was already tool-agnostic.
+- Bumped `takeaway` 1.1.1 → 1.2.0 (MINOR — new packaging) across the Claude manifest, the new Codex manifest, and the Claude marketplace entry. Updated `CLAUDE.md` and `README.md` to list `takeaway` as dual-packaged.
+
 ## [plan-cycle 4.0.0] - 2026-06-25
 
 ### Changed (BREAKING)

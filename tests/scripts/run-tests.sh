@@ -60,6 +60,9 @@ run_structure_tests() {
     assert_file_exists "$PROJECT_ROOT/plugins/refactor-discovery/.claude-plugin/plugin.json" \
         "STRUCT-119: refactor-discovery Claude plugin.json exists"
 
+    assert_file_exists "$PROJECT_ROOT/plugins/takeaway/.codex-plugin/plugin.json" \
+        "STRUCT-126: takeaway Codex plugin.json exists"
+
     # Test: JSON files are valid
     log_info "Testing JSON validity..."
 
@@ -83,6 +86,9 @@ run_structure_tests() {
 
     assert_valid_json "$PROJECT_ROOT/plugins/refactor-discovery/.claude-plugin/plugin.json" \
         "STRUCT-121: refactor-discovery Claude plugin.json is valid JSON"
+
+    assert_valid_json "$PROJECT_ROOT/plugins/takeaway/.codex-plugin/plugin.json" \
+        "STRUCT-127: takeaway Codex plugin.json is valid JSON"
 
     # Test: SKILL.md has valid frontmatter
     log_info "Testing SKILL.md frontmatter..."
@@ -257,6 +263,30 @@ run_structure_tests() {
 
     assert_file_contains "$PROJECT_ROOT/plugins/refactor-discovery/skills/refactor-discovery/SKILL.md" \
         "../../docs/methodology.md" "STRUCT-124: refactor-discovery uses portable methodology path"
+
+    local takeaway_ver_claude=$(jq -r '.version' "$PROJECT_ROOT/plugins/takeaway/.claude-plugin/plugin.json")
+    local takeaway_ver_codex=$(jq -r '.version' "$PROJECT_ROOT/plugins/takeaway/.codex-plugin/plugin.json")
+    local takeaway_ver_market=$(jq -r '.plugins[] | select(.name == "takeaway") | .version' "$PROJECT_ROOT/.claude-plugin/marketplace.json")
+    local takeaway_codex_source=$(jq -r '.plugins[] | select(.name == "takeaway") | .source.path' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
+    local takeaway_codex_has_version=$(jq -r '.plugins[] | select(.name == "takeaway") | has("version")' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
+
+    if [ "$takeaway_ver_claude" == "$takeaway_ver_codex" ] && [ "$takeaway_ver_claude" == "$takeaway_ver_market" ]; then
+        log_success "STRUCT-128: takeaway version sync — all manifests show $takeaway_ver_claude"
+    else
+        log_fail "STRUCT-128: takeaway version mismatch — Claude=$takeaway_ver_claude, Codex=$takeaway_ver_codex, marketplace=$takeaway_ver_market"
+    fi
+
+    if [ "$takeaway_codex_source" == "./plugins/takeaway" ]; then
+        log_success "STRUCT-129: Codex marketplace points to plugins/takeaway"
+    else
+        log_fail "STRUCT-129: takeaway Codex marketplace source mismatch — $takeaway_codex_source"
+    fi
+
+    if [ "$takeaway_codex_has_version" == "false" ]; then
+        log_success "STRUCT-130: Codex marketplace takeaway entry has no version field"
+    else
+        log_fail "STRUCT-130: Codex marketplace takeaway entry should not have a version field (got: $takeaway_codex_has_version)"
+    fi
 
     # ============================================
     # NEGATIVE VALIDATION (invalid configs must fail)

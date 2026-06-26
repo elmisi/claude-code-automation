@@ -40,16 +40,16 @@ The user's request: **$ARGUMENTS**
 ## Step 1: Identify the target
 
 Determine what the user wants to extract feedback about. This can be:
-- A skill (e.g., `/plan-cycle`, `/automate`)
-- A tool or workflow (e.g., a hook, a subagent, a custom command)
-- A plugin (the whole thing)
+- A skill or command (e.g., a planning skill, an automation advisor)
+- A tool or workflow (e.g., an event hook, an agent/automation, a custom command)
+- A plugin or extension (the whole thing)
 - A process (e.g., "how we do code review")
 
 If `$ARGUMENTS` names something specific, locate the relevant files:
-- For skills: find the SKILL.md file
-- For hooks: find the hook configuration and script
-- For plugins: find the plugin.json and main components
-- For processes: ask the user to point you to relevant files
+- For a skill or command: find its definition file (the main instructions/prompt file)
+- For a hook or automation: find its configuration and any script it runs
+- For a plugin or extension: find its manifest and main components
+- For a process: ask the user to point you to relevant files
 
 Read the target files so you understand the current state. You need context to ask good questions and to produce useful artifacts later.
 
