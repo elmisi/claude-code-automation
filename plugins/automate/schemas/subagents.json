@@ -23,13 +23,13 @@
         "type": "string",
         "description": "Comma-separated list of allowed tools. By default, subagents inherit all tools from the main conversation including MCP tools.",
         "validValues": [
-          "Agent", "AskUserQuestion", "Bash", "CronCreate", "CronDelete", "CronList",
+          "Agent", "Artifact", "AskUserQuestion", "Bash", "CronCreate", "CronDelete", "CronList",
           "Edit", "EnterPlanMode", "EnterWorktree", "ExitPlanMode", "ExitWorktree",
           "Glob", "Grep", "ListMcpResourcesTool", "LSP", "Monitor", "NotebookEdit", "PowerShell",
           "PushNotification", "Read", "ReadMcpResourceTool", "RemoteTrigger", "ScheduleWakeup",
           "SendMessage", "ShareOnboardingGuide", "Skill", "TaskCreate", "TaskGet",
           "TaskList", "TaskOutput", "TaskStop", "TaskUpdate", "TeamCreate", "TeamDelete",
-          "TodoWrite", "ToolSearch", "WaitForMcpServers", "WebFetch", "WebSearch", "Write"
+          "TodoWrite", "ToolSearch", "WaitForMcpServers", "WebFetch", "WebSearch", "Workflow", "Write"
         ],
         "note": "MCP tools can also be included as mcp__<server>__<tool>. Use Agent(type1, type2) to restrict which subagent types can be spawned.",
         "example": "Read, Grep, Glob, Bash"
@@ -154,6 +154,8 @@
     "nestedAgents": "Subagents CAN spawn other subagents using Agent(type1, type2) syntax in the tools field to restrict which types can be spawned. The restriction only applies to agents running as main thread with claude --agent.",
     "taskRenamed": "In v2.1.63, the Task tool was renamed to Agent. Existing Task(...) references still work as aliases.",
     "taskOutputDeprecated": "TaskOutput is deprecated. Use Read on the task's output file path instead.",
+    "workflowTool": "Workflow runs a dynamic workflow: a script that orchestrates many subagents in the background and returns one consolidated result.",
+    "artifactTool": "Artifact publishes an HTML or Markdown file as a private, interactive page on claude.ai that can be shared inside your organization. Requires a Team or Enterprise plan and /login authentication.",
     "disableSubagent": "Deny specific subagents via permissions: Agent(Explore), Agent(my-custom-agent)",
     "pluginSecurity": "Plugin subagents ignore hooks, mcpServers, and permissionMode fields for security.",
     "subagentModelOverride": "CLAUDE_CODE_SUBAGENT_MODEL env var overrides subagent model at the highest priority."

@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **`develop-cycle` plugin** removed — no longer used. Deleted `plugins/develop-cycle/`, its entry in `.claude-plugin/marketplace.json` (so it is no longer installable), and all live references in `CLAUDE.md`, `AGENTS.md`, and `README.md`. No version bump: the `automate` package that `VERSION` tracks is unaffected. Git history and historical CHANGELOG entries are preserved.
 
+## [2.12.0] - 2026-06-27
+
+### Added
+- **`Artifact` and `Workflow` subagent tools.** The Claude Code [tools reference](https://code.claude.com/docs/en/tools-reference) added two tools that were missing from the schema. `Workflow` runs a dynamic workflow that orchestrates many subagents in the background and returns one consolidated result; `Artifact` publishes an HTML/Markdown file as a private, interactive page on claude.ai shareable inside your organization (Team or Enterprise plan, `/login` auth). Added both to `plugins/automate/schemas/subagents.json` (`validValues` + descriptive `notes`), `plugins/automate/scripts/validate-config.sh`, the `automate` `SKILL.md` valid-tools list, `plugins/automate/docs/claude-code-reference.md`, and `CLAUDE.md`. Resolves the `schema-update` issue raised by the daily docs check (#16).
+- Structure tests `STRUCT-131` (subagent accepts `Artifact, Workflow`), `STRUCT-132` (schema includes `Artifact`), `STRUCT-133` (schema includes `Workflow`).
+
+### Notes
+- MINOR bump (additive): two new recognized tool values, fully backward compatible. No existing configuration changes meaning.
+
 ## [plan-cycle 4.1.0] - 2026-06-27
 
 ### Added
