@@ -639,6 +639,21 @@ run_structure_tests() {
         '"Monitor"' "STRUCT-105: subagent schema includes Monitor tool"
 
     # ============================================
+    # ARTIFACT AND WORKFLOW TOOLS TESTS (2026-06-27)
+    # ============================================
+    log_info "Testing Artifact and Workflow subagent tools..."
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: Artifact, Workflow\n---\nContent')" \
+        "STRUCT-131: accept Artifact and Workflow tools in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"Artifact"' "STRUCT-132: subagent schema includes Artifact tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"Workflow"' "STRUCT-133: subagent schema includes Workflow tool"
+
+    # ============================================
     # SETUP EVENT TESTS (2026-05-01)
     # ============================================
     log_info "Testing Setup hook event..."
