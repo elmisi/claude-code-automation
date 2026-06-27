@@ -73,6 +73,15 @@ Identify the requested operation by the user's **exact** wording:
 
 Existing `> **NOTE**:` lines don't change the requested operation. For `plan-cycle-annotate`, never edit/remove/resolve/rewrite existing plan content.
 
+## Grilling discipline
+
+When an operation needs decisions from you, it grills — it resolves the decision tree in waves, never as a flat dump:
+
+- **Per wave, ask only mutually independent (orthogonal) questions.** Two questions are dependent — and MUST NOT share a wave — if the answer to one would change the answer to the other, or change whether the other still needs asking. Independent questions don't influence each other, so they may be grouped (a handful at most).
+- **Walk the tree in waves.** Answer the current orthogonal set, follow the branches the answers open, and let the newly-unblocked questions form the next wave. Repeat until no branch is left open.
+- **Every question carries a recommended answer** (the planner's default) with a one-line why.
+- **Explore before asking.** If the codebase or the plan can answer it, investigate and state the finding instead of asking.
+
 ## plan-cycle-annotate
 
 Add inline annotations below the section/task they refer to. Do NOT modify plan content — only add notes.
@@ -86,7 +95,7 @@ Add inline annotations below the section/task they refer to. Do NOT modify plan 
 1. Read the entire plan.
 2. Find all `> **NOTE**:` lines.
 3. For each: understand, update plan, remove annotation.
-4. If unclear, keep it and ask for clarification.
+4. If unclear, keep the annotation and resolve it via the **Grilling discipline** (above).
 
 ## plan-cycle-finalize
 
@@ -96,7 +105,7 @@ Make the plan operative, self-contained, coherent, robust — a fresh agent must
 2. For each section, check ALL 11 rules: Self-contained, Operative, Outcome-layer success, Numbers-not-adjectives, Exit clauses, Explicit degradation, Verify-before-claim, Enumerate-universals, Mark-unverifiable, Coherent, Robust.
 3. Rewrite every failing section — do not annotate.
 4. Report: sections updated count + one-line summary per section.
-5. **Unresolved Items Inventory** — list every remaining TODO, `assumed:`, `unverified:`. For each, prompt the user per item: *resolve before execution* or *proceed knowingly with consequence stated*. Approval is invalid without this step.
+5. **Unresolved Items Inventory** — list every remaining TODO, `assumed:`, `unverified:`. For each, prompt the user per item via the **Grilling discipline** (above): *resolve before execution* or *proceed knowingly with consequence stated*. Approval is invalid without this step.
 
 ## General Principles
 

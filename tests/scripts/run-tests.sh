@@ -953,6 +953,22 @@ run_plan_cycle_tests() {
     else
         log_fail "STRUCT-PC-28: plan-cycle-finalize missing Outcome-layer success rule"
     fi
+
+    # STRUCT-PC-29: appendix defines the Grilling discipline block (one-at-a-time / orthogonal waves)
+    if grep -qE "^## Grilling discipline" "$tmpl" && grep -qi "orthogonal" "$tmpl"; then
+        log_success "STRUCT-PC-29: plan template appendix has the Grilling discipline section"
+    else
+        log_fail "STRUCT-PC-29: plan template appendix missing '## Grilling discipline' section (or its orthogonality rule)"
+    fi
+
+    # STRUCT-PC-30: review (if-unclear) and finalize (inventory) both route through the Grilling discipline
+    local review_block_g
+    review_block_g=$(awk '/^## plan-cycle-review/,/^## plan-cycle-finalize/' "$tmpl")
+    if echo "$review_block_g" | grep -q "Grilling discipline" && echo "$finalize_block" | grep -q "Grilling discipline"; then
+        log_success "STRUCT-PC-30: plan-cycle-review and plan-cycle-finalize reference the Grilling discipline"
+    else
+        log_fail "STRUCT-PC-30: review/finalize do not both reference the Grilling discipline"
+    fi
 }
 
 # ============================================

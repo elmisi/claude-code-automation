@@ -16,7 +16,7 @@
     },
     {
       "name": "plan-cycle",
-      "version": "4.0.0",
+      "version": "4.1.0",
       "source": "./plugins/plan-cycle",
       "description": "File-based planning with annotation pipeline. Creates persistent markdown plans, companion ops guide, and supports impact/quality analysis via composable skills."
     },

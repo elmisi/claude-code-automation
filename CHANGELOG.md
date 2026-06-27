@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **`develop-cycle` plugin** removed — no longer used. Deleted `plugins/develop-cycle/`, its entry in `.claude-plugin/marketplace.json` (so it is no longer installable), and all live references in `CLAUDE.md`, `AGENTS.md`, and `README.md`. No version bump: the `automate` package that `VERSION` tracks is unaffected. Git history and historical CHANGELOG entries are preserved.
 
+## [plan-cycle 4.1.0] - 2026-06-27
+
+### Added
+- **Grilling discipline for the interactive operations.** Added a `## Grilling discipline` block to the plan template's Operations Guide appendix (inspired by Matt Pocock's `grill-me` skill). When `plan-cycle-review` hits an unclear annotation, or `plan-cycle-finalize` works its Unresolved Items Inventory, it now resolves decisions in **waves** instead of dumping a flat question list: each wave asks only mutually independent (orthogonal) questions — dependent questions, whose answers would change another answer or whether it still needs asking, are deferred to a later wave once their prerequisites resolve. Every question carries a recommended answer; the agent explores the codebase/plan to answer a question before asking it.
+- Structure tests `STRUCT-PC-29` (appendix defines the Grilling discipline + orthogonality rule) and `STRUCT-PC-30` (both `plan-cycle-review` and `plan-cycle-finalize` route through it).
+
+### Notes
+- Always-on, no toggle: the discipline only governs question moments that already existed (review's "if unclear" and finalize's per-item inventory), so a plan with nothing to clarify is unaffected. Users who want the prior, non-grilling behavior can pin plan-cycle 4.0.0.
+- New plans (≥ 4.1.0) embed the discipline in their appendix; existing v3.x / 4.0.0 plans are unchanged (their appendix/companion is authoritative). MINOR bump (additive) across both manifests and the Claude marketplace entry.
+
 ## [takeaway 1.2.0] - 2026-06-25
 
 ### Added
