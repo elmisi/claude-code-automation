@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Removed
-- **`develop-cycle` plugin** removed — no longer used. Deleted `plugins/develop-cycle/`, its entry in `.claude-plugin/marketplace.json` (so it is no longer installable), and all live references in `CLAUDE.md`, `AGENTS.md`, and `README.md`. No version bump: the `automate` package that `VERSION` tracks is unaffected. Git history and historical CHANGELOG entries are preserved.
+- **Committed `.html` renders** (`CLAUDE.html`, `plugins/automate/skills/automate/SKILL.html`, `plugins/automate/docs/claude-code-reference.html`, `tests/TEST.html`) removed. They were one-off `pandoc` renders of their `.md` sources with no generator, no CI check, and no consumer — Claude Code reads the Markdown, and the files were nowhere linked. They had already drifted stale (missing the `Artifact`/`Workflow`/`ReportFindings`/`SendUserFile` tools) and only added maintenance friction. No version bump: the `automate` package that `VERSION` tracks is unaffected. Regenerate on demand with `pandoc -s --metadata title=" " <src>.md -o <src>.html` if ever needed.
 
 ## [2.13.0] - 2026-07-14
 
