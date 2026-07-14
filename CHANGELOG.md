@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **`develop-cycle` plugin** removed — no longer used. Deleted `plugins/develop-cycle/`, its entry in `.claude-plugin/marketplace.json` (so it is no longer installable), and all live references in `CLAUDE.md`, `AGENTS.md`, and `README.md`. No version bump: the `automate` package that `VERSION` tracks is unaffected. Git history and historical CHANGELOG entries are preserved.
 
+## [2.13.0] - 2026-07-14
+
+### Added
+- **`ReportFindings` and `SendUserFile` subagent tools** (issue #19) — the daily docs check found these two tools in the [Claude Code tools reference](https://code.claude.com/docs/en/tools-reference) but missing from the schema. Added both to `plugins/automate/schemas/subagents.json` (valid tool list + descriptive notes), the `VALID_TOOLS` array in `validate-config.sh`, the inline tool lists in `SKILL.md`, `docs/claude-code-reference.md`, and this repo's `CLAUDE.md`. `ReportFindings` reports code-review findings as a typed list for the host UI; `SendUserFile` surfaces a file to the user as a deliverable.
+- **Structure tests STRUCT-134/135/136** covering acceptance of the two new tools in subagent validation and their presence in the schema.
+
 ## [2.12.0] - 2026-06-27
 
 ### Added
