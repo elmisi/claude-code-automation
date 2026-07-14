@@ -654,6 +654,21 @@ run_structure_tests() {
         '"Workflow"' "STRUCT-133: subagent schema includes Workflow tool"
 
     # ============================================
+    # REPORTFINDINGS AND SENDUSERFILE TOOLS TESTS (2026-07-14)
+    # ============================================
+    log_info "Testing ReportFindings and SendUserFile subagent tools..."
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: ReportFindings, SendUserFile\n---\nContent')" \
+        "STRUCT-134: accept ReportFindings and SendUserFile tools in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"ReportFindings"' "STRUCT-135: subagent schema includes ReportFindings tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"SendUserFile"' "STRUCT-136: subagent schema includes SendUserFile tool"
+
+    # ============================================
     # SETUP EVENT TESTS (2026-05-01)
     # ============================================
     log_info "Testing Setup hook event..."

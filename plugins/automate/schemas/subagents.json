@@ -26,8 +26,8 @@
           "Agent", "Artifact", "AskUserQuestion", "Bash", "CronCreate", "CronDelete", "CronList",
           "Edit", "EnterPlanMode", "EnterWorktree", "ExitPlanMode", "ExitWorktree",
           "Glob", "Grep", "ListMcpResourcesTool", "LSP", "Monitor", "NotebookEdit", "PowerShell",
-          "PushNotification", "Read", "ReadMcpResourceTool", "RemoteTrigger", "ScheduleWakeup",
-          "SendMessage", "ShareOnboardingGuide", "Skill", "TaskCreate", "TaskGet",
+          "PushNotification", "Read", "ReadMcpResourceTool", "RemoteTrigger", "ReportFindings",
+          "ScheduleWakeup", "SendMessage", "SendUserFile", "ShareOnboardingGuide", "Skill", "TaskCreate", "TaskGet",
           "TaskList", "TaskOutput", "TaskStop", "TaskUpdate", "TeamCreate", "TeamDelete",
           "TodoWrite", "ToolSearch", "WaitForMcpServers", "WebFetch", "WebSearch", "Workflow", "Write"
         ],
@@ -156,6 +156,8 @@
     "taskOutputDeprecated": "TaskOutput is deprecated. Use Read on the task's output file path instead.",
     "workflowTool": "Workflow runs a dynamic workflow: a script that orchestrates many subagents in the background and returns one consolidated result.",
     "artifactTool": "Artifact publishes an HTML or Markdown file as a private, interactive page on claude.ai that can be shared inside your organization. Requires a Team or Enterprise plan and /login authentication.",
+    "reportFindingsTool": "ReportFindings reports code-review findings as a typed list so the host UI can render them. Used by code-review workflows; call once with verified findings.",
+    "sendUserFileTool": "SendUserFile sends a file to the user as a surfaced deliverable (rendered inline or attached) instead of only mentioning its path.",
     "disableSubagent": "Deny specific subagents via permissions: Agent(Explore), Agent(my-custom-agent)",
     "pluginSecurity": "Plugin subagents ignore hooks, mcpServers, and permissionMode fields for security.",
     "subagentModelOverride": "CLAUDE_CODE_SUBAGENT_MODEL env var overrides subagent model at the highest priority."
