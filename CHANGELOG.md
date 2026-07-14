@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **`check-docs-updates` workflow now runs weekly** instead of daily — `cron` changed from `0 6 * * *` to `0 6 * * 1` (Mondays 06:00 UTC). The Claude Code docs don't change often enough to warrant a daily fetch; weekly keeps schema drift caught without the noise. Updated the auto-generated issue text ("weekly docs check") and the `CLAUDE.md` workflow table to match. No version bump (CI infra only).
+
 ### Removed
 - **Committed `.html` renders** (`CLAUDE.html`, `plugins/automate/skills/automate/SKILL.html`, `plugins/automate/docs/claude-code-reference.html`, `tests/TEST.html`) removed. They were one-off `pandoc` renders of their `.md` sources with no generator, no CI check, and no consumer — Claude Code reads the Markdown, and the files were nowhere linked. They had already drifted stale (missing the `Artifact`/`Workflow`/`ReportFindings`/`SendUserFile` tools) and only added maintenance friction. No version bump: the `automate` package that `VERSION` tracks is unaffected. Regenerate on demand with `pandoc -s --metadata title=" " <src>.md -o <src>.html` if ever needed.
 

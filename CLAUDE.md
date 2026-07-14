@@ -209,4 +209,4 @@ When Anthropic adds new hook events, tools, etc.: update the **schema** → upda
 |----------|---------|---------|
 | `ci.yml` | Push/PR to main | Runs structure + e2e tests + fixture validation |
 | `auto-tag.yml` | VERSION file changes on main | Creates `v{VERSION}` git tag automatically |
-| `check-docs-updates.yml` | Daily cron | Fetches docs from code.claude.com, compares against schemas, opens `schema-update` issue if discrepancies found |
+| `check-docs-updates.yml` | Weekly cron (Mondays 06:00 UTC) | Fetches docs from code.claude.com, compares against schemas, opens `schema-update` issue if discrepancies found |
