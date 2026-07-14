@@ -2,7 +2,8 @@ name: Check Claude Code Docs for Schema Updates
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    # Weekly, Mondays at 06:00 UTC
+    - cron: '0 6 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -193,7 +194,7 @@ jobs:
           ISSUE_BODY=$(cat <<BODYEOF
           ## Documentation Change Detected
 
-          The daily docs check found differences between the Claude Code documentation and this project's schemas.
+          The weekly docs check found differences between the Claude Code documentation and this project's schemas.
           $(echo -e "$DISCREPANCIES")
 
           ## Action Required

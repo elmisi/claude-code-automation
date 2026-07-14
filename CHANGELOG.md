@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **`check-docs-updates` workflow now runs weekly** instead of daily — `cron` changed from `0 6 * * *` to `0 6 * * 1` (Mondays 06:00 UTC). The Claude Code docs don't change often enough to warrant a daily fetch; weekly keeps schema drift caught without the noise. Updated the auto-generated issue text ("weekly docs check") and the `CLAUDE.md` workflow table to match. No version bump (CI infra only).
+
 ### Removed
 - **`develop-cycle` plugin** removed — no longer used. Deleted `plugins/develop-cycle/`, its entry in `.claude-plugin/marketplace.json` (so it is no longer installable), and all live references in `CLAUDE.md`, `AGENTS.md`, and `README.md`. No version bump: the `automate` package that `VERSION` tracks is unaffected. Git history and historical CHANGELOG entries are preserved.
 
