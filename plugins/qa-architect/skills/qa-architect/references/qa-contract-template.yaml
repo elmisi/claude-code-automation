@@ -1,0 +1,29 @@
+# Copy to <target>/.qa/qa-contract.yaml. Set status to approved only after an
+# explicit user approval of this exact proposal.
+status: proposed
+product:
+  name: ""
+  primary_value: ""
+users: []
+critical_tasks: []
+unacceptable_failures: []
+accepted_tradeoffs: {}
+release_gates: []
+fallback_policies: {}
+environments: []
+requirements:
+  - id: example-requirement
+    statement: ""
+    category: invariant # invariant | threshold | regression | heuristic | experiment | human-decision
+    origin: ""
+    motivation: ""
+    risk_id: ""
+    verification:
+      type: deterministic # deterministic | semantic | hybrid | manual
+      evidence_required: []
+      success_condition: ""
+    severity: blocking # blocking | advisory
+    false_positive_risk: low # low | medium | high
+    automation: full # full | partial | manual
+    estimated_cost: ""
+    status: assumption # confirmed | recommendation | assumption | unverifiable

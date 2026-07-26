@@ -63,6 +63,18 @@ run_structure_tests() {
     assert_file_exists "$PROJECT_ROOT/plugins/takeaway/.codex-plugin/plugin.json" \
         "STRUCT-126: takeaway Codex plugin.json exists"
 
+    assert_file_exists "$PROJECT_ROOT/plugins/qa-architect/.claude-plugin/plugin.json" \
+        "STRUCT-QA-01: qa-architect Claude plugin.json exists"
+
+    assert_file_exists "$PROJECT_ROOT/plugins/qa-architect/.codex-plugin/plugin.json" \
+        "STRUCT-QA-02: qa-architect Codex plugin.json exists"
+
+    assert_file_exists "$PROJECT_ROOT/plugins/qa-architect/skills/qa-architect/SKILL.md" \
+        "STRUCT-QA-03: qa-architect SKILL.md exists"
+
+    assert_file_exists "$PROJECT_ROOT/.agents/skills/qa-architect/SKILL.md" \
+        "STRUCT-QA-04: OpenCode-compatible qa-architect SKILL.md exists"
+
     # Test: JSON files are valid
     log_info "Testing JSON validity..."
 
@@ -90,11 +102,20 @@ run_structure_tests() {
     assert_valid_json "$PROJECT_ROOT/plugins/takeaway/.codex-plugin/plugin.json" \
         "STRUCT-127: takeaway Codex plugin.json is valid JSON"
 
+    assert_valid_json "$PROJECT_ROOT/plugins/qa-architect/.claude-plugin/plugin.json" \
+        "STRUCT-QA-05: qa-architect Claude plugin.json is valid JSON"
+
+    assert_valid_json "$PROJECT_ROOT/plugins/qa-architect/.codex-plugin/plugin.json" \
+        "STRUCT-QA-06: qa-architect Codex plugin.json is valid JSON"
+
     # Test: SKILL.md has valid frontmatter
     log_info "Testing SKILL.md frontmatter..."
 
     assert_valid_frontmatter "$PROJECT_ROOT/plugins/automate/skills/automate/SKILL.md" \
         "STRUCT-06: SKILL.md has valid frontmatter"
+
+    assert_valid_frontmatter "$PROJECT_ROOT/plugins/qa-architect/skills/qa-architect/SKILL.md" \
+        "STRUCT-QA-07: qa-architect SKILL.md frontmatter is valid"
 
     # Test: Required fields in plugin.json
     log_info "Testing required fields..."
@@ -269,6 +290,11 @@ run_structure_tests() {
     local takeaway_ver_market=$(jq -r '.plugins[] | select(.name == "takeaway") | .version' "$PROJECT_ROOT/.claude-plugin/marketplace.json")
     local takeaway_codex_source=$(jq -r '.plugins[] | select(.name == "takeaway") | .source.path' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
     local takeaway_codex_has_version=$(jq -r '.plugins[] | select(.name == "takeaway") | has("version")' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
+    local qa_ver_claude=$(jq -r '.version' "$PROJECT_ROOT/plugins/qa-architect/.claude-plugin/plugin.json")
+    local qa_ver_codex=$(jq -r '.version' "$PROJECT_ROOT/plugins/qa-architect/.codex-plugin/plugin.json")
+    local qa_ver_market=$(jq -r '.plugins[] | select(.name == "qa-architect") | .version' "$PROJECT_ROOT/.claude-plugin/marketplace.json")
+    local qa_codex_source=$(jq -r '.plugins[] | select(.name == "qa-architect") | .source.path' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
+    local qa_codex_has_version=$(jq -r '.plugins[] | select(.name == "qa-architect") | has("version")' "$PROJECT_ROOT/.agents/plugins/marketplace.json")
 
     if [ "$takeaway_ver_claude" == "$takeaway_ver_codex" ] && [ "$takeaway_ver_claude" == "$takeaway_ver_market" ]; then
         log_success "STRUCT-128: takeaway version sync — all manifests show $takeaway_ver_claude"
@@ -287,6 +313,36 @@ run_structure_tests() {
     else
         log_fail "STRUCT-130: Codex marketplace takeaway entry should not have a version field (got: $takeaway_codex_has_version)"
     fi
+
+    if [ "$qa_ver_claude" == "$qa_ver_codex" ] && [ "$qa_ver_claude" == "$qa_ver_market" ]; then
+        log_success "STRUCT-QA-08: qa-architect version sync — all manifests show $qa_ver_claude"
+    else
+        log_fail "STRUCT-QA-08: qa-architect version mismatch — Claude=$qa_ver_claude, Codex=$qa_ver_codex, marketplace=$qa_ver_market"
+    fi
+
+    if [ "$qa_codex_source" == "./plugins/qa-architect" ]; then
+        log_success "STRUCT-QA-09: Codex marketplace points to plugins/qa-architect"
+    else
+        log_fail "STRUCT-QA-09: Codex marketplace source mismatch — $qa_codex_source"
+    fi
+
+    if [ "$qa_codex_has_version" == "false" ]; then
+        log_success "STRUCT-QA-10: Codex marketplace qa-architect entry has no version field"
+    else
+        log_fail "STRUCT-QA-10: Codex marketplace qa-architect entry should not have a version field (got: $qa_codex_has_version)"
+    fi
+
+    assert_file_contains "$PROJECT_ROOT/plugins/qa-architect/skills/qa-architect/SKILL.md" \
+        "Never enter QA Build" "STRUCT-QA-11: qa-architect keeps the contract approval gate"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/qa-architect/skills/qa-architect/SKILL.md" \
+        "one high-information question at a time" "STRUCT-QA-12: qa-architect uses adaptive grilling"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/qa-architect/skills/qa-architect/references/mutation-catalog.md" \
+        "Controlled mutation" "STRUCT-QA-13: qa-architect includes mutation guidance"
+
+    assert_file_exists "$PROJECT_ROOT/tests/fixtures/qa-architect/markdown-editor-pilot.md" \
+        "STRUCT-QA-14: qa-architect synthetic pilot fixture exists"
 
     # ============================================
     # NEGATIVE VALIDATION (invalid configs must fail)

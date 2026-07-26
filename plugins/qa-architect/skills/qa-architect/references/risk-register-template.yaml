@@ -1,0 +1,11 @@
+risks:
+  - id: R-001
+    title: ""
+    source: ""
+    consequence: ""
+    likelihood: unknown # low | medium | high | unknown
+    impact: unknown # low | medium | high | unknown
+    unacceptable: false
+    mitigation: ""
+    verification_ids: []
+    status: open # open | covered | accepted | deferred
