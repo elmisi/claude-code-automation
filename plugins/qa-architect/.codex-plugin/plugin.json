@@ -1,0 +1,38 @@
+{
+  "name": "qa-architect",
+  "version": "0.1.0-beta.1",
+  "description": "Contract-driven QA discovery, design, build, and audit workflow (beta).",
+  "author": {
+    "name": "elmisi"
+  },
+  "homepage": "https://github.com/elmisi/claude-code-automation",
+  "repository": "https://github.com/elmisi/claude-code-automation",
+  "license": "MIT",
+  "keywords": [
+    "qa",
+    "testing",
+    "quality",
+    "discovery",
+    "evaluation"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "QA Architect",
+    "shortDescription": "Discover and build contract-driven QA",
+    "longDescription": "Define quality through an adaptive discovery interview, propose an approval-gated QA contract, then build and audit model-independent QA.",
+    "developerName": "elmisi",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/elmisi/claude-code-automation",
+    "defaultPrompt": [
+      "Discover a QA contract for this project",
+      "Propose QA verification for this product",
+      "Audit this QA suite against its contract"
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

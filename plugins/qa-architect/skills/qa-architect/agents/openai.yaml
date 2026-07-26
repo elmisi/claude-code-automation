@@ -1,0 +1,4 @@
+interface:
+  display_name: "QA Architect"
+  short_description: "Discover, design, build, and audit contract-driven QA"
+  default_prompt: "Create a QA contract before building tests"
