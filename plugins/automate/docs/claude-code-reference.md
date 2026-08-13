@@ -272,7 +272,7 @@ System prompt for the agent...
 |-------|----------|--------------|
 | `name` | Yes | Agent identifier |
 | `description` | Yes | Brief description |
-| `tools` | No | `Agent`, `Artifact`, `AskUserQuestion`, `Bash`, `CronCreate`, `CronDelete`, `CronList`, `Edit`, `EnterPlanMode`, `EnterWorktree`, `ExitPlanMode`, `ExitWorktree`, `Glob`, `Grep`, `ListMcpResourcesTool`, `LSP`, `Monitor`, `NotebookEdit`, `PowerShell`, `PushNotification`, `Read`, `ReadMcpResourceTool`, `RemoteTrigger`, `ReportFindings`, `ScheduleWakeup`, `SendMessage`, `SendUserFile`, `ShareOnboardingGuide`, `Skill`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop`, `TaskUpdate`, `TeamCreate`, `TeamDelete`, `TodoWrite`, `ToolSearch`, `WaitForMcpServers`, `WebFetch`, `WebSearch`, `Workflow`, `Write` |
+| `tools` | No | `Agent`, `Artifact`, `AskUserQuestion`, `Bash`, `CronCreate`, `CronDelete`, `CronList`, `Edit`, `EnterPlanMode`, `EnterWorktree`, `ExitPlanMode`, `ExitWorktree`, `Glob`, `Grep`, `ListAgents`, `ListMcpResourcesTool`, `LSP`, `Monitor`, `NotebookEdit`, `PowerShell`, `PushNotification`, `Read`, `ReadMcpResourceTool`, `RemoteTrigger`, `ReportFindings`, `ScheduleWakeup`, `SendMessage`, `SendUserFile`, `ShareOnboardingGuide`, `Skill`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop`, `TaskUpdate`, `TeamCreate`, `TeamDelete`, `TodoWrite`, `ToolSearch`, `WaitForMcpServers`, `WebFetch`, `WebSearch`, `Workflow`, `Write` |
 | `model` | No | `opus`, `sonnet`, `haiku`, `inherit`, or full model ID (e.g. `claude-opus-4-6`). Default: `inherit` |
 | `disallowedTools` | No | List of tools the agent cannot use |
 | `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan` |
@@ -285,6 +285,14 @@ System prompt for the agent...
 | `isolation` | No | `worktree` for isolated git worktree |
 | `effort` | No | Effort level: `low`, `medium`, `high`, `max` (Opus 4.6 only) |
 | `initialPrompt` | No | Auto-submitted as first user turn when running as main session agent (via `--agent`) |
+
+#### Tools excluded from the `tools` field
+
+The [tools reference](https://code.claude.com/docs/en/tools-reference) lists one tool that is **not** a valid `tools` value:
+
+- **`EndConversation`** (v2.1.213+) — ends the session, used only against sustained abusive input or when the user explicitly asks for a demonstration. Subagents never receive it, and background tasks that share the main conversation's tool list can see it but calling it there ends nothing. It never prompts for permission, `PreToolUse` hooks do not run for it, and while any other tool remains it cannot be removed by a `tools` list, by `--disallowedTools`, or by `deny`/`ask` permission rules. A `"*"` deny rule that removes every other tool does remove it, unless an `allow` rule names it explicitly.
+
+Because the tools-reference table lists it alongside ordinary tools, an automated docs diff will report it as "missing from the schema". That is a false positive — leave it out.
 
 ### Built-in Agents
 

@@ -725,6 +725,27 @@ run_structure_tests() {
         '"SendUserFile"' "STRUCT-136: subagent schema includes SendUserFile tool"
 
     # ============================================
+    # LISTAGENTS TOOL / ENDCONVERSATION EXCLUSION (2026-08-13)
+    # ============================================
+    log_info "Testing ListAgents tool and EndConversation exclusion..."
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: ListAgents, SendMessage\n---\nContent')" \
+        "STRUCT-137: accept ListAgents tool in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"ListAgents"' "STRUCT-138: subagent schema includes ListAgents tool"
+
+    # EndConversation is in the tools reference but subagents never receive it,
+    # so it must stay out of the subagent tools list (issue #23 false positive).
+    assert_validation_fails "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: EndConversation\n---\nContent')" \
+        "STRUCT-139: reject EndConversation as a subagent tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        'endConversationToolExcluded' "STRUCT-140: subagent schema documents the EndConversation exclusion"
+
+    # ============================================
     # SETUP EVENT TESTS (2026-05-01)
     # ============================================
     log_info "Testing Setup hook event..."
