@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/elmisi/claude-code-automation/actions/workflows/ci.yml)
 
-This repository contains four Claude Code plugins. `plan-cycle`, `refactor-discovery`, and `takeaway` are also packaged for Codex from shared source trees.
+This repository contains five Claude Code plugins. `plan-cycle`, `refactor-discovery`, `takeaway`, and the beta `qa-architect` are also packaged for Codex from shared source trees.
 
 | Plugin | Claude Code | Codex | Description |
 |--------|-------------|-------|-------------|
@@ -13,6 +13,7 @@ This repository contains four Claude Code plugins. `plan-cycle`, `refactor-disco
 | **plan-cycle** | `/plan-cycle` | `plan-cycle` skill | File-based planning with annotation cycles. Persistent markdown plans you can edit and refine iteratively |
 | **takeaway** | `/takeaway` | `takeaway` skill | Structured feedback extraction. Interviews the user, distills observations into portable principles for continuous improvement |
 | **refactor-discovery** | `/refactor-discovery` | `refactor-discovery` skill | Research methodology for surfacing non-obvious structural smell leads before promoting refactor candidates |
+| **qa-architect** *(beta)* | `/qa-architect` | `qa-architect` skill | Contract-driven QA discovery, design, build, and audit; OpenCode-compatible through the shared SKILL.md |
 
 ---
 
@@ -27,6 +28,7 @@ This repository contains four Claude Code plugins. `plan-cycle`, `refactor-disco
 /plugin install plan-cycle
 /plugin install takeaway
 /plugin install refactor-discovery
+/plugin install qa-architect
 ```
 
 Restart Claude Code after installation to activate.
@@ -35,12 +37,13 @@ Restart Claude Code after installation to activate.
 
 This repository exposes a Codex marketplace at `.agents/plugins/marketplace.json`.
 
-Add `elmisi/claude-code-automation` as a Codex marketplace, then install `plan-cycle`, `refactor-discovery`, or `takeaway`. Codex reads the plugins from:
+Add `elmisi/claude-code-automation` as a Codex marketplace, then install `plan-cycle`, `refactor-discovery`, `takeaway`, or `qa-architect`. Codex reads the plugins from:
 
 ```text
 plugins/plan-cycle/.codex-plugin/plugin.json
 plugins/refactor-discovery/.codex-plugin/plugin.json
 plugins/takeaway/.codex-plugin/plugin.json
+plugins/qa-architect/.codex-plugin/plugin.json
 ```
 
 The Claude Code and Codex manifests point to the same plugin skill directories, so workflow updates are shared by both tools.

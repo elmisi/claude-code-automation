@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **`qa-architect` 0.1.0-beta.1** — new dual-packaged Claude Code and Codex beta plugin for contract-driven QA. It conducts a one-question-at-a-time discovery interview, proposes an explicit approval-gated QA contract, then guides deterministic-first build and mutation-based audit. It includes portable contract/risk/evaluation templates, a synthetic Markdown-editor pilot, and OpenCode adapter instructions for the same canonical `SKILL.md`.
+
 ### Changed
 - **`check-docs-updates` workflow now runs weekly** instead of daily — `cron` changed from `0 6 * * *` to `0 6 * * 1` (Mondays 06:00 UTC). The Claude Code docs don't change often enough to warrant a daily fetch; weekly keeps schema drift caught without the noise. Updated the auto-generated issue text ("weekly docs check") and the `CLAUDE.md` workflow table to match. No version bump (CI infra only).
 
