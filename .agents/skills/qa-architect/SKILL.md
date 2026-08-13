@@ -1,1 +1,0 @@
-../../../plugins/qa-architect/skills/qa-architect/SKILL.md

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [qa-architect 0.1.0-beta.2] - 2026-08-13
+
+### Fixed
+- **The `.agents/skills/qa-architect` link now exposes the whole skill directory** instead of the bare `SKILL.md`. Verified against `opencode` 1.18.18: a skill's relative references are resolved against the link path *without following the link*, so with a link to the file alone the skill's own base directory contained only `SKILL.md` and every relative reference in it — six `references/` templates and one `assets/` pilot — resolved to a non-existent path. An agent asked to read `references/mutation-catalog.md` failed the read and only recovered by falling back to a repo-wide glob, a workaround that disappears entirely once the skill is installed outside the target project. Replacing the file link with a directory link makes `references/`, `assets/` and `agents/` reachable through the skill path, and the read succeeds on the first attempt. Skill discovery is unchanged. The same link is the one Codex consumes, so the fix applies to both runtimes.
+- **Structure tests `STRUCT-QA-15`/`STRUCT-QA-16`** assert that `references/` and `assets/` are reachable *through* `.agents/skills/qa-architect/`. The pre-existing `STRUCT-QA-04` only checked that the `SKILL.md` path resolved, which held in both shapes and so did not catch this.
+
 ## [Unreleased]
 
 ### Added

@@ -34,7 +34,7 @@
     },
     {
       "name": "qa-architect",
-      "version": "0.1.0-beta.1",
+      "version": "0.1.0-beta.2",
       "source": "./plugins/qa-architect",
       "description": "Beta contract-driven QA discovery, design, build, and audit workflow."
     }
