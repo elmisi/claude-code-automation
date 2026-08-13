@@ -13,6 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **Committed `.html` renders** (`CLAUDE.html`, `plugins/automate/skills/automate/SKILL.html`, `plugins/automate/docs/claude-code-reference.html`, `tests/TEST.html`) removed. They were one-off `pandoc` renders of their `.md` sources with no generator, no CI check, and no consumer — Claude Code reads the Markdown, and the files were nowhere linked. They had already drifted stale (missing the `Artifact`/`Workflow`/`ReportFindings`/`SendUserFile` tools) and only added maintenance friction. No version bump: the `automate` package that `VERSION` tracks is unaffected. Regenerate on demand with `pandoc -s --metadata title=" " <src>.md -o <src>.html` if ever needed.
 
+## [2.14.0] - 2026-08-13
+
+### Added
+- **`ListAgents` subagent tool** — the weekly docs check (issue #23) surfaced a drift between the [Claude Code tools reference](https://code.claude.com/docs/en/tools-reference) and the schema. `ListAgents` (v2.1.224+) lists the agents reachable via `SendMessage` — session subagents, other local sessions, and, while connected to Remote Control, web and remote sessions — excluding agent-team teammates, which Claude reaches through the team roster. It appears only where cross-session messaging is enabled. Added to `plugins/automate/schemas/subagents.json` (`validValues` + note), the `VALID_TOOLS` array in `validate-config.sh`, and the inline tool lists in `SKILL.md`, `docs/claude-code-reference.md`, and `CLAUDE.md`.
+- **Structure tests `STRUCT-137`/`STRUCT-138`** (subagent accepts `ListAgents`; schema includes it) and **`STRUCT-139`/`STRUCT-140`** (subagent validation rejects `EndConversation`; schema documents why).
+
+### Changed
+- **`EndConversation` documented as deliberately excluded.** Issue #23 also reported `EndConversation` as missing from the subagent schema. It is a **false positive**: the tools reference states that subagents never receive the tool, and that background tasks sharing the main conversation's tool list can see it but calling it there ends nothing. It additionally never prompts for permission, `PreToolUse` hooks do not run for it, and while any other tool remains it cannot be removed by a `tools` list, `--disallowedTools`, or `deny`/`ask` rules. Adding it to `validValues` would have validated a subagent configuration that cannot work. Instead the exclusion is now recorded in the schema (`notes.endConversationToolExcluded`), in `docs/claude-code-reference.md` (new "Tools excluded from the `tools` field" section), and in `CLAUDE.md`, so a future docs diff does not reintroduce it.
+
+### Notes
+- MINOR bump (additive): one new recognized tool value, fully backward compatible. `STRUCT-139` is the only behavioral tightening — a subagent declaring `tools: EndConversation` was already invalid, and is now asserted to stay that way.
+- The tools-reference table no longer lists `TeamCreate`/`TeamDelete`, which remain in the schema. Left untouched here — agent teams are experimental and the removal needs its own verification against the agent-teams docs.
+
 ## [2.13.0] - 2026-07-14
 
 ### Added
