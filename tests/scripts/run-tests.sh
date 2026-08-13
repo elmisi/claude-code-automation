@@ -75,6 +75,16 @@ run_structure_tests() {
     assert_file_exists "$PROJECT_ROOT/.agents/skills/qa-architect/SKILL.md" \
         "STRUCT-QA-04: OpenCode-compatible qa-architect SKILL.md exists"
 
+    # The skill link must expose the WHOLE skill directory, not just SKILL.md:
+    # OpenCode (verified on 1.18.18) resolves a skill's relative references
+    # against the link path without following it, so a link to the bare
+    # SKILL.md leaves references/ and assets/ unreachable.
+    assert_file_exists "$PROJECT_ROOT/.agents/skills/qa-architect/references/qa-contract-template.yaml" \
+        "STRUCT-QA-15: qa-architect references/ reachable through the skill link"
+
+    assert_file_exists "$PROJECT_ROOT/.agents/skills/qa-architect/assets/synthetic-markdown-editor-pilot.md" \
+        "STRUCT-QA-16: qa-architect assets/ reachable through the skill link"
+
     # Test: JSON files are valid
     log_info "Testing JSON validity..."
 
