@@ -1,0 +1,9 @@
+{
+  "base": "main",
+  "head": "HEAD",
+  "files": [
+    {"path": "db/migrations/001_add_users.sql", "role": "source", "area": "db", "added": 40, "removed": 0, "generated": false}
+  ],
+  "added": 40, "removed": 0, "dispersion": 1, "area_depth": 1,
+  "areas": ["db"], "tests_touched": [], "source_without_tests": ["db/migrations/001_add_users.sql"]
+}

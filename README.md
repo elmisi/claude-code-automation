@@ -344,6 +344,31 @@ docs/refactor-discovery/
 
 ---
 
+## review-cycle *(beta)*
+
+Verifies a **change** instead of auditing a diff. The order is the protocol: it reconstructs what the change does from the diff alone, and only then reads the intent its author declared — which is what makes intent *drift* visible at all.
+
+```bash
+/review-cycle main...HEAD          # the whole pipeline
+/review-cycle-intent  <pass-dir>   # just the intent handover, no judgement
+/review-cycle-drift   <pass-dir>   # behaviour vs. validated intent
+/review-cycle-architecture <pass-dir>
+/review-cycle-risk    <pass-dir>   # probability, impact, blast radius, detectability, reversibility
+/review-cycle-hygiene <pass-dir>   # apply the deterministic fixes as local commits
+```
+
+How deep the review goes is decided by a **deterministic risk floor** computed by a script, not by the model. The model may raise it — motivating the raise in writing — and can never lower it, so "skip the review" is only ever reachable by rule.
+
+Every outcome is either a **finding** (a defect, with a severity) or an **open question** (a decision, admissible only if it names a concrete alternative and that alternative's cost). Both must state what happens if you ignore them; one that cannot is not an outcome, and `rc-validate.sh` enforces that with a non-zero exit and a line number.
+
+Findings labelled `auto-fixable` never become comment threads. They go to the hygiene lane, which applies them as themed **local commits** — gated on a green test suite before and after, never touching a test file, and never pushing. The outward gesture stays yours.
+
+Two safety mechanisms ship **inert**: the block on unrecognised stacks and the automatic promotion driven by accumulated debt both depend on thresholds that are `null` until calibrated on real passes. Any script that reads one prints an `INERT:` line, so you cannot mistake an uncalibrated mechanism for a working one.
+
+Artefacts land in `docs/review-cycle/<date>/`: `change-brief.md`, `intent.md`, `review.md`, `hygiene.md`, plus a per-project `registry.md` and `debt.md`.
+
+The design record — the source conversation, the decisions separated by provenance, the open questions and the spec — is in `docs/review-cycle/`.
+
 ## Testing
 
 | Type | Command | Tests | Description |

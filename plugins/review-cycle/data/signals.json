@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "layer_base": {
+    "sensitive": [
+      {
+        "match": "**/migration*/**",
+        "floor": "strict",
+        "why": "schema change"
+      },
+      {
+        "match": "**/migrations/**",
+        "floor": "strict",
+        "why": "schema change"
+      },
+      {
+        "match": "**/auth*/**",
+        "floor": "strict",
+        "why": "authentication surface"
+      },
+      {
+        "match": "**/*secret*",
+        "floor": "strict",
+        "why": "credential surface"
+      },
+      {
+        "match": "**/*permission*",
+        "floor": "strict",
+        "why": "authorization surface"
+      },
+      {
+        "match": "**/*.sql",
+        "floor": "strict",
+        "why": "schema or data change"
+      },
+      {
+        "match": "**/*.lock",
+        "floor": "normal",
+        "why": "dependency graph"
+      },
+      {
+        "match": "**/package-lock.json",
+        "floor": "normal",
+        "why": "dependency graph"
+      },
+      {
+        "match": ".github/workflows/**",
+        "floor": "normal",
+        "why": "pipeline definition"
+      },
+      {
+        "match": "bitbucket-pipelines.yml",
+        "floor": "normal",
+        "why": "pipeline definition"
+      },
+      {
+        "match": "Dockerfile*",
+        "floor": "normal",
+        "why": "runtime image"
+      },
+      {
+        "match": "**/*.tf",
+        "floor": "strict",
+        "why": "infrastructure definition"
+      }
+    ],
+    "generated": [
+      "**/dist/**",
+      "**/build/**",
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/*.min.js",
+      "**/*.min.css",
+      "**/*.lock",
+      "**/package-lock.json"
+    ],
+    "roles": {
+      "test": [
+        "**/test/**",
+        "**/tests/**",
+        "**/__tests__/**",
+        "**/spec/**",
+        "**/*_test.*",
+        "**/*-test.*",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/test_*.py",
+        "**/conftest.py"
+      ],
+      "config": [
+        "**/*.config.*",
+        "**/*.ini",
+        "**/*.toml",
+        "**/*.cfg",
+        "**/*.yaml",
+        "**/*.yml",
+        "**/*.json"
+      ],
+      "docs": [
+        "**/*.md",
+        "**/*.rst",
+        "**/*.txt",
+        "**/*.adoc"
+      ],
+      "source": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.jsx",
+        "**/*.py",
+        "**/*.rs",
+        "**/*.go",
+        "**/*.java",
+        "**/*.rb",
+        "**/*.php",
+        "**/*.cs",
+        "**/*.kt",
+        "**/*.swift",
+        "**/*.c",
+        "**/*.h",
+        "**/*.cpp",
+        "**/*.hpp",
+        "**/*.sh",
+        "**/*.sql",
+        "**/*.vue",
+        "**/*.svelte",
+        "**/*.css",
+        "**/*.scss",
+        "**/*.html"
+      ]
+    }
+  },
+  "layer_stack": {
+    "node": {
+      "manifest": "package.json",
+      "test_config": [
+        "jest.config.*",
+        "vitest.config.*",
+        "playwright.config.*"
+      ]
+    },
+    "python": {
+      "manifest": "pyproject.toml",
+      "test_config": [
+        "pytest.ini",
+        "tox.ini",
+        "setup.cfg"
+      ]
+    },
+    "rust": {
+      "manifest": "Cargo.toml",
+      "test_config": []
+    },
+    "go": {
+      "manifest": "go.mod",
+      "test_config": []
+    },
+    "php": {
+      "manifest": "composer.json",
+      "test_config": [
+        "phpunit.xml",
+        "phpunit.xml.dist"
+      ]
+    }
+  },
+  "collect_commands": {
+    "pytest": "pytest --collect-only -q",
+    "jest": "npx --no-install jest --listTests",
+    "vitest": "npx --no-install vitest list",
+    "go": "go test ./... -list .",
+    "cargo": "cargo test -- --list"
+  },
+  "ci_files": [
+    ".github/workflows",
+    "bitbucket-pipelines.yml",
+    ".gitlab-ci.yml",
+    ".circleci/config.yml"
+  ],
+  "floor_rules": {
+    "_note": "Opinionated starting values, part of the catalogue. Distinct from data/thresholds.json, which holds the three uncalibrated safety thresholds.",
+    "docs_or_generated_only": "skip",
+    "default": "fast",
+    "raise_to_normal_when": {
+      "config_touched": true,
+      "dispersion_min": 3,
+      "churn_lines_min": 200,
+      "source_without_tests": true
+    }
+  },
+  "adhoc_test_runners": [
+    "**/run-tests.sh",
+    "**/run_tests.sh",
+    "**/test.sh",
+    "**/runtests.sh"
+  ],
+  "runner_detect": {
+    "node": {
+      "when_file": "package.json",
+      "command": "npm test",
+      "collect": "jest"
+    },
+    "python": {
+      "when_file": "pyproject.toml",
+      "command": "pytest",
+      "collect": "pytest"
+    },
+    "python-ini": {
+      "when_file": "pytest.ini",
+      "command": "pytest",
+      "collect": "pytest"
+    },
+    "rust": {
+      "when_file": "Cargo.toml",
+      "command": "cargo test",
+      "collect": "cargo"
+    },
+    "go": {
+      "when_file": "go.mod",
+      "command": "go test ./...",
+      "collect": "go"
+    },
+    "php": {
+      "when_file": "phpunit.xml",
+      "command": "./vendor/bin/phpunit",
+      "collect": null
+    }
+  }
+}

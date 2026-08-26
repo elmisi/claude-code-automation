@@ -836,6 +836,135 @@ run_structure_tests() {
 
     # Run plan-cycle plugin tests as part of structure tier
     run_plan_cycle_tests
+
+    # Run review-cycle plugin tests as part of structure tier
+    run_review_cycle_tests
+}
+
+# ============================================
+# review-cycle PLUGIN TESTS (STRUCT-RC-01..26)
+# ============================================
+run_review_cycle_tests() {
+    log_section "review-cycle Plugin Tests (STRUCT-RC-01..26)"
+
+    local RC="$PROJECT_ROOT/plugins/review-cycle"
+    local SKILLS=(review-cycle review-cycle-intent review-cycle-drift \
+                  review-cycle-architecture review-cycle-risk review-cycle-hygiene)
+    local SCRIPTS=(rc-lib.sh rc-recognize.sh rc-inventory.sh rc-floor.sh \
+                   rc-suites.sh rc-registry.sh rc-guard.sh rc-validate.sh)
+    local i n
+
+    # STRUCT-RC-01..06: the six skills exist
+    i=1
+    for n in "${SKILLS[@]}"; do
+        assert_file_exists "$RC/skills/$n/SKILL.md" \
+            "$(printf 'STRUCT-RC-%02d: %s SKILL.md exists' "$i" "$n")"
+        i=$((i+1))
+    done
+
+    # STRUCT-RC-07..12: valid frontmatter
+    i=7
+    for n in "${SKILLS[@]}"; do
+        assert_valid_frontmatter "$RC/skills/$n/SKILL.md" \
+            "$(printf 'STRUCT-RC-%02d: %s frontmatter valid' "$i" "$n")"
+        i=$((i+1))
+    done
+
+    assert_valid_json "$RC/.claude-plugin/plugin.json" "STRUCT-RC-13: Claude plugin.json valid"
+    assert_valid_json "$RC/.codex-plugin/plugin.json" "STRUCT-RC-14: Codex plugin.json valid"
+    assert_valid_json "$RC/data/signals.json" "STRUCT-RC-15: signals.json valid"
+
+    # STRUCT-RC-16: thresholds carry the three keys and are null or numeric
+    if jq -e 'has("recognition_coverage_min") and has("uncumulated_volume_lines") and has("open_judgements_max")
+              and ([.recognition_coverage_min, .uncumulated_volume_lines, .open_judgements_max]
+                   | all(. == null or (type == "number")))' \
+         "$RC/data/thresholds.json" >/dev/null 2>&1; then
+        log_success "STRUCT-RC-16: thresholds.json has the three keys, each null or numeric"
+    else
+        log_fail "STRUCT-RC-16: thresholds.json malformed"
+    fi
+
+    # STRUCT-RC-17: version sync across both manifests and the Claude marketplace
+    local v_claude v_codex v_market
+    v_claude=$(jq -r '.version' "$RC/.claude-plugin/plugin.json")
+    v_codex=$(jq -r '.version' "$RC/.codex-plugin/plugin.json")
+    v_market=$(jq -r '.plugins[] | select(.name == "review-cycle") | .version' \
+                  "$PROJECT_ROOT/.claude-plugin/marketplace.json")
+    if [ "$v_claude" == "$v_codex" ] && [ "$v_claude" == "$v_market" ]; then
+        log_success "STRUCT-RC-17: review-cycle version sync — all manifests show $v_claude"
+    else
+        log_fail "STRUCT-RC-17: review-cycle version mismatch — Claude=$v_claude, Codex=$v_codex, marketplace=$v_market"
+    fi
+
+    # STRUCT-RC-18/19: the Codex marketplace entry
+    local codex_src codex_has_version
+    codex_src=$(jq -r '.plugins[] | select(.name == "review-cycle") | .source.path' \
+                   "$PROJECT_ROOT/.agents/plugins/marketplace.json")
+    if [ "$codex_src" == "./plugins/review-cycle" ]; then
+        log_success "STRUCT-RC-18: Codex marketplace points to plugins/review-cycle"
+    else
+        log_fail "STRUCT-RC-18: Codex marketplace source mismatch — $codex_src"
+    fi
+    codex_has_version=$(jq -r '.plugins[] | select(.name == "review-cycle") | has("version")' \
+                           "$PROJECT_ROOT/.agents/plugins/marketplace.json")
+    if [ "$codex_has_version" == "false" ]; then
+        log_success "STRUCT-RC-19: Codex marketplace entry carries no version field"
+    else
+        log_fail "STRUCT-RC-19: Codex marketplace entry must not carry a version field"
+    fi
+
+    # STRUCT-RC-20: the eight scripts exist, are executable and are bash
+    local bad=0
+    for n in "${SCRIPTS[@]}"; do
+        [ -f "$RC/scripts/$n" ] || { log_fail "STRUCT-RC-20: missing script $n"; bad=1; break; }
+        [ -x "$RC/scripts/$n" ] || { log_fail "STRUCT-RC-20: $n is not executable"; bad=1; break; }
+        head -1 "$RC/scripts/$n" | grep -q '^#!/bin/bash$' || { log_fail "STRUCT-RC-20: $n lacks #!/bin/bash"; bad=1; break; }
+    done
+    [ "$bad" -eq 0 ] && log_success "STRUCT-RC-20: all 8 scripts present, executable and bash"
+
+    # STRUCT-RC-21: no lane conditional in any prompt (S-31)
+    if grep -rlEi 'if the lane|se la corsia|when the lane is' "$RC"/skills/*/SKILL.md >/dev/null 2>&1; then
+        log_fail "STRUCT-RC-21: a SKILL.md branches on the lane — the script emits the invoke list for that reason"
+    else
+        log_success "STRUCT-RC-21: no lane conditional in any SKILL.md"
+    fi
+
+    assert_file_exists "$RC/agents/lens-runner.md" "STRUCT-RC-22a: lens-runner agent exists"
+    assert_valid_frontmatter "$RC/agents/lens-runner.md" "STRUCT-RC-22b: lens-runner frontmatter valid"
+
+    # STRUCT-RC-23: the six Codex/OpenCode links are directory symlinks.
+    # File links break relative references — see CHANGELOG qa-architect 0.1.0-beta.2.
+    bad=0
+    for n in "${SKILLS[@]}"; do
+        if [ ! -L "$PROJECT_ROOT/.agents/skills/$n" ] || [ ! -d "$PROJECT_ROOT/.agents/skills/$n" ]; then
+            log_fail "STRUCT-RC-23: .agents/skills/$n is not a directory symlink"; bad=1; break
+        fi
+    done
+    [ "$bad" -eq 0 ] && log_success "STRUCT-RC-23: all 6 skills exposed as directory symlinks"
+
+    # STRUCT-RC-24/25: shared material reachable THROUGH the link, not on the real path.
+    # STRUCT-QA-04 checked the real path and missed exactly this class of bug.
+    bad=0
+    for n in review-cycle review-cycle-intent review-cycle-hygiene; do
+        [ -r "$PROJECT_ROOT/.agents/skills/$n/scripts/rc-lib.sh" ] || {
+            log_fail "STRUCT-RC-24: scripts/ not reachable through .agents/skills/$n"; bad=1; break; }
+    done
+    [ "$bad" -eq 0 ] && log_success "STRUCT-RC-24: scripts/ reachable through the skill link"
+
+    bad=0
+    for n in "${SKILLS[@]}"; do
+        [ -r "$PROJECT_ROOT/.agents/skills/$n/methodology-core.md" ] || {
+            log_fail "STRUCT-RC-25: methodology-core.md not reachable through .agents/skills/$n"; bad=1; break; }
+    done
+    [ "$bad" -eq 0 ] && log_success "STRUCT-RC-25: methodology-core.md reachable through all 6 skill links"
+
+    # STRUCT-RC-26: no parent-relative path in any prompt. Measured against
+    # opencode 1.18.23: such a path leaves the project root and is refused.
+    if grep -rl '\.\./\.\.' "$RC"/skills/*/SKILL.md >/dev/null 2>&1; then
+        log_fail "STRUCT-RC-26: a SKILL.md uses ../.. — unusable from a symlinked skill"
+    else
+        log_success "STRUCT-RC-26: no parent-relative path in any SKILL.md"
+    fi
 }
 
 # ============================================
@@ -1287,11 +1416,95 @@ run_fixture_tests() {
     run_fixture_test_04
     run_fixture_test_05
     run_fixture_test_06
+    run_review_cycle_fixture_tests
 
     # Cleanup
     cleanup_sandbox
     restore_global_config
     trap - EXIT
+}
+
+# Fixture TEST-RC-01..08: review-cycle script layer
+run_review_cycle_fixture_tests() {
+    log_info "Fixture TEST-RC-01..08: review-cycle script layer"
+
+    local RC="$PROJECT_ROOT/plugins/review-cycle/scripts"
+    local FX="$PROJECT_ROOT/tests/fixtures/review-cycle"
+    local out
+
+    # --- rc-validate: the shape rules have teeth or they are aspirations ---
+    if "$RC/rc-validate.sh" "$FX/review-valid.md" >/dev/null 2>&1; then
+        log_success "TEST-RC-01: rc-validate accepts a well-formed review"
+    else
+        log_fail "TEST-RC-01: rc-validate rejected a well-formed review"
+    fi
+
+    out=$("$RC/rc-validate.sh" "$FX/review-missing-consequence.md" 2>&1) && \
+        log_fail "TEST-RC-02: rc-validate accepted a finding with no Consequence" || {
+        if echo "$out" | grep -q "review-missing-consequence.md:5"; then
+            log_success "TEST-RC-02: rc-validate rejects a finding with no Consequence and names line 5"
+        else
+            log_fail "TEST-RC-02: rc-validate rejected but did not name the offending line"
+        fi
+    }
+
+    "$RC/rc-validate.sh" "$FX/open-question-without-alternative.md" >/dev/null 2>&1 && \
+        log_fail "TEST-RC-03: rc-validate accepted an open question with no Alternative/Cost" || \
+        log_success "TEST-RC-03: rc-validate rejects an open question with no Alternative/Cost"
+
+    # --- rc-floor: the invoke list is a safety property, so it is pinned ---
+    out=$("$RC/rc-floor.sh" "$FX/inventory-sample.json" 2>/dev/null)
+    if [ "$(echo "$out" | jq -r '.floor')" == "strict" ] && \
+       echo "$out" | jq -e '[.signals[].why] | any(test("schema"))' >/dev/null; then
+        log_success "TEST-RC-04: a migration lands in the strict lane, citing a schema signal"
+    else
+        log_fail "TEST-RC-04: migration inventory did not produce a strict floor"
+    fi
+
+    out=$("$RC/rc-floor.sh" "$FX/inventory-docs-only.json" 2>/dev/null)
+    if [ "$(echo "$out" | jq -r '.floor')" == "skip" ] && \
+       [ "$(echo "$out" | jq -c '.invoke')" == '["review-cycle-hygiene"]' ]; then
+        log_success "TEST-RC-05: a docs-only change lands in skip, invoking hygiene alone"
+    else
+        log_fail "TEST-RC-05: docs-only inventory did not produce a skip lane with hygiene only"
+    fi
+
+    # --- uncalibrated thresholds must announce themselves, not pass silently ---
+    out=$(cd "$PROJECT_ROOT" && "$RC/rc-recognize.sh" HEAD~1 HEAD 2>&1 >/dev/null) || true
+    if echo "$out" | grep -q "^INERT: threshold 'recognition_coverage_min'"; then
+        log_success "TEST-RC-06: an uncalibrated threshold announces itself as INERT"
+    else
+        log_fail "TEST-RC-06: uncalibrated threshold did not emit an INERT line"
+    fi
+
+    # --- rc-guard: the perimeter check the whole hygiene guarantee rests on ---
+    local sb
+    sb=$(mktemp -d)
+    (
+        cd "$sb"
+        git init -q .; git config user.email t@t; git config user.name t
+        mkdir -p src tests
+        echo "x" > src/app.js; echo "y" > tests/app.test.js
+        git add -A; git commit -qm base
+        echo "z" >> tests/app.test.js; git add -A; git commit -qm touch-test
+        echo "w" >> src/app.js; git add -A; git commit -qm touch-source
+    ) >/dev/null 2>&1
+
+    out=$(cd "$sb" && "$RC/rc-guard.sh" HEAD~2 HEAD~1 2>&1) && \
+        log_fail "TEST-RC-07: rc-guard allowed a change that touches a test file" || {
+        if echo "$out" | grep -q "tests/app.test.js"; then
+            log_success "TEST-RC-07: rc-guard blocks a change touching a test file and names it"
+        else
+            log_fail "TEST-RC-07: rc-guard blocked but did not name the test file"
+        fi
+    }
+
+    if (cd "$sb" && "$RC/rc-guard.sh" HEAD~1 HEAD >/dev/null 2>&1); then
+        log_success "TEST-RC-08: rc-guard passes a change that touches no test file"
+    else
+        log_fail "TEST-RC-08: rc-guard blocked a change that touches no test file"
+    fi
+    rm -rf "$sb"
 }
 
 # Fixture TEST-01: Hook creation

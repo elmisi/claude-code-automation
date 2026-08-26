@@ -1,0 +1,6 @@
+{
+  "recognition_coverage_min": null,
+  "uncumulated_volume_lines": null,
+  "open_judgements_max": null,
+  "_note": "null = mechanism present but INERT: it will never fire. Calibrate at roadmap stage 3 (docs/review-cycle/docs/product-spec.md)."
+}

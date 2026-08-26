@@ -1,0 +1,10 @@
+{
+  "base": "main",
+  "head": "HEAD",
+  "files": [
+    {"path": "README.md", "role": "docs", "area": "<root>", "added": 3, "removed": 1, "generated": false},
+    {"path": "docs/guide.md", "role": "docs", "area": "docs", "added": 8, "removed": 0, "generated": false}
+  ],
+  "added": 11, "removed": 1, "dispersion": 2, "area_depth": 1,
+  "areas": ["<root>", "docs"], "tests_touched": [], "source_without_tests": []
+}
