@@ -75,7 +75,11 @@ The core creation workflow is in `plugins/automate/skills/automate/SKILL.md`. Ma
 
 ### plan-cycle Internals
 
-**Before changing the Grilling discipline in `plugins/plan-cycle/skills/plan-cycle/templates/plan-template.md`, read `docs/plan-cycle/decisions.md`** — it records permanent rules that have already been settled (notably: the discipline has an interactive rendition and a document rendition, and the document one batches independent questions on purpose).
+**Before changing the Grilling discipline in `plugins/plan-cycle/skills/plan-cycle/templates/plan-template.md`, read `docs/plan-cycle/decisions.md`** — it records permanent rules that have already been settled.
+
+The **transposition rule** is the one that keeps getting re-opened, so it lives here and in the record, never in the template: the discipline has an *interactive* rendition (one question at a time) and a *document* rendition (independent questions batched into one pass). New versions arrive written for interactive use; transpose them by grouping the independent questions, and do **not** propose replacing the batching on the grounds that the interactive version says "one question at a time". This has been settled twice.
+
+Maintainer meta-documentation must stay out of `plan-template.md`: `SKILL.md` copies its Operations Guide appendix verbatim into every produced plan, in any repository, where a `docs/plan-cycle/` reference is a dead path.
 
 ## Plugin Packaging
 

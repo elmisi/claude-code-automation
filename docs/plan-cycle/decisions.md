@@ -20,7 +20,11 @@ Two parts, deliberately separated by nature.
 
 **Do not re-open this.** An agent reading a new interactive version will notice that "one question at a time" contradicts the batching in the plan template, and will propose replacing the batching. That proposal has been raised twice and rejected twice, on the same grounds both times: in a document reviewed over multiple passes, serialising independent questions turns one pass into fifteen exchanges without adding any information, because by definition none of those answers changes another. The contradiction is not a defect — it is the difference between the two renditions.
 
-**Where it is written.** `plugins/plan-cycle/skills/plan-cycle/templates/plan-template.md`, appendix section `## Grilling discipline`, under *Transposition rule*.
+**Where it is written — and where it must not be.** Here, and in `CLAUDE.md` under *plan-cycle Internals*. **Not** in `plugins/plan-cycle/skills/plan-cycle/templates/plan-template.md`: `SKILL.md` copies that file's Operations Guide appendix verbatim into every produced plan, in any repository, so a maintainer-facing "do not re-litigate" clause would ship to end users along with a `docs/plan-cycle/` path that does not exist there. The template carries only the operative statement of the two renditions, which is what an agent operating a plan actually needs. `STRUCT-PC-31` asserts both halves: the record and the pointer exist, and the template does not reference `docs/plan-cycle/`.
+
+### Maintainer meta-documentation stays out of the plan template
+
+**Rule.** Anything addressed to whoever maintains this plugin — rationale, settled-decision markers, references to `docs/`, changelog-style notes — belongs in `CLAUDE.md` or in this record, never in `plan-template.md`. That file's appendix is reproduced verbatim inside every plan the plugin produces, for users who have no access to this repository. Operative instructions for an agent operating a plan are the only thing that belongs there.
 
 ---
 

@@ -1089,28 +1089,35 @@ run_plan_cycle_tests() {
         log_fail "STRUCT-PC-30: review/finalize do not both reference the Grilling discipline"
     fi
 
-    # STRUCT-PC-31: the transposition rule is settled in the template and recorded in docs/, pointed at from CLAUDE.md
+    # STRUCT-PC-31: the transposition rule lives in docs/ + CLAUDE.md, and NOT in the template.
+    # SKILL.md copies the template's appendix verbatim into every produced plan, in any repo,
+    # where a docs/plan-cycle/ reference is a dead path and maintainer notes are noise.
     local decisions_doc="$PROJECT_ROOT/docs/plan-cycle/decisions.md"
-    if grep -q "Transposition rule" "$tmpl" && \
-       grep -q "docs/plan-cycle/decisions.md" "$tmpl" && \
-       [ -f "$decisions_doc" ] && \
+    if [ -f "$decisions_doc" ] && \
        grep -q "Permanent rules" "$decisions_doc" && \
-       grep -q "docs/plan-cycle/decisions.md" "$PROJECT_ROOT/CLAUDE.md"; then
-        log_success "STRUCT-PC-31: transposition rule settled, recorded in docs/plan-cycle/decisions.md, pointed at from CLAUDE.md"
+       grep -qi "transposition" "$decisions_doc" && \
+       grep -q "docs/plan-cycle/decisions.md" "$PROJECT_ROOT/CLAUDE.md" && \
+       grep -qi "transposition rule" "$PROJECT_ROOT/CLAUDE.md" && \
+       ! grep -q "docs/plan-cycle/" "$tmpl" && \
+       ! grep -qi "do not re-litigate" "$tmpl"; then
+        log_success "STRUCT-PC-31: transposition rule recorded in docs/ + CLAUDE.md, absent from the shipped template"
     else
-        log_fail "STRUCT-PC-31: transposition rule, its decision record, or the CLAUDE.md pointer is missing"
+        log_fail "STRUCT-PC-31: transposition rule misplaced — missing from docs/CLAUDE.md, or leaking into the shipped plan template"
     fi
 
-    # STRUCT-PC-32: the Decision question format declares all five mandatory fields
+    # STRUCT-PC-32: the Decision question format declares all five mandatory fields.
+    # Scoped to the Decision question sub-block: 'Recommendation' also appears in the
+    # Unresolved item format, so a whole-block grep would not catch its removal here.
     local qfields=("Context" "Why it matters" "Options" "Trade-offs" "Recommendation")
     local missing_q=""
-    local disc_block
+    local disc_block dq_block
     disc_block=$(awk '/^## Grilling discipline/,/^## plan-cycle-annotate/' "$tmpl")
+    dq_block=$(echo "$disc_block" | awk '/^\*\*Decision question\*\*/,/^\*\*Unresolved item\*\*/')
     local f
     for f in "${qfields[@]}"; do
-        echo "$disc_block" | grep -q "$f" || missing_q="$missing_q $f"
+        echo "$dq_block" | grep -q "$f" || missing_q="$missing_q $f"
     done
-    if grep -q "Decision question" "$tmpl" && [ -z "$missing_q" ]; then
+    if [ -n "$dq_block" ] && [ -z "$missing_q" ]; then
         log_success "STRUCT-PC-32: Decision question format declares all five fields"
     else
         log_fail "STRUCT-PC-32: Decision question format missing field(s):$missing_q"
@@ -1174,6 +1181,16 @@ run_plan_cycle_tests() {
         log_success "STRUCT-PC-37: reviewer question sections match the Decision question field list (parity)"
     else
         log_fail "STRUCT-PC-37: field-list parity broken —$missing_parity"
+    fi
+
+    # STRUCT-PC-38: the first wave enforces the dependency rule across its two sections
+    if echo "$disc_block" | grep -q "Dependencies inside the first wave" && \
+       echo "$disc_block" | grep -q "Waiting on:" && \
+       echo "$dec_block" | grep -q "Waiting on:" && \
+       echo "$finalize_block" | grep -q "Waiting on:"; then
+        log_success "STRUCT-PC-38: first-wave dependency rule declared, templated, and caught by the finalize inventory"
+    else
+        log_fail "STRUCT-PC-38: first-wave dependency rule missing from the discipline, the Decisions section, or the finalize inventory"
     fi
 }
 

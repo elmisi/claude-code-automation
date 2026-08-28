@@ -37,6 +37,9 @@ Planner uncertainty requiring user input. This section is part of the **first wa
   - **Trade-offs:** <A → concrete consequence>; <B → concrete consequence>.
   - **Recommendation:** <choice>, because <one line>. This is also what the planner assumes if you do not answer.
 
+- **Q2 — <one-line title naming the decision>**
+  - **Waiting on:** <the Interpretation Log entry whose confirmation decides this>. Not asked in this wave — `plan-cycle-review` asks it in full once that reading is settled.
+
 If no open decisions, write `None.` — never leave the section empty.
 
 ## Detailed Changes *(Executor surface)*
@@ -86,8 +89,6 @@ When an operation needs decisions from you, it grills. The discipline has **two 
 
 Two questions are dependent — and MUST NOT share a pass — if the answer to one would change the answer to the other, or change whether the other still needs asking.
 
-**Transposition rule (settled — do not re-litigate).** When a new version of this discipline is written for interactive use, transpose it to the document rendition by grouping the independent questions into one pass. The choice is permanent and recorded in `docs/plan-cycle/decisions.md`; do not re-open it on the grounds that the interactive version says "one question at a time".
-
 **Ordering.** Within a pass, most critical first — the questions whose answers change the most other answers — then the marginal ones.
 
 **Scope fence.** Only the request under discussion. Do not drift into adjacent topics, however tempting.
@@ -129,6 +130,8 @@ No pass re-checks this automatically. If a question is unclear or badly framed, 
 
 The **Interpretation Log** and **Decisions I Need From You** sections of a freshly written plan *are* the first wave of the document rendition; `plan-cycle-review` and `plan-cycle-finalize` carry the waves that follow. All of them use the same Decision question format above — there is one question format across the whole cycle.
 
+**Dependencies inside the first wave.** The two sections share one pass, so the dependency rule binds across them. A `Decisions I Need From You` entry whose answer — or whose very relevance — depends on how an `Interpretation Log` entry is confirmed **MUST NOT** be asked in this wave. Instead, list it with `**Waiting on:** <the Interpretation Log entry it depends on>` and no options and no recommendation; `plan-cycle-review` asks it as a full Decision question once that reading is settled. A question still waiting when `plan-cycle-finalize` runs is an unresolved item and goes into the closing inventory.
+
 ## plan-cycle-annotate
 
 **Purpose.** Annotations are the review channel on this plan. They exist to **find what is wrong with it and to make it better before anyone executes it** — errors, gaps, unstated assumptions, weak criteria, missed improvements. An annotation *marks* the plan; it never changes it. Multiple annotation passes may run before a single review pass, so a pass is worth running even when it finds one thing.
@@ -166,7 +169,7 @@ Make the plan operative, self-contained, coherent, robust — a fresh agent must
 2. For each section, check ALL 11 rules: Self-contained, Operative, Outcome-layer success, Numbers-not-adjectives, Exit clauses, Explicit degradation, Verify-before-claim, Enumerate-universals, Mark-unverifiable, Coherent, Robust.
 3. Rewrite every failing section — do not annotate.
 4. Report: sections updated count + one-line summary per section.
-5. **Unresolved Items Inventory** — list every remaining TODO, `assumed:`, `unverified:`. Present them as **one single list in one pass** (document rendition of the **Grilling discipline** above): these items are independent by construction, so none of them waits on another. Each item uses the **Unresolved item** format — what is unresolved, why it cannot be settled now, consequence of proceeding as-is, recommendation between *resolve before execution* and *proceed knowingly with consequence stated*. If an answer opens a real question, that question becomes the next wave, in the Decision question format. Approval is invalid without this step.
+5. **Unresolved Items Inventory** — list every remaining TODO, `assumed:`, `unverified:`, and every question still marked `Waiting on:`. Present them as **one single list in one pass** (document rendition of the **Grilling discipline** above): these items are independent by construction, so none of them waits on another. Each item uses the **Unresolved item** format — what is unresolved, why it cannot be settled now, consequence of proceeding as-is, recommendation between *resolve before execution* and *proceed knowingly with consequence stated*. If an answer opens a real question, that question becomes the next wave, in the Decision question format. Approval is invalid without this step.
 
 ## General Principles
 
