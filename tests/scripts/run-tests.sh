@@ -1071,11 +1071,13 @@ run_plan_cycle_tests() {
         log_fail "STRUCT-PC-28: plan-cycle-finalize missing Outcome-layer success rule"
     fi
 
-    # STRUCT-PC-29: appendix defines the Grilling discipline block (one-at-a-time / orthogonal waves)
-    if grep -qE "^## Grilling discipline" "$tmpl" && grep -qi "orthogonal" "$tmpl"; then
-        log_success "STRUCT-PC-29: plan template appendix has the Grilling discipline section"
+    # STRUCT-PC-29: appendix defines the Grilling discipline with both renditions
+    if grep -qE "^## Grilling discipline" "$tmpl" && \
+       grep -q "Interactive rendition" "$tmpl" && \
+       grep -q "Document rendition" "$tmpl"; then
+        log_success "STRUCT-PC-29: plan template appendix has the Grilling discipline with both renditions"
     else
-        log_fail "STRUCT-PC-29: plan template appendix missing '## Grilling discipline' section (or its orthogonality rule)"
+        log_fail "STRUCT-PC-29: plan template appendix missing '## Grilling discipline' section or one of its two renditions"
     fi
 
     # STRUCT-PC-30: review (if-unclear) and finalize (inventory) both route through the Grilling discipline
@@ -1085,6 +1087,93 @@ run_plan_cycle_tests() {
         log_success "STRUCT-PC-30: plan-cycle-review and plan-cycle-finalize reference the Grilling discipline"
     else
         log_fail "STRUCT-PC-30: review/finalize do not both reference the Grilling discipline"
+    fi
+
+    # STRUCT-PC-31: the transposition rule is settled in the template and recorded in docs/, pointed at from CLAUDE.md
+    local decisions_doc="$PROJECT_ROOT/docs/plan-cycle/decisions.md"
+    if grep -q "Transposition rule" "$tmpl" && \
+       grep -q "docs/plan-cycle/decisions.md" "$tmpl" && \
+       [ -f "$decisions_doc" ] && \
+       grep -q "Permanent rules" "$decisions_doc" && \
+       grep -q "docs/plan-cycle/decisions.md" "$PROJECT_ROOT/CLAUDE.md"; then
+        log_success "STRUCT-PC-31: transposition rule settled, recorded in docs/plan-cycle/decisions.md, pointed at from CLAUDE.md"
+    else
+        log_fail "STRUCT-PC-31: transposition rule, its decision record, or the CLAUDE.md pointer is missing"
+    fi
+
+    # STRUCT-PC-32: the Decision question format declares all five mandatory fields
+    local qfields=("Context" "Why it matters" "Options" "Trade-offs" "Recommendation")
+    local missing_q=""
+    local disc_block
+    disc_block=$(awk '/^## Grilling discipline/,/^## plan-cycle-annotate/' "$tmpl")
+    local f
+    for f in "${qfields[@]}"; do
+        echo "$disc_block" | grep -q "$f" || missing_q="$missing_q $f"
+    done
+    if grep -q "Decision question" "$tmpl" && [ -z "$missing_q" ]; then
+        log_success "STRUCT-PC-32: Decision question format declares all five fields"
+    else
+        log_fail "STRUCT-PC-32: Decision question format missing field(s):$missing_q"
+    fi
+
+    # STRUCT-PC-33: the Unresolved item format is distinct, and the inventory uses the document rendition
+    if echo "$disc_block" | grep -q "Unresolved item" && \
+       echo "$disc_block" | grep -q "What is unresolved" && \
+       echo "$disc_block" | grep -q "Why it cannot be settled now" && \
+       echo "$disc_block" | grep -q "Consequence of proceeding as-is" && \
+       echo "$finalize_block" | grep -qE "one single list|single list in one pass" && \
+       echo "$finalize_block" | grep -q "Unresolved item"; then
+        log_success "STRUCT-PC-33: Unresolved item format is distinct and used as one list by the finalize inventory"
+    else
+        log_fail "STRUCT-PC-33: Unresolved item format missing, or finalize inventory not presented as a single list"
+    fi
+
+    # STRUCT-PC-34: the discipline declares the two reviewer sections as the first wave
+    if echo "$disc_block" | grep -q "First wave" && \
+       echo "$disc_block" | grep -q "Interpretation Log" && \
+       echo "$disc_block" | grep -q "Decisions I Need From You" && \
+       grep -q "first wave" "$skills_dir/plan-cycle/SKILL.md"; then
+        log_success "STRUCT-PC-34: first wave declared in the appendix and in SKILL.md"
+    else
+        log_fail "STRUCT-PC-34: first-wave parentage not declared in the appendix or in SKILL.md"
+    fi
+
+    # STRUCT-PC-35: the Humanized context rule exists and is scoped to where the document asks
+    if echo "$disc_block" | grep -q "Humanized context" && \
+       echo "$disc_block" | grep -qE "asks instead of describing" && \
+       grep -q "Humanized context" "$skills_dir/plan-cycle/SKILL.md"; then
+        log_success "STRUCT-PC-35: Humanized context rule present and scoped to asking sections"
+    else
+        log_fail "STRUCT-PC-35: Humanized context rule missing or not scoped to asking sections"
+    fi
+
+    # STRUCT-PC-36: plan-cycle-annotate states its purpose and lists the annotation intents
+    local annotate_block
+    annotate_block=$(awk '/^## plan-cycle-annotate/,/^## plan-cycle-review/' "$tmpl")
+    if echo "$annotate_block" | grep -q "\*\*Purpose\.\*\*" && \
+       echo "$annotate_block" | grep -q "What to annotate" && \
+       echo "$annotate_block" | grep -q "Factual error" && \
+       echo "$annotate_block" | grep -q "Assumption sold as certainty" && \
+       echo "$annotate_block" | grep -q "Unclear question" && \
+       echo "$annotate_block" | grep -q "Improvement proposal" && \
+       echo "$annotate_block" | grep -q "no new tags"; then
+        log_success "STRUCT-PC-36: plan-cycle-annotate states purpose + intent checklist, without new tags"
+    else
+        log_fail "STRUCT-PC-36: plan-cycle-annotate missing purpose statement, intent checklist, or the no-new-tags guarantee"
+    fi
+
+    # STRUCT-PC-37: parity — both reviewer question sections use the discipline's five field names
+    local interp_block dec_block missing_parity=""
+    interp_block=$(awk '/^## Interpretation Log/,/^## Approach/' "$tmpl")
+    dec_block=$(awk '/^## Decisions I Need From You/,/^## Detailed Changes/' "$tmpl")
+    for f in "${qfields[@]}"; do
+        echo "$interp_block" | grep -q "$f" || missing_parity="$missing_parity Interpretation-Log:$f"
+        echo "$dec_block" | grep -q "$f" || missing_parity="$missing_parity Decisions:$f"
+    done
+    if [ -z "$missing_parity" ]; then
+        log_success "STRUCT-PC-37: reviewer question sections match the Decision question field list (parity)"
+    else
+        log_fail "STRUCT-PC-37: field-list parity broken —$missing_parity"
     fi
 }
 

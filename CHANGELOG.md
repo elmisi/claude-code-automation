@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [plan-cycle 4.2.0] - 2026-08-28
+
+### Added
+- **`plan-cycle-annotate` now states what annotations are for.** The operation was purely procedural — note syntax, tags, the no-rewrite guardrail — and never said that annotations exist to find what is wrong with a plan and to make it better before anyone executes it. It gains a purpose statement plus a closed checklist of annotation intents, each with a one-line example: factual error, gap, assumption sold as certainty, disagreement with the approach, success criterion that is not user-observable, risk without an exit clause, request for clarification, unclear question, improvement proposal. A reviewer facing a plausible-looking plan now has a list of things to hunt for instead of only a note format. The list classifies **intent, not syntax**: no new tags, and `plan-cycle-review` keeps processing every note uniformly.
+- **The Grilling discipline now declares its two renditions.** *Interactive* (a live conversation, no document in front of the reader): one question at a time. *Document* (a plan reviewed over multiple passes, the default in a plan file): the first pass carries every question that has no dependency on another, and each new branch opened by an answer forms the next pass. A **transposition rule** records that new versions of the discipline arrive written for interactive use and are transposed by grouping the independent questions — settled, not to be re-litigated. Also added: ordering by criticality within a pass, a scope fence against drift into adjacent topics, and an explicit termination condition.
+- **Question format is now fixed by the kind of request, not by the agent's judgement.** A *decision question* carries five mandatory fields (context, why it matters, options, trade-offs, recommendation with reason). An *unresolved item* from the closing inventory of `plan-cycle-finalize` carries four shorter ones (what is unresolved, why it cannot be settled now, consequence of proceeding as-is, recommendation between resolving and proceeding knowingly) — an inventory item is a known gap with a binary choice, not an open question, and imposing five fields on fifteen of them produced ceremony that gets dropped exactly where discipline matters most.
+- **Humanized context rule.** The plan stays rigorous — paths, signatures, thresholds and markers remain mandatory — but wherever the document *asks* rather than *describes*, a question must restate in plain words the substance of whatever it depends on and put the reference next to it. A citation is a pointer, not an explanation. The boundary is functional rather than a list of section names, so it does not go stale when the template changes.
+- **`docs/plan-cycle/decisions.md`** — decision record with permanent rules on top and dated session records below, plus a pointer in `CLAUDE.md`. The two-rendition rule had already been proposed for removal twice on the same mistaken grounds; it is now written down once.
+- **Structure tests `STRUCT-PC-31`..`STRUCT-PC-37`**, asserting section headings and field names rather than prose, so rewording does not break them. `STRUCT-PC-37` is a parity check between the field names declared in the discipline and those used in the two reviewer-facing question sections — the divergence this release removed would otherwise return, since the two texts sit far apart in the same file.
+
+### Changed
+- **`Interpretation Log` and `Decisions I Need From You` are now declared the first wave** of the document rendition, and their entry formats were aligned to the discipline's five fields. Previously the template's section format (situation, options, trade-offs, default) and the discipline's format were similar, different, and unranked, so an agent reading both had no rule for which one wins.
+- **The unresolved-items inventory is presented as one list in one pass** instead of item-by-item prompting: the items are independent by construction, so serialising them added exchanges without adding information. Follow-up questions opened by an answer become the next wave.
+- **`STRUCT-PC-29`** now asserts that both renditions are present, replacing its check for the word "orthogonal", which the rewrite retired.
+- **`plan-cycle/SKILL.md`** gained the first-wave pointer and shed two duplicated passages (the "you only plan" restatement and the second listing of the three operation names) to stay within its 5000-byte budget.
+
+### Not changed
+- The eleven writing rules stay eleven, and `plan-cycle-finalize` keeps checking those. Humanized context is deliberately **not** a twelfth rule: by the time finalize runs, the plan is closed for its owner. Question quality has no automatic re-check either — an unclear question is corrected with an annotation, which is why *unclear question* is now a declared intent.
+
 ## [qa-architect 0.1.0-beta.2] - 2026-08-13
 
 ### Fixed
