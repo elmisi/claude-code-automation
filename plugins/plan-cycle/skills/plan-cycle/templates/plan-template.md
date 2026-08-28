@@ -28,7 +28,7 @@ If no ambiguities detected, write `None detected.` — never leave the section e
 
 ## Decisions I Need From You *(Reviewer surface)*
 
-Planner uncertainty requiring user input. This section is part of the **first wave** of the Grilling discipline (see appendix): each entry uses the five-field **Decision question** format and obeys the **Humanized context** rule. Each entry MUST be self-contained — no `see section X` references.
+Planner uncertainty requiring user input. This section is part of the **first wave** of the Grilling discipline (see appendix): each entry uses the five-field **Decision question** format and obeys the **Humanized context** rule. The single exception is a **deferred** entry — one that depends on an `Interpretation Log` reading and is therefore not being asked yet: it carries a plain-language **Context** and a **Waiting on:** pointer, and nothing else. Every entry MUST be self-contained — no `see section X` references, and a deferred entry must still say in plain words what is being deferred.
 
 - **Q1 — <one-line title naming the decision>**
   - **Context:** <the situation in plain language; restate the substance of anything the question depends on, then cite the reference next to it>.
@@ -38,7 +38,8 @@ Planner uncertainty requiring user input. This section is part of the **first wa
   - **Recommendation:** <choice>, because <one line>. This is also what the planner assumes if you do not answer.
 
 - **Q2 — <one-line title naming the decision>**
-  - **Waiting on:** <the Interpretation Log entry whose confirmation decides this>. Not asked in this wave — `plan-cycle-review` asks it in full once that reading is settled.
+  - **Context:** <what this decision is about, in plain words — enough to know what is being deferred without going to look it up>.
+  - **Waiting on:** <the Interpretation Log entry whose confirmation decides this, restated in a few words>. Not asked in this wave — `plan-cycle-review` asks it in full once that reading is settled.
 
 If no open decisions, write `None.` — never leave the section empty.
 
@@ -130,7 +131,7 @@ No pass re-checks this automatically. If a question is unclear or badly framed, 
 
 The **Interpretation Log** and **Decisions I Need From You** sections of a freshly written plan *are* the first wave of the document rendition; `plan-cycle-review` and `plan-cycle-finalize` carry the waves that follow. All of them use the same Decision question format above — there is one question format across the whole cycle.
 
-**Dependencies inside the first wave.** The two sections share one pass, so the dependency rule binds across them. A `Decisions I Need From You` entry whose answer — or whose very relevance — depends on how an `Interpretation Log` entry is confirmed **MUST NOT** be asked in this wave. Instead, list it with `**Waiting on:** <the Interpretation Log entry it depends on>` and no options and no recommendation; `plan-cycle-review` asks it as a full Decision question once that reading is settled. A question still waiting when `plan-cycle-finalize` runs is an unresolved item and goes into the closing inventory.
+**Dependencies inside the first wave.** The two sections share one pass, so the dependency rule binds across them. A `Decisions I Need From You` entry whose answer — or whose very relevance — depends on how an `Interpretation Log` entry is confirmed **MUST NOT** be asked in this wave. Instead, list it with a plain-language **Context** — the Humanized context rule still binds, so a bare cross-reference is not enough — plus `**Waiting on:** <the Interpretation Log entry it depends on>`, and no options and no recommendation. Step 5 of `plan-cycle-review` asks it as a full Decision question once that reading is settled. A question still waiting when `plan-cycle-finalize` runs is an unresolved item and goes into the closing inventory.
 
 ## plan-cycle-annotate
 
@@ -160,6 +161,7 @@ Add annotations below the section/task they refer to. Do NOT modify plan content
 2. Find all `> **NOTE**:` lines.
 3. For each: understand, update plan, remove annotation.
 4. If unclear, keep the annotation and resolve it via the **Grilling discipline** (above), using the **Decision question** format.
+5. **Deferred questions** — scan `Decisions I Need From You` for entries marked `Waiting on:`. For each one whose blocking `Interpretation Log` entry the user has now confirmed, ask it in this pass as a full **Decision question** (all five fields) and drop the `Waiting on:` marker; leave the others waiting. This is how the wave after the first one actually gets asked — without this step a deferred question is never posed and merely resurfaces in the closing inventory.
 
 ## plan-cycle-finalize
 

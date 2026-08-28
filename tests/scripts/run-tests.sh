@@ -1098,11 +1098,11 @@ run_plan_cycle_tests() {
        grep -qi "transposition" "$decisions_doc" && \
        grep -q "docs/plan-cycle/decisions.md" "$PROJECT_ROOT/CLAUDE.md" && \
        grep -qi "transposition rule" "$PROJECT_ROOT/CLAUDE.md" && \
-       ! grep -q "docs/plan-cycle/" "$tmpl" && \
-       ! grep -qi "do not re-litigate" "$tmpl"; then
-        log_success "STRUCT-PC-31: transposition rule recorded in docs/ + CLAUDE.md, absent from the shipped template"
+       ! grep -qE '(^|[^[:alnum:]_/-])(docs|plugins|tests|scripts)/' "$tmpl" && \
+       ! grep -q "CLAUDE.md" "$tmpl"; then
+        log_success "STRUCT-PC-31: transposition rule recorded in docs/ + CLAUDE.md; shipped template references no repo-internal path"
     else
-        log_fail "STRUCT-PC-31: transposition rule misplaced — missing from docs/CLAUDE.md, or leaking into the shipped plan template"
+        log_fail "STRUCT-PC-31: transposition rule missing from docs//CLAUDE.md, or the shipped template references a repo-internal path (docs/, plugins/, tests/, scripts/, CLAUDE.md) that is a dead link for end users"
     fi
 
     # STRUCT-PC-32: the Decision question format declares all five mandatory fields.
@@ -1183,14 +1183,32 @@ run_plan_cycle_tests() {
         log_fail "STRUCT-PC-37: field-list parity broken —$missing_parity"
     fi
 
-    # STRUCT-PC-38: the first wave enforces the dependency rule across its two sections
+    # STRUCT-PC-38: the deferral is declared, templated, ASKED by review, and swept by finalize.
+    # The review step is the load-bearing one: without it a deferred question is never posed
+    # and only resurfaces in the closing inventory, turning deferral into postponement.
+    local review_block_w
+    review_block_w=$(awk '/^## plan-cycle-review/,/^## plan-cycle-finalize/' "$tmpl")
     if echo "$disc_block" | grep -q "Dependencies inside the first wave" && \
        echo "$disc_block" | grep -q "Waiting on:" && \
        echo "$dec_block" | grep -q "Waiting on:" && \
+       echo "$review_block_w" | grep -q "Waiting on:" && \
        echo "$finalize_block" | grep -q "Waiting on:"; then
-        log_success "STRUCT-PC-38: first-wave dependency rule declared, templated, and caught by the finalize inventory"
+        log_success "STRUCT-PC-38: deferral declared, templated, asked by plan-cycle-review, swept by the finalize inventory"
     else
-        log_fail "STRUCT-PC-38: first-wave dependency rule missing from the discipline, the Decisions section, or the finalize inventory"
+        log_fail "STRUCT-PC-38: deferral chain broken — missing from the discipline, the Decisions section, plan-cycle-review, or the finalize inventory"
+    fi
+
+    # STRUCT-PC-39: a deferred entry still carries plain-language Context (Humanized context binds).
+    # Scoped to the deferred entry itself, so deleting its Context line fails the check.
+    local deferred_entry
+    deferred_entry=$(echo "$dec_block" | awk '/Waiting on:/{print prev; print} {prev=$0}')
+    if echo "$deferred_entry" | grep -q "\*\*Context:\*\*" && \
+       echo "$deferred_entry" | grep -q "\*\*Waiting on:\*\*" && \
+       echo "$dec_block" | grep -q "deferred" && \
+       echo "$disc_block" | grep -q "bare cross-reference is not enough"; then
+        log_success "STRUCT-PC-39: deferred entries carry a plain-language Context, not a bare pointer"
+    else
+        log_fail "STRUCT-PC-39: deferred entry shape allows a bare cross-reference — Humanized context rule not carved out"
     fi
 }
 
