@@ -24,6 +24,14 @@ jobs:
 
           DISCREPANCIES=""
 
+          # Tools that appear in the docs table but are deliberately NOT valid
+          # `tools` values for a subagent. Reporting them produces a false
+          # positive on every run. Rationale for each is recorded in
+          # plugins/automate/docs/claude-code-reference.md, section
+          # "Tools excluded from the `tools` field", and in the schema's
+          # `notes` object. Add a name here only together with that record.
+          IGNORED_DOCS_TOOLS="EndConversation"
+
           fetch_page() {
             local url="$1"
             local output="$2"
@@ -97,7 +105,7 @@ jobs:
           if [ -s /tmp/docs/hooks.html ]; then
             # Check for new handler types by looking for "type": "candidate" patterns
             # Only match exact JSON-like patterns to avoid false positives from MCP/transport contexts
-            for candidate in stdio grpc websocket webhook graphql; do
+            for candidate in mcp_tool stdio grpc websocket webhook graphql; do
               if grep -qP "\"type\":\s*\"${candidate}\"" /tmp/docs/hooks.html; then
                 if ! echo "$SCHEMA_TYPES" | grep -qx "$candidate"; then
                   DISCREPANCIES="${DISCREPANCIES}\n### New hook handler type: \`$candidate\`\n\n"
@@ -127,7 +135,10 @@ jobs:
               DOCS_TOOL_COUNT=$(echo "$DOCS_TOOLS" | wc -l)
               echo "Docs table has $DOCS_TOOL_COUNT tools"
 
-              NEW_TOOLS=$(comm -23 <(echo "$DOCS_TOOLS") <(echo "$SCHEMA_TOOLS") || true)
+              printf '%s\n' $IGNORED_DOCS_TOOLS | sort > /tmp/docs/ignored-tools.txt
+              NEW_TOOLS=$(comm -23 <(echo "$DOCS_TOOLS") <(echo "$SCHEMA_TOOLS") \
+                | comm -23 - /tmp/docs/ignored-tools.txt || true)
+              echo "Ignoring deliberately excluded tools: $IGNORED_DOCS_TOOLS"
               if [ -n "$NEW_TOOLS" ]; then
                 DISCREPANCIES="${DISCREPANCIES}\n### New tools in docs, missing from schema\n\n"
                 DISCREPANCIES="${DISCREPANCIES}The following tools appear in the [tools reference table](https://code.claude.com/docs/en/tools-reference) but not in \`plugins/automate/schemas/subagents.json\`:\n"

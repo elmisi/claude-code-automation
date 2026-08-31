@@ -432,6 +432,8 @@ Same pattern:
 - `StopFailure` - When turn ends due to API error (matchers: rate_limit, authentication_failed, billing_error, invalid_request, server_error, max_output_tokens, unknown; output ignored)
 - `PreCompact` - Before context compaction (matchers: manual, auto)
 - `PostCompact` - After context compaction completes (matchers: manual, auto)
+- `PreModelSwitch` - Before a requested model switch is applied, v2.1.251+ (matchers: canonical target model name, e.g. `claude-opus-5`, `.*opus.*`; exit 2 or permissionDecision allow/deny/ask blocks the switch)
+- `PostModelSwitch` - After the session model changed, including automatic fallback and restore on resume, v2.1.251+ (same matchers; cannot block; stdout is delivered to Claude with the next request)
 - `SubagentStart`, `SubagentStop` - Subagent lifecycle
 - `TeammateIdle` - Agent team teammate about to go idle (matchers: agent name; exit 2 only)
 - `TaskCreated` - Task being created via TaskCreate (no matcher; exit 2 prevents creation)
@@ -443,6 +445,7 @@ Same pattern:
 - `Elicitation` - When MCP server requests user input (matchers: MCP server name regex)
 - `ElicitationResult` - After user responds to MCP elicitation (matchers: MCP server name regex)
 - `CwdChanged` - When working directory changes, e.g. cd (no matcher; useful for direnv)
+- `DirectoryAdded` - When a working directory is added mid-session via `/add-dir` or the SDK `register_repo_root` request (matchers: slash_command, register_repo_root; runs in background, cannot block)
 - `FileChanged` - When a watched file changes on disk (matchers: filename basename, e.g. .envrc, .env)
 - `PermissionDenied` - When user denies a permission request (matchers: tool name; non-blocking, informational)
 - `PostToolBatch` - After a full batch of parallel tool calls resolves (no matcher; can block next model call or add context)
@@ -494,16 +497,19 @@ NEVER overwrite settings.json. Always merge.
 **Never write a partial `hooks` object — always include all existing events.**
 
 **Hook handler fields:**
-- `type` (string, required): `command`, `http`, `prompt`, or `agent`. All events support all 4 types.
+- `type` (string, required): `command`, `http`, `mcp_tool`, `prompt`, or `agent`. Every event supports `command` and `mcp_tool`. `http` is supported everywhere except `SessionStart` and `Setup`. `prompt` and `agent` are supported only on the tool, prompt and stop events (see `schemas/hooks.json` → `eventHandlerSupport`).
 - `if` (string, optional): Permission rule syntax filter — only runs hook when tool/event matches (e.g. `Bash(git *)`)
 - `command` (string): Shell command to run (command type)
 - `prompt` (string): Prompt text (prompt/agent type)
 - `url` (string): URL endpoint (http type, required)
+- `server` (string): Already-connected MCP server name (mcp_tool type, required). Plugin-bundled servers use `plugin:<plugin-name>:<server-name>`
+- `tool` (string): Tool to call on that server (mcp_tool type, required)
+- `input` (object): Arguments for the tool (mcp_tool type, optional). String values support `${path}` substitution from the hook input, e.g. `"${tool_input.file_path}"`
 - `headers` (object): HTTP headers (http type, optional; supports `$VAR` interpolation from environment)
 - `allowedEnvVars` (array): Environment variables to include in http request (http type, optional)
 - `async` (boolean): Run hook in background without blocking Claude (command type only)
 - `shell` (string): Shell to use — `bash` (default) or `powershell` (Windows). Requires CLAUDE_CODE_USE_POWERSHELL_TOOL=1
-- `timeout` (integer): Timeout in seconds. Defaults: command=600, prompt=30, agent=60
+- `timeout` (integer): Timeout in seconds. Defaults: command/http/mcp_tool=600, prompt=30, agent=60 (lowered to 30 on UserPromptSubmit, PreModelSwitch and PostModelSwitch, 10 on MessageDisplay; SessionEnd hooks share a 1.5s budget)
 - `statusMessage` (string): Custom spinner message while hook runs
 - `model` (string): Model for prompt/agent hooks (default: haiku)
 - `once` (boolean): Run hook only once per session
@@ -871,7 +877,7 @@ Only after ALL verifications pass:
 - CLAUDE.md instructions are advisory, not guaranteed. If certainty is needed, use Hook.
 - Hooks are scripts, they don't have access to Claude's intelligence. For complex logic, combine Hook + Skill.
 - Subagents consume extra tokens but preserve the main context.
-- Valid hook events: SessionStart, SessionEnd, UserPromptSubmit, UserPromptExpansion, PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied, Notification, Stop, StopFailure, PreCompact, PostCompact, SubagentStart, SubagentStop, TeammateIdle, TaskCreated, TaskCompleted, ConfigChange, InstructionsLoaded, WorktreeCreate, WorktreeRemove, Elicitation, ElicitationResult, CwdChanged, FileChanged, Setup
+- Valid hook events (33): SessionStart, SessionEnd, UserPromptSubmit, UserPromptExpansion, PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied, Notification, MessageDisplay, Stop, StopFailure, PreCompact, PostCompact, PreModelSwitch, PostModelSwitch, SubagentStart, SubagentStop, TeammateIdle, TaskCreated, TaskCompleted, ConfigChange, InstructionsLoaded, WorktreeCreate, WorktreeRemove, Elicitation, ElicitationResult, CwdChanged, DirectoryAdded, FileChanged, Setup
 - All automations are tracked in `~/.claude/automations-registry.json` for management with list/edit/delete/export/import.
 - Agent Teams require `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and are experimental. The feature may change or be removed.
 - MCP tools appear as `mcp__<server>__<tool>` in Claude and can be matched in hooks using `"matcher": "mcp__servername__.*"`.
