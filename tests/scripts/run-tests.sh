@@ -1200,7 +1200,9 @@ run_plan_cycle_tests() {
        echo "$interp_block_s" | grep -q "\*\*Status:\*\*" && \
        echo "$review_block_w" | grep -qE "^3\..*Confirmed\." && \
        echo "$review_block_w" | grep -qE "^5\..*Confirmed\." && \
-       echo "$finalize_block" | grep -q "Confirmed\."; then
+       echo "$finalize_block" | grep -q "Confirmed\." && \
+       echo "$finalize_block" | grep -qE "^5\..*Released at finalize" && \
+       echo "$finalize_block" | grep -qE "^6\..*Released at finalize"; then
         log_success "STRUCT-PC-38: deferral declared, templated, unblocked by a Status marker in the document, asked by review, released by finalize"
     else
         log_fail "STRUCT-PC-38: deferral chain broken — missing from the discipline, the Decisions section, the Interpretation Log Status marker, plan-cycle-review, or plan-cycle-finalize"

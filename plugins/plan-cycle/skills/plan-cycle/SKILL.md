@@ -65,7 +65,7 @@ Add annotations inline with `> **NOTE**: your comment`. Tell me when done.
 
 The user will request one of the three operations. Their exact definitions live in the **Operations Guide** appendix at the bottom of the plan file (internalized in Step 3). Follow it — do not re-derive procedures here.
 
-**Approval gate:** before saying `Plan approved`, ensure `plan-cycle-finalize` has run and its unresolved-items inventory (TODOs, `assumed:`, `unverified:`) was surfaced with per-item choice (resolve / proceed knowingly with consequence stated). Approval over an unsurfaced inventory ships speculation into execution.
+**Approval gate:** before saying `Plan approved`, ensure `plan-cycle-finalize` has run and its unresolved-items inventory (TODOs, `assumed:`, `unverified:`, questions released at finalize) was surfaced with per-item choice (resolve / proceed knowingly with consequence stated). Approval over an unsurfaced inventory ships speculation into execution.
 
 Repeat until the user says approved ("looks good", "OK", "let's go"). Then say:
 
