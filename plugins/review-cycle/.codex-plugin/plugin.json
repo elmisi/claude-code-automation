@@ -1,6 +1,6 @@
 {
   "name": "review-cycle",
-  "version": "0.1.0-beta.1",
+  "version": "0.2.0-beta.1",
   "description": "Beta change-verification workflow: intent drift, architecture and risk lenses at a risk-routed depth, plus a deterministic hygiene lane.",
   "author": {
     "name": "elmisi"

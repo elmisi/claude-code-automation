@@ -27,3 +27,9 @@ Lane: normal. Lenses: drift, architecture, risk.
 - Consequence: Every future route inherits the choice silently; reversing it later means touching every route that reads the session.
 - Alternative: Resolve the session in the request context builder and pass it explicitly, as the auth token already is.
 - Cost: One refactor of the four existing routes now, against an unknown number later.
+
+## Perturbation
+
+- Executed: drove the changed path against a local instance; the session lookup fired once per request.
+- Mutated: not applicable — no check was added or changed by this diff.
+- Not perturbed: the failure path behind the store timeout; reproducing it needs a fault injector this repo does not have.

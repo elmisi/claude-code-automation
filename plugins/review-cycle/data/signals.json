@@ -93,7 +93,11 @@
         "**/*.cfg",
         "**/*.yaml",
         "**/*.yml",
-        "**/*.json"
+        "**/*.json",
+        "**/.gitignore",
+        "**/.gitattributes",
+        "**/.editorconfig",
+        "**/.dockerignore"
       ],
       "docs": [
         "**/*.md",
@@ -126,6 +130,96 @@
         "**/*.css",
         "**/*.scss",
         "**/*.html"
+      ]
+    },
+    "capability": {
+      "_note": "Matched against the ADDED lines of the diff (ERE), not against paths. Removal never fires.",
+      "patterns": [
+        {
+          "regex": "\\beval[[:space:]]*\\(",
+          "floor": "strict",
+          "why": "runs text as code"
+        },
+        {
+          "regex": "\\bnew[[:space:]]+Function[[:space:]]*\\(",
+          "floor": "strict",
+          "why": "runs text as code"
+        },
+        {
+          "regex": "Runtime\\.evaluate",
+          "floor": "strict",
+          "why": "runs text as code"
+        },
+        {
+          "regex": "\\bexecuteScript\\b",
+          "floor": "strict",
+          "why": "runs text as code"
+        },
+        {
+          "regex": "\\bexecute_script\\b",
+          "floor": "strict",
+          "why": "runs text as code"
+        },
+        {
+          "regex": "\\bexecSync[[:space:]]*\\(",
+          "floor": "strict",
+          "why": "runs a shell command"
+        },
+        {
+          "regex": "shell[[:space:]]*=[[:space:]]*True",
+          "floor": "strict",
+          "why": "runs a shell command"
+        },
+        {
+          "regex": "os\\.system[[:space:]]*\\(",
+          "floor": "strict",
+          "why": "runs a shell command"
+        },
+        {
+          "regex": "host_permissions",
+          "floor": "strict",
+          "why": "declares a wider privilege"
+        },
+        {
+          "regex": "\\bNOPASSWD\\b",
+          "floor": "strict",
+          "why": "declares a wider privilege"
+        },
+        {
+          "regex": "privileged[[:space:]]*:[[:space:]]*true",
+          "floor": "strict",
+          "why": "declares a wider privilege"
+        },
+        {
+          "regex": "--cap-add",
+          "floor": "strict",
+          "why": "declares a wider privilege"
+        },
+        {
+          "regex": "^[[:space:]+]*permissions[[:space:]]*:",
+          "floor": "normal",
+          "why": "declares a privilege set"
+        },
+        {
+          "regex": "--no-sandbox|--disable-web-security",
+          "floor": "strict",
+          "why": "removes a guard"
+        },
+        {
+          "regex": "verify[[:space:]]*=[[:space:]]*False",
+          "floor": "strict",
+          "why": "removes a guard"
+        },
+        {
+          "regex": "rejectUnauthorized[[:space:]]*:[[:space:]]*false",
+          "floor": "strict",
+          "why": "removes a guard"
+        },
+        {
+          "regex": "InsecureSkipVerify",
+          "floor": "strict",
+          "why": "removes a guard"
+        }
       ]
     }
   },

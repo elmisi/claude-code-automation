@@ -965,6 +965,30 @@ run_review_cycle_tests() {
     else
         log_success "STRUCT-RC-26: no parent-relative path in any SKILL.md"
     fi
+
+    # STRUCT-RC-27: the catalogue can express a capability boundary. A path glob
+    # only says which files changed; the change that most often deserves the
+    # strict lane is one that grants a power, which lives in the added lines.
+    local caps
+    caps="$RC/data/signals.json"
+    if [ "$(jq '.layer_base.capability.patterns | length' "$caps")" -ge 3 ] && \
+       jq -e '.layer_base.capability._note | test("ADDED lines")' "$caps" >/dev/null && \
+       jq -e '[.layer_base.capability.patterns[].why] | unique | length >= 3' "$caps" >/dev/null; then
+        log_success "STRUCT-RC-27: signals.json declares capability patterns matched on added lines"
+    else
+        log_fail "STRUCT-RC-27: capability family missing, or not declared as matching added lines"
+    fi
+
+    # STRUCT-RC-28: perturbation is declared in the methodology AND enforced.
+    # Declared alone it is advice, and advice is the first thing a long pass drops.
+    local core="$RC/docs/methodology-core.md"
+    if grep -q '^## Perturb, do not only read' "$core" && \
+       grep -q '^## Perturbation' "$core" && \
+       grep -q 'Perturbation' "$RC/scripts/rc-validate.sh"; then
+        log_success "STRUCT-RC-28: perturbation declared in the methodology and enforced by rc-validate"
+    else
+        log_fail "STRUCT-RC-28: perturbation not declared, or declared without an enforcement"
+    fi
 }
 
 # ============================================
@@ -1424,9 +1448,9 @@ run_fixture_tests() {
     trap - EXIT
 }
 
-# Fixture TEST-RC-01..08: review-cycle script layer
+# Fixture TEST-RC-01..10: review-cycle script layer
 run_review_cycle_fixture_tests() {
-    log_info "Fixture TEST-RC-01..08: review-cycle script layer"
+    log_info "Fixture TEST-RC-01..10: review-cycle script layer"
 
     local RC="$PROJECT_ROOT/plugins/review-cycle/scripts"
     local FX="$PROJECT_ROOT/tests/fixtures/review-cycle"
@@ -1469,12 +1493,19 @@ run_review_cycle_fixture_tests() {
         log_fail "TEST-RC-05: docs-only inventory did not produce a skip lane with hygiene only"
     fi
 
-    # --- uncalibrated thresholds must announce themselves, not pass silently ---
+    # --- the INERT contract, now that one threshold is calibrated and two are not.
+    # Both halves matter: an uncalibrated mechanism must say so, and a calibrated
+    # one must stop saying so, or the warning becomes background noise.
     out=$(cd "$PROJECT_ROOT" && "$RC/rc-recognize.sh" HEAD~1 HEAD 2>&1 >/dev/null) || true
     if echo "$out" | grep -q "^INERT: threshold 'recognition_coverage_min'"; then
-        log_success "TEST-RC-06: an uncalibrated threshold announces itself as INERT"
+        log_fail "TEST-RC-06: a calibrated threshold still announces itself as INERT"
     else
-        log_fail "TEST-RC-06: uncalibrated threshold did not emit an INERT line"
+        out=$("$RC/rc-registry.sh" promote-check "$FX/inventory-sample.json" 2>&1 >/dev/null) || true
+        if echo "$out" | grep -q "^INERT: threshold 'uncumulated_volume_lines'"; then
+            log_success "TEST-RC-06: a calibrated threshold is silent, an uncalibrated one declares itself INERT"
+        else
+            log_fail "TEST-RC-06: uncalibrated threshold did not emit an INERT line"
+        fi
     fi
 
     # --- rc-guard: the perimeter check the whole hygiene guarantee rests on ---
@@ -1505,6 +1536,39 @@ run_review_cycle_fixture_tests() {
         log_fail "TEST-RC-08: rc-guard blocked a change that touches no test file"
     fi
     rm -rf "$sb"
+
+    # --- the Perturbation section is what separates a measurement from a guess.
+    # Unenforced, it is the first thing dropped, and nothing downstream can tell.
+    local nopert="$sb-nopert.md"
+    awk '/^## Perturbation/{exit} {print}' "$FX/review-valid.md" > "$nopert"
+    "$RC/rc-validate.sh" "$nopert" >/dev/null 2>&1 && \
+        log_fail "TEST-RC-09: rc-validate accepted a review with no Perturbation section" || \
+        log_success "TEST-RC-09: rc-validate rejects a review with no Perturbation section"
+    rm -f "$nopert"
+
+    # --- capability signals are matched against added lines, not paths. A path
+    # glob cannot see a change that grants the software a power it did not have.
+    local cs
+    cs=$(mktemp -d)
+    (
+        cd "$cs"
+        git init -q .; git config user.email t@t; git config user.name t
+        mkdir -p src
+        echo 'function run(x) { return x; }' > src/app.js
+        git add -A; git commit -qm base
+        echo 'function run(x) { return eval(x); }' > src/app.js
+        git add -A; git commit -qm change
+    ) >/dev/null 2>&1
+    # rc-floor re-reads the inventory with jq several times, so it needs a file.
+    out=$(cd "$cs" && "$RC/rc-inventory.sh" HEAD~1 HEAD > inv.json 2>/dev/null && \
+                      "$RC/rc-floor.sh" inv.json 2>/dev/null) || true
+    if [ "$(echo "$out" | jq -r '.floor')" == "strict" ] && \
+       echo "$out" | jq -e '[.signals[] | select(.layer == "capability") | .why] | any(test("runs text as code"))' >/dev/null; then
+        log_success "TEST-RC-10: a change that starts running text as code lands in strict"
+    else
+        log_fail "TEST-RC-10: capability signal did not fire on an added eval()"
+    fi
+    rm -rf "$cs"
 }
 
 # Fixture TEST-01: Hook creation

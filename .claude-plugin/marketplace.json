@@ -40,7 +40,7 @@
     },
     {
       "name": "review-cycle",
-      "version": "0.1.0-beta.1",
+      "version": "0.2.0-beta.1",
       "source": "./plugins/review-cycle",
       "description": "Beta change-verification workflow. Reconstructs what a diff does before reading any declared intent, routes review depth by a deterministic risk floor, applies intent-drift, architecture and risk lenses, and hands deterministic fixes to a hygiene lane that commits locally and never pushes."
     }

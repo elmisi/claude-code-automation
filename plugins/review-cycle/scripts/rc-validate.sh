@@ -61,8 +61,11 @@ function flush(   missing) {
     if (low ~ /finding/)        section = "finding"
     else if (low ~ /question/)  section = "question"
     else                        section = ""
+    in_pert = (low ~ /perturbation/)
+    if (in_pert) seen_pert = 1
     next
 }
+in_pert && /[^ \t]/ { pert_body = 1 }
 /^###[ \t]+/ {
     flush()
     if (section == "") next
@@ -82,6 +85,15 @@ function flush(   missing) {
 }
 END {
     flush()
+    if (!seen_pert) {
+        printf "%s: missing the mandatory \"## Perturbation\" section — a measurement and a plausible inference are indistinguishable unless you declare which this was\n",
+               FILENAME > "/dev/stderr"
+        bad++
+    } else if (!pert_body) {
+        printf "%s: \"## Perturbation\" is empty — if nothing was perturbed, say so and say why\n",
+               FILENAME > "/dev/stderr"
+        bad++
+    }
     if (bad > 0) {
         printf "rc-validate: %d outcome(s) do not satisfy the shape rules\n", bad > "/dev/stderr"
         exit 1

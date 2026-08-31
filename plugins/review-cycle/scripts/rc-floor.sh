@@ -61,6 +61,31 @@ while IFS=$'\t' read -r stack manifest; do
     done < <(jq -r --arg s "$stack" '.layer_stack[$s].test_config[]?' "$SIG")
 done < <(jq -r '.layer_stack | to_entries[] | [.key, .value.manifest] | @tsv' "$SIG")
 
+# --- capability signals ------------------------------------------------------
+# A path glob can only say which files changed. The class of change that most
+# often deserves the strict lane is invisible to paths: the one that gives the
+# software a power it did not have. Three observable forms — running text as
+# code, asking for more privilege, removing a guard. Matched against the ADDED
+# lines only, so a removal never fires, and never against docs.
+base=$(jq -r '.base' "$INV"); head=$(jq -r '.head' "$INV")
+mapfile -t cap_paths < <(jq -r '.files[] | select(.generated == false and .role != "docs") | .path' "$INV")
+if [ "${#cap_paths[@]}" -gt 0 ] \
+   && git rev-parse --verify -q "$base" >/dev/null 2>&1 \
+   && git rev-parse --verify -q "$head" >/dev/null 2>&1; then
+    added=$(git diff -U0 "$base" "$head" -- "${cap_paths[@]}" 2>/dev/null \
+            | grep '^+' | grep -v '^+++' || true)
+    # Not @tsv: it escapes backslashes, and these fields are regexes.
+    # Not `grep -qE "$re"`: a pattern starting with `-` would be read as an option.
+    while IFS=$'\001' read -r re lane why; do
+        [ -n "$re" ] || continue
+        if printf '%s\n' "$added" | grep -qE -- "$re"; then
+            floor="$(rc_lane_max "$floor" "$lane")"
+            signals=$(jq -c --arg m "$re" --arg l "$lane" --arg w "$why" \
+                '. + [{path:"(added lines)", match:$m, floor:$l, why:$w, layer:"capability"}]' <<<"$signals")
+        fi
+    done < <(jq -r '.layer_base.capability.patterns[] | .regex + "\u0001" + .floor + "\u0001" + .why' "$SIG")
+fi
+
 # --- coarse rules ------------------------------------------------------------
 only_inert=$(jq '[.files[] | select(.generated == false and .role != "docs")] | length == 0' "$INV")
 if [ "$only_inert" = "true" ] && [ "$(jq 'length' <<<"$signals")" -eq 0 ]; then

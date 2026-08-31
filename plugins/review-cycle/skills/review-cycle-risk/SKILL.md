@@ -37,7 +37,8 @@ then, and not otherwise.
 ## Output
 
 Write `review-risk.md` in the pass directory, in the shape defined by
-`methodology-core.md`: a `## Findings` section, a `## Open questions` section,
+`methodology-core.md`: a `## Findings` section, a `## Open questions` section, a
+`## Perturbation` section stating what you drove or broke and what you did not,
 and a final `## Out of scope` section stating what you did not look at and why.
 
 Every outcome states what happens if it is ignored. One that cannot is not an

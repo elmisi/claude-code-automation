@@ -5,6 +5,10 @@
 > [decisions.md](decisions.md#b-decisioni-prese-nella-sessione-di-design-del-26-agosto-2026).
 > Nessuna delle domande rimaste autorizza assunzioni implicite.
 
+> Dopo quattro passate reali su `elmisi/navigator`, le osservazioni sul campo
+> — difetti del plugin, cosa ha funzionato, il buco metodologico sull'esecuzione
+> — sono in [field-notes.md](field-notes.md).
+
 ## Bloccanti prima dell'implementazione
 
 Nessuna. Le tre emerse durante la sessione — come si scopre il comando dei test,

@@ -1,6 +1,6 @@
 {
   "name": "review-cycle",
-  "version": "0.1.0-beta.1",
+  "version": "0.2.0-beta.1",
   "description": "Beta change-verification workflow. Reconstructs what a diff does before reading any declared intent, routes review depth by a deterministic risk floor, applies three orthogonal lenses (intent drift, architecture, risk), and sends deterministic fixes to a hygiene lane that commits locally and never pushes.",
   "author": {
     "name": "elmisi"
