@@ -22,6 +22,14 @@ Two parts, deliberately separated by nature.
 
 **Where it is written — and where it must not be.** Here, and in `CLAUDE.md` under *plan-cycle Internals*. **Not** in `plugins/plan-cycle/skills/plan-cycle/templates/plan-template.md`: `SKILL.md` copies that file's Operations Guide appendix verbatim into every produced plan, in any repository, so a maintainer-facing "do not re-litigate" clause would ship to end users along with a `docs/plan-cycle/` path that does not exist there. The template carries only the operative statement of the two renditions, which is what an agent operating a plan actually needs. `STRUCT-PC-31` asserts both halves: the record and the pointer exist, and the template does not reference `docs/plan-cycle/`.
 
+### A mechanism's trigger must be readable from the document, not from session memory
+
+**Rule.** Whenever an operation in the Operations Guide acts "once the user has confirmed X" or on any other state the conversation produced, the plan must carry that state as a marker the operation can test — a `Status` line, a dropped `Waiting on:`, something written down. An agent's recollection is not a trigger.
+
+**Why.** `plan-cycle-finalize` states the premise: *a fresh agent must execute the plan without prior context*, and `Self-contained` is the first of the eleven writing rules. A step conditioned on unwritten state works in the session that produced it and silently does nothing afterwards — the worst failure shape, because the document keeps promising the behaviour. This was found in the deferred-question mechanism: review step 3 removed the confirming annotation, so the evidence step 5 needed was destroyed by an earlier step of the same operation.
+
+**Corollary.** Every such marker needs a defined outcome for silence, or the mechanism deadlocks on an answer that never comes. Here: an Interpretation Log entry never confirmed stands as written — its own Recommendation says so — so `plan-cycle-finalize` treats it as settled and releases the questions waiting on it.
+
 ### Maintainer meta-documentation stays out of the plan template
 
 **Rule.** Anything addressed to whoever maintains this plugin — rationale, settled-decision markers, references to `docs/`, changelog-style notes — belongs in `CLAUDE.md` or in this record, never in `plan-template.md`. That file's appendix is reproduced verbatim inside every plan the plugin produces, for users who have no access to this repository. Operative instructions for an agent operating a plan are the only thing that belongs there.

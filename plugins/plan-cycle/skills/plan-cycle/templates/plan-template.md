@@ -19,7 +19,10 @@ Every interpretive choice the planner made on the user's request. This section i
   - **Why it matters:** <what part of the plan depends on this reading>.
   - **Options:** <chosen reading> / <alternative Y> / <alternative Z>.
   - **Trade-offs:** <chosen → ...>; <Y → ...>; <Z → ...>.
-  - **Recommendation:** <chosen reading>, because <one line>. This stands if you do not answer. **Confirm or correct.**
+  - **Recommendation:** <chosen reading>, because <one line>. This stands if you do not answer.
+  - **Status:** `Confirm or correct.`
+
+The **Status** line is the entry's state, and it is the only record of it — do not drop it. `plan-cycle-review` sets it to `Confirmed.` when you confirm the reading, or rewrites the entry when you correct it. A deferred question in `Decisions I Need From You` is asked only once the entry it waits on reads `Confirmed.`, so without this line a fresh agent cannot tell which readings are settled.
 
 If no ambiguities detected, write `None detected.` — never leave the section empty.
 
@@ -131,7 +134,7 @@ No pass re-checks this automatically. If a question is unclear or badly framed, 
 
 The **Interpretation Log** and **Decisions I Need From You** sections of a freshly written plan *are* the first wave of the document rendition; `plan-cycle-review` and `plan-cycle-finalize` carry the waves that follow. All of them use the same Decision question format above — there is one question format across the whole cycle.
 
-**Dependencies inside the first wave.** The two sections share one pass, so the dependency rule binds across them. A `Decisions I Need From You` entry whose answer — or whose very relevance — depends on how an `Interpretation Log` entry is confirmed **MUST NOT** be asked in this wave. Instead, list it with a plain-language **Context** — the Humanized context rule still binds, so a bare cross-reference is not enough — plus `**Waiting on:** <the Interpretation Log entry it depends on>`, and no options and no recommendation. Step 5 of `plan-cycle-review` asks it as a full Decision question once that reading is settled. A question still waiting when `plan-cycle-finalize` runs is an unresolved item and goes into the closing inventory.
+**Dependencies inside the first wave.** The two sections share one pass, so the dependency rule binds across them. A `Decisions I Need From You` entry whose answer — or whose very relevance — depends on how an `Interpretation Log` entry is confirmed **MUST NOT** be asked in this wave. Instead, list it with a plain-language **Context** — the Humanized context rule still binds, so a bare cross-reference is not enough — plus `**Waiting on:** <the Interpretation Log entry it depends on>`, and no options and no recommendation. Step 5 of `plan-cycle-review` asks it as a full Decision question once the entry it waits on reads **Status:** `Confirmed.` — the marker in the document, not the agent's memory of the conversation, is what unblocks it. Any question still waiting when `plan-cycle-finalize` runs is released there: an unconfirmed reading stands as written, so it counts as settled and the question is finally asked.
 
 ## plan-cycle-annotate
 
@@ -159,9 +162,9 @@ Add annotations below the section/task they refer to. Do NOT modify plan content
 
 1. Read the entire plan.
 2. Find all `> **NOTE**:` lines.
-3. For each: understand, update plan, remove annotation.
+3. For each: understand, update plan, remove annotation. If the annotation confirms an `Interpretation Log` reading, set that entry's **Status** to `Confirmed.` **before** removing the note — step 5 reads that marker, and removing the note destroys the only other evidence that the reading was settled.
 4. If unclear, keep the annotation and resolve it via the **Grilling discipline** (above), using the **Decision question** format.
-5. **Deferred questions** — scan `Decisions I Need From You` for entries marked `Waiting on:`. For each one whose blocking `Interpretation Log` entry the user has now confirmed, ask it in this pass as a full **Decision question** (all five fields) and drop the `Waiting on:` marker; leave the others waiting. This is how the wave after the first one actually gets asked — without this step a deferred question is never posed and merely resurfaces in the closing inventory.
+5. **Deferred questions** — scan `Decisions I Need From You` for entries marked `Waiting on:`. Ask, in this pass and as a full **Decision question** (all five fields), every one whose blocking `Interpretation Log` entry now reads **Status:** `Confirmed.`, and drop its `Waiting on:` marker; leave the others waiting. The test is the marker in the document, never your recollection of the conversation — a fresh agent has no recollection, and this step must work for it too. Without this step a deferred question is never posed and merely resurfaces in the closing inventory.
 
 ## plan-cycle-finalize
 
@@ -171,7 +174,8 @@ Make the plan operative, self-contained, coherent, robust — a fresh agent must
 2. For each section, check ALL 11 rules: Self-contained, Operative, Outcome-layer success, Numbers-not-adjectives, Exit clauses, Explicit degradation, Verify-before-claim, Enumerate-universals, Mark-unverifiable, Coherent, Robust.
 3. Rewrite every failing section — do not annotate.
 4. Report: sections updated count + one-line summary per section.
-5. **Unresolved Items Inventory** — list every remaining TODO, `assumed:`, `unverified:`, and every question still marked `Waiting on:`. Present them as **one single list in one pass** (document rendition of the **Grilling discipline** above): these items are independent by construction, so none of them waits on another. Each item uses the **Unresolved item** format — what is unresolved, why it cannot be settled now, consequence of proceeding as-is, recommendation between *resolve before execution* and *proceed knowingly with consequence stated*. If an answer opens a real question, that question becomes the next wave, in the Decision question format. Approval is invalid without this step.
+5. **Release the still-waiting questions** — an `Interpretation Log` entry whose **Status** never became `Confirmed.` stands as written; its own Recommendation says so. It is therefore settled now, by default, and nothing is gained by waiting further. Ask every remaining `Waiting on:` question as a full **Decision question** and drop the marker. A question left waiting forever is a question never asked.
+6. **Unresolved Items Inventory** — list every remaining TODO, `assumed:`, `unverified:`, and any question still marked `Waiting on:` after step 5. Present them as **one single list in one pass** (document rendition of the **Grilling discipline** above): these items are independent by construction, so none of them waits on another. Each item uses the **Unresolved item** format — what is unresolved, why it cannot be settled now, consequence of proceeding as-is, recommendation between *resolve before execution* and *proceed knowingly with consequence stated*. If an answer opens a real question, that question becomes the next wave, in the Decision question format. Approval is invalid without this step.
 
 ## General Principles
 

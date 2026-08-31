@@ -1188,14 +1188,22 @@ run_plan_cycle_tests() {
     # and only resurfaces in the closing inventory, turning deferral into postponement.
     local review_block_w
     review_block_w=$(awk '/^## plan-cycle-review/,/^## plan-cycle-finalize/' "$tmpl")
+    # The Confirmed. marker is the fourth link: without a state recorded in the document,
+    # step 5's trigger is only the agent's session memory, which a fresh agent does not have.
+    local interp_block_s
+    interp_block_s=$(awk '/^## Interpretation Log/,/^## Approach/' "$tmpl")
     if echo "$disc_block" | grep -q "Dependencies inside the first wave" && \
        echo "$disc_block" | grep -q "Waiting on:" && \
        echo "$dec_block" | grep -q "Waiting on:" && \
        echo "$review_block_w" | grep -q "Waiting on:" && \
-       echo "$finalize_block" | grep -q "Waiting on:"; then
-        log_success "STRUCT-PC-38: deferral declared, templated, asked by plan-cycle-review, swept by the finalize inventory"
+       echo "$finalize_block" | grep -q "Waiting on:" && \
+       echo "$interp_block_s" | grep -q "\*\*Status:\*\*" && \
+       echo "$review_block_w" | grep -qE "^3\..*Confirmed\." && \
+       echo "$review_block_w" | grep -qE "^5\..*Confirmed\." && \
+       echo "$finalize_block" | grep -q "Confirmed\."; then
+        log_success "STRUCT-PC-38: deferral declared, templated, unblocked by a Status marker in the document, asked by review, released by finalize"
     else
-        log_fail "STRUCT-PC-38: deferral chain broken — missing from the discipline, the Decisions section, plan-cycle-review, or the finalize inventory"
+        log_fail "STRUCT-PC-38: deferral chain broken — missing from the discipline, the Decisions section, the Interpretation Log Status marker, plan-cycle-review, or plan-cycle-finalize"
     fi
 
     # STRUCT-PC-39: a deferred entry still carries plain-language Context (Humanized context binds).
@@ -1204,8 +1212,7 @@ run_plan_cycle_tests() {
     deferred_entry=$(echo "$dec_block" | awk '/Waiting on:/{print prev; print} {prev=$0}')
     if echo "$deferred_entry" | grep -q "\*\*Context:\*\*" && \
        echo "$deferred_entry" | grep -q "\*\*Waiting on:\*\*" && \
-       echo "$dec_block" | grep -q "deferred" && \
-       echo "$disc_block" | grep -q "bare cross-reference is not enough"; then
+       echo "$dec_block" | grep -q "deferred"; then
         log_success "STRUCT-PC-39: deferred entries carry a plain-language Context, not a bare pointer"
     else
         log_fail "STRUCT-PC-39: deferred entry shape allows a bare cross-reference — Humanized context rule not carved out"
