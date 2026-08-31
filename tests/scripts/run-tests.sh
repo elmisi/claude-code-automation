@@ -518,12 +518,12 @@ run_structure_tests() {
     # ============================================
     log_info "Testing schema contents are up-to-date..."
 
-    # Verify hooks schema has all 30 events
+    # Verify hooks schema has all 33 events
     local hook_events=$(jq '.validEvents | length' "$PROJECT_ROOT/plugins/automate/schemas/hooks.json")
-    if [ "$hook_events" -eq 30 ]; then
-        log_success "STRUCT-64: hooks schema has 30 events"
+    if [ "$hook_events" -eq 33 ]; then
+        log_success "STRUCT-64: hooks schema has 33 events"
     else
-        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 30)"
+        log_fail "STRUCT-64: hooks schema has $hook_events events (expected 33)"
     fi
 
     # Verify hooks schema has http type
@@ -754,6 +754,52 @@ run_structure_tests() {
 
     assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
         'endConversationToolExcluded' "STRUCT-140: subagent schema documents the EndConversation exclusion"
+
+    # ============================================
+    # DOCS SYNC 2026-08-31 (issue #27): DirectoryAdded,
+    # Pre/PostModelSwitch, mcp_tool handler type, SendFeedback
+    # ============================================
+    log_info "Testing DirectoryAdded, model-switch events, mcp_tool type and SendFeedback..."
+
+    assert_validation_passes "$VALIDATE" hooks \
+        '{"hooks":{"DirectoryAdded":[{"matcher":"slash_command","hooks":[{"type":"command","command":"npm install"}]}]}}' \
+        "STRUCT-141: accept DirectoryAdded hook event"
+
+    assert_validation_passes "$VALIDATE" hooks \
+        '{"hooks":{"PreModelSwitch":[{"matcher":"claude-opus-5","hooks":[{"type":"command","command":"exit 0"}]}]}}' \
+        "STRUCT-142: accept PreModelSwitch hook event"
+
+    assert_validation_passes "$VALIDATE" hooks \
+        '{"hooks":{"PostModelSwitch":[{"matcher":".*opus.*","hooks":[{"type":"command","command":"echo guidance"}]}]}}' \
+        "STRUCT-143: accept PostModelSwitch hook event"
+
+    assert_validation_passes "$VALIDATE" hooks \
+        '{"hooks":{"PostToolUse":[{"matcher":"Write|Edit","hooks":[{"type":"mcp_tool","server":"my_server","tool":"security_scan","input":{"file_path":"${tool_input.file_path}"}}]}]}}' \
+        "STRUCT-144: accept mcp_tool hook type"
+
+    assert_validation_fails "$VALIDATE" hooks \
+        '{"hooks":{"PostToolUse":[{"hooks":[{"type":"mcp_tool","tool":"security_scan"}]}]}}' \
+        "STRUCT-145: reject mcp_tool hook missing server"
+
+    assert_validation_fails "$VALIDATE" hooks \
+        '{"hooks":{"PostToolUse":[{"hooks":[{"type":"mcp_tool","server":"my_server"}]}]}}' \
+        "STRUCT-146: reject mcp_tool hook missing tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/hooks.json" \
+        '"mcp_tool"' "STRUCT-147: hooks schema includes mcp_tool type"
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: SendFeedback, Read\n---\nContent')" \
+        "STRUCT-148: accept SendFeedback tool in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"SendFeedback"' "STRUCT-149: subagent schema includes SendFeedback tool"
+
+    # The weekly docs check reported EndConversation on every run. The ignore
+    # list is what stops that recurring false positive.
+    assert_file_contains "$PROJECT_ROOT/.github/workflows/check-docs-updates.yml" \
+        'IGNORED_DOCS_TOOLS="EndConversation"' \
+        "STRUCT-150: docs-check workflow ignores the EndConversation false positive"
 
     # ============================================
     # SETUP EVENT TESTS (2026-05-01)

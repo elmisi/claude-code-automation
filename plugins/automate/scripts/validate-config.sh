@@ -83,6 +83,9 @@ VALID_HOOK_EVENTS=(
     "UserPromptExpansion"
     "Setup"
     "MessageDisplay"
+    "DirectoryAdded"
+    "PreModelSwitch"
+    "PostModelSwitch"
 )
 
 # Invalid/non-existent hook events (common mistakes)
@@ -100,10 +103,10 @@ INVALID_HOOK_EVENTS=(
 )
 
 # Valid hook types
-VALID_HOOK_TYPES=("command" "http" "prompt" "agent")
+VALID_HOOK_TYPES=("command" "http" "mcp_tool" "prompt" "agent")
 
 # Valid subagent tools
-VALID_TOOLS=("Agent" "Artifact" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronList" "Edit" "EnterPlanMode" "EnterWorktree" "ExitPlanMode" "ExitWorktree" "Glob" "Grep" "ListAgents" "ListMcpResourcesTool" "LSP" "Monitor" "NotebookEdit" "PowerShell" "PushNotification" "Read" "ReadMcpResourceTool" "RemoteTrigger" "ReportFindings" "ScheduleWakeup" "SendMessage" "SendUserFile" "ShareOnboardingGuide" "Skill" "TaskCreate" "TaskGet" "TaskList" "TaskOutput" "TaskStop" "TaskUpdate" "TeamCreate" "TeamDelete" "TodoWrite" "ToolSearch" "WaitForMcpServers" "WebFetch" "WebSearch" "Workflow" "Write")
+VALID_TOOLS=("Agent" "Artifact" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronList" "Edit" "EnterPlanMode" "EnterWorktree" "ExitPlanMode" "ExitWorktree" "Glob" "Grep" "ListAgents" "ListMcpResourcesTool" "LSP" "Monitor" "NotebookEdit" "PowerShell" "PushNotification" "Read" "ReadMcpResourceTool" "RemoteTrigger" "ReportFindings" "ScheduleWakeup" "SendFeedback" "SendMessage" "SendUserFile" "ShareOnboardingGuide" "Skill" "TaskCreate" "TaskGet" "TaskList" "TaskOutput" "TaskStop" "TaskUpdate" "TeamCreate" "TeamDelete" "TodoWrite" "ToolSearch" "WaitForMcpServers" "WebFetch" "WebSearch" "Workflow" "Write")
 
 # Valid models
 VALID_MODELS=("opus" "sonnet" "haiku" "inherit")
@@ -220,6 +223,20 @@ validate_hooks() {
                     local url=$(echo "$hook" | jq -r '.url // empty')
                     if [ -z "$url" ]; then
                         error "Event '$event' http hook missing 'url' field"
+                        ((errors++))
+                    fi
+                fi
+
+                # Check server and tool exist for mcp_tool type
+                if [ "$hook_type" == "mcp_tool" ]; then
+                    local mcp_server=$(echo "$hook" | jq -r '.server // empty')
+                    local mcp_tool=$(echo "$hook" | jq -r '.tool // empty')
+                    if [ -z "$mcp_server" ]; then
+                        error "Event '$event' mcp_tool hook missing 'server' field"
+                        ((errors++))
+                    fi
+                    if [ -z "$mcp_tool" ]; then
+                        error "Event '$event' mcp_tool hook missing 'tool' field"
                         ((errors++))
                     fi
                 fi

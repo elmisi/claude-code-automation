@@ -31,12 +31,18 @@
     "PostToolBatch",
     "UserPromptExpansion",
     "Setup",
-    "MessageDisplay"
+    "MessageDisplay",
+    "DirectoryAdded",
+    "PreModelSwitch",
+    "PostModelSwitch"
   ],
-  "validTypes": ["command", "http", "prompt", "agent"],
+  "validTypes": ["command", "http", "mcp_tool", "prompt", "agent"],
   "eventHandlerSupport": {
-    "allTypes": ["ConfigChange", "CwdChanged", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "MessageDisplay", "Notification", "PermissionDenied", "PermissionRequest", "PostCompact", "PostToolBatch", "PostToolUse", "PostToolUseFailure", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "StopFailure", "SubagentStart", "SubagentStop", "TaskCompleted", "TaskCreated", "TeammateIdle", "UserPromptExpansion", "UserPromptSubmit", "WorktreeCreate", "WorktreeRemove"],
-    "commandOnly": ["Setup"]
+    "description": "Which handler types each event accepts. Every event accepts command and mcp_tool; the groups below differ only in whether http, prompt and agent are also accepted.",
+    "allTypes": ["PermissionDenied", "PermissionRequest", "PostToolBatch", "PostToolUse", "PostToolUseFailure", "PreToolUse", "Stop", "SubagentStop", "TaskCompleted", "TaskCreated", "TeammateIdle", "UserPromptExpansion", "UserPromptSubmit"],
+    "commandHttpMcpToolOnly": ["ConfigChange", "CwdChanged", "DirectoryAdded", "Elicitation", "ElicitationResult", "FileChanged", "InstructionsLoaded", "MessageDisplay", "Notification", "PostCompact", "PostModelSwitch", "PreCompact", "PreModelSwitch", "SessionEnd", "StopFailure", "SubagentStart", "WorktreeCreate", "WorktreeRemove"],
+    "commandMcpToolOnly": ["SessionStart", "Setup"],
+    "note": "mcp_tool hooks require the named MCP server to be already connected. SessionStart and Setup usually fire before servers finish connecting, so an mcp_tool hook there gets a non-blocking 'not connected' error on first run."
   },
   "hookHandlerFields": {
     "common": {
@@ -53,7 +59,7 @@
       },
       "timeout": {
         "type": "number",
-        "description": "Timeout in seconds. Defaults: command=600, prompt=30, agent=60",
+        "description": "Timeout in seconds. Defaults: command/http/mcp_tool=600, prompt=30, agent=60. Lowered to 30 on UserPromptSubmit, PreModelSwitch and PostModelSwitch, and to 10 on MessageDisplay. SessionEnd hooks share a 1.5s budget.",
         "required": false
       },
       "statusMessage": {
@@ -104,6 +110,23 @@
         "items": "string",
         "required": false,
         "description": "Environment variable names allowed in headers"
+      }
+    },
+    "mcp_tool": {
+      "server": {
+        "type": "string",
+        "required": true,
+        "description": "Name of an already-connected MCP server. For a plugin-bundled server use the scoped name plugin:<plugin-name>:<server-name>. The hook never triggers an OAuth or connection flow."
+      },
+      "tool": {
+        "type": "string",
+        "required": true,
+        "description": "Name of the tool to call on that server"
+      },
+      "input": {
+        "type": "object",
+        "required": false,
+        "description": "Arguments passed to the tool. String values support ${path} substitution from the hook input, e.g. \"${tool_input.file_path}\"."
       }
     },
     "prompt": {
@@ -179,6 +202,16 @@
       "description": "What triggered compaction (same as PreCompact)",
       "validValues": ["manual", "auto"]
     },
+    "PreModelSwitch": {
+      "description": "Before Claude Code applies a model switch you or a client requested (v2.1.251+). Does NOT fire for switches Claude Code makes on its own.",
+      "examples": ["claude-opus-5", "claude-opus-4-6|claude-opus-5", ".*opus.*"],
+      "note": "Matcher is the canonical name of the target model, ignoring any [1m] suffix; every alias and dated or provider-specific ID resolves to it. When no canonical name can be derived, every hook runs regardless of matcher — check to_model in the input. Exit 2 or hookSpecificOutput.permissionDecision (allow/deny/ask) controls the switch; a timeout blocks it. Default timeout 30s."
+    },
+    "PostModelSwitch": {
+      "description": "After the session model changed, including automatic fallback, opusplan entering/leaving plan mode, and model restore on resume (v2.1.251+)",
+      "examples": ["claude-opus-5", ".*opus.*"],
+      "note": "Same matcher rules as PreModelSwitch. Cannot block. Stdout or hookSpecificOutput.additionalContext is delivered to Claude with the next request. Input adds source values auto and resume. Default timeout 30s."
+    },
     "UserPromptSubmit": {
       "description": "No matcher support - always fires",
       "note": "Matcher is ignored for this event"
@@ -236,6 +269,11 @@
     "CwdChanged": {
       "description": "When the working directory changes (e.g. cd command). Useful for direnv.",
       "note": "No matcher support. Non-blocking — stderr shown to user only."
+    },
+    "DirectoryAdded": {
+      "description": "When a working directory is added mid-session via /add-dir or the SDK register_repo_root control request",
+      "validValues": ["slash_command", "register_repo_root"],
+      "note": "Matcher is how the directory was added. Does NOT fire for --add-dir at startup (SessionStart covers those) or for the /permissions Workspace tab. Runs in the background after the add completes — no decision control, and the continue field is discarded. Input adds directory and source."
     },
     "FileChanged": {
       "description": "When a watched file changes on disk. Matcher specifies filenames to watch.",
@@ -329,12 +367,12 @@
   "exitCode2BehaviorPerEvent": {
     "blocking": {
       "description": "These events can be blocked with exit code 2",
-      "events": ["PreToolUse", "PermissionRequest", "UserPromptSubmit", "UserPromptExpansion", "PostToolBatch", "Stop", "SubagentStop", "TeammateIdle", "TaskCreated", "TaskCompleted", "ConfigChange", "Elicitation", "ElicitationResult"]
+      "events": ["PreToolUse", "PermissionRequest", "UserPromptSubmit", "UserPromptExpansion", "PostToolBatch", "Stop", "SubagentStop", "TeammateIdle", "TaskCreated", "TaskCompleted", "ConfigChange", "Elicitation", "ElicitationResult", "PreCompact", "PreModelSwitch"]
     },
     "nonBlocking": {
       "description": "Exit code 2 shows stderr but does not block",
-      "events": ["PostToolUse", "PostToolUseFailure", "Notification", "MessageDisplay", "SubagentStart", "SessionStart", "SessionEnd", "CwdChanged", "FileChanged", "PermissionDenied", "PreCompact", "PostCompact", "InstructionsLoaded", "Setup"],
-      "note": "WorktreeCreate: any non-zero exit fails creation. WorktreeRemove: logged in debug only. StopFailure: output and exit code are ignored entirely."
+      "events": ["PostToolUse", "PostToolUseFailure", "Notification", "MessageDisplay", "SubagentStart", "SessionStart", "SessionEnd", "CwdChanged", "DirectoryAdded", "FileChanged", "PermissionDenied", "PostCompact", "PostModelSwitch", "InstructionsLoaded", "Setup"],
+      "note": "WorktreeCreate: any non-zero exit fails creation. WorktreeRemove: logged in debug only. StopFailure: output and exit code are ignored entirely. DirectoryAdded: stderr goes to the debug log, the directory is already added."
     }
   },
   "structure": {
@@ -369,7 +407,11 @@
       "tool_response": "Object with the tool's response (PostToolUse only)",
       "tool_use_id": "Unique identifier for the tool invocation",
       "agent_id": "Subagent ID (only when hook fires inside subagent call)",
-      "agent_type": "Agent name (only with --agent or inside subagent)"
+      "agent_type": "Agent name (only with --agent or inside subagent)",
+      "directory": "Absolute path of the added directory (DirectoryAdded only)",
+      "source": "How the event was triggered (DirectoryAdded: slash_command|register_repo_root; PreModelSwitch: command|picker|sdk; PostModelSwitch: also auto|resume)",
+      "from_model": "Model ID the switch changes from (Pre/PostModelSwitch only)",
+      "to_model": "Model ID the switch changes to — the matcher compares against its canonical name (Pre/PostModelSwitch only)"
     },
     "example_read": "cat | jq -r '.tool_input.file_path'",
     "note": "CLAUDE_TOOL_INPUT and TOOL_INPUT env vars are NOT set. Always read from stdin."

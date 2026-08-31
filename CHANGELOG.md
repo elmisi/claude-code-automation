@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.0] - 2026-08-31
+
+Schema sync with the Claude Code documentation, from the weekly docs check (issue #27).
+
+### Added
+- **`DirectoryAdded` hook event.** Fires after a working directory is added mid-session with `/add-dir` or the SDK `register_repo_root` control request — not for `--add-dir` at startup (`SessionStart` covers those) and not for the `/permissions` Workspace tab. Matcher is `slash_command` or `register_repo_root`. It has no decision control: the add has already completed and Claude Code doesn't wait for the hook, which runs in the background on the 600-second default. Input carries `directory` and `source`. Useful for preparing a newly added repository, e.g. installing its dependencies.
+- **`PreModelSwitch` and `PostModelSwitch` hook events** (v2.1.251+), not named in the issue but present in the same docs table, so leaving them out would have re-opened it on the next run. Both match on the **canonical** name of the target model, ignoring any `[1m]` suffix, so `claude-opus-5` covers every alias, dated ID, and provider-specific ID that resolves to it — and when no canonical name can be derived, every hook runs regardless of matcher, which is why a blocking hook should check `to_model` from the input rather than trust the matcher. `PreModelSwitch` can cancel a switch (exit 2, `decision: "block"`, or `permissionDecision` `allow`/`deny`/`ask`) and **blocks on timeout**, unlike `PreToolUse`; `PostModelSwitch` cannot block and delivers its stdout to Claude with the next request.
+- **`mcp_tool` hook handler type** — a fifth handler that calls a tool on an already-connected MCP server and reads its text output like command stdout. Required fields `server` (scoped `plugin:<plugin>:<server>` for plugin-bundled servers) and `tool`, optional `input` whose string values support `${path}` substitution from the hook input. The weekly check could not have found this one: its handler-type probe only tested a fixed candidate list, so `mcp_tool` is now in that list.
+- **`SendFeedback` subagent tool** (v2.1.238+) — drafts a feedback report about Claude Code and queues it locally; nothing is sent until the user chooses to send it.
+- **Structure tests `STRUCT-141`..`STRUCT-150`**: the three new events accepted, `mcp_tool` accepted with `server`+`tool` and rejected without either, the schema carrying the type, `SendFeedback` accepted and present, and the workflow's ignore list pinned by its literal assignment. `STRUCT-64` now asserts 33 events.
+
+### Changed
+- **`eventHandlerSupport` corrected.** The schema claimed every event accepted all four handler types except `Setup`. The docs now state three tiers, and the previous claim was wrong for 16 events: all five types on the 13 tool/prompt/stop events; `command`, `http`, `mcp_tool` on the 18 lifecycle events; `command` and `mcp_tool` only on `SessionStart` and `Setup`. The former `commandOnly` key is replaced by `commandHttpMcpToolOnly` and `commandMcpToolOnly` (nothing in the repo read the old key).
+- **`PreCompact` moved from `nonBlocking` to `blocking`** in `exitCode2BehaviorPerEvent` — exit 2 blocks compaction, and the schema said otherwise.
+- **Timeout defaults restated**: 600s for `command`/`http`/`mcp_tool`, 30s for `prompt`, 60s for `agent`, lowered to 30s on `UserPromptSubmit`/`PreModelSwitch`/`PostModelSwitch` and 10s on `MessageDisplay`; `SessionEnd` hooks share a 1.5s budget.
+- **`check-docs-updates.yml` no longer reports `EndConversation`.** The tool is deliberately excluded from the subagent schema (settled in 2.14.0 for issue #23), so the check reported the same false positive on every run and the issue could never close cleanly. A named `IGNORED_DOCS_TOOLS` list, commented with a pointer to the record that justifies each entry, is subtracted from the diff.
+
+### Not changed
+- **`EndConversation` stays out of `plugins/automate/schemas/subagents.json`**, as issue #27 requested it be added. Subagents never receive the tool; it bypasses permissions and `PreToolUse` hooks, and no `tools` list or `--disallowedTools` removes it while another tool remains. Listing it would validate a configuration that cannot work. `STRUCT-139` still asserts it is rejected.
+- `TeamCreate`/`TeamDelete` remain in the schema though the tools-reference table does not list them — unchanged from the 2.14.0 note, and still needing its own verification against the agent-teams docs.
+
+### Notes
+- MINOR bump (additive): three new events, one new handler type, one new tool value; every previously valid configuration stays valid. `STRUCT-145`/`STRUCT-146` are the only tightening, and they reject `mcp_tool` shapes that were never valid.
+
 ## [plan-cycle 4.2.0] - 2026-08-28
 
 ### Added

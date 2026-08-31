@@ -64,6 +64,8 @@ Location: `.claude/settings.json` or `~/.claude/settings.json`
 | `StopFailure` | Turn ends due to API error | `rate_limit`, `authentication_failed`, `billing_error`, `invalid_request`, `server_error`, `max_output_tokens`, `unknown` (output ignored) |
 | `PreCompact` | Before context compaction | `manual`, `auto` |
 | `PostCompact` | After context compaction completes | `manual`, `auto` |
+| `PreModelSwitch` | Before a requested model switch is applied (v2.1.251+) | Canonical target model name: `claude-opus-5`, `claude-opus-4-6\|claude-opus-5`, `.*opus.*` |
+| `PostModelSwitch` | After the session model changed, including automatic fallback and restore on resume (v2.1.251+) | Same as `PreModelSwitch` (cannot block) |
 | `SubagentStart` | Subagent spawned | Agent type (e.g. `code-reviewer`, `general-purpose`) |
 | `SubagentStop` | Subagent finished | Agent type (e.g. `code-reviewer`, `general-purpose`) |
 | `TeammateIdle` | Teammate about to go idle | Agent name (exit 2 only) |
@@ -76,6 +78,7 @@ Location: `.claude/settings.json` or `~/.claude/settings.json`
 | `Elicitation` | When MCP server requests user input | MCP server name (regex) |
 | `ElicitationResult` | After user responds to MCP elicitation | MCP server name (regex) |
 | `CwdChanged` | Working directory changes (e.g. cd) | (no matcher) |
+| `DirectoryAdded` | Working directory added mid-session via `/add-dir` or the SDK `register_repo_root` request | `slash_command`, `register_repo_root` (runs in background, cannot block) |
 | `FileChanged` | Watched file changes on disk | Filename basename (e.g. `.envrc`, `.env`) |
 | `PermissionDenied` | User denies a permission request | Tool name (non-blocking, informational) |
 | `PostToolBatch` | After full batch of parallel tool calls resolves | (no matcher, can block next model call) |
@@ -92,14 +95,23 @@ These event names do **NOT** exist:
 
 ### Hook Types
 
-All events support all 4 handler types (except `Setup` which only supports `command`):
-
 | Type | Description |
 |------|-------------|
 | `command` | Execute a shell command |
+| `http` | Send POST to URL endpoint |
+| `mcp_tool` | Call a tool on an already-connected MCP server; its text output is read like command stdout |
 | `prompt` | Single-turn LLM evaluation (Haiku by default) |
 | `agent` | Multi-turn verification with tool access |
-| `http` | Send POST to URL endpoint |
+
+Not every event accepts every type:
+
+| Events | Types accepted |
+|--------|----------------|
+| `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PostToolBatch`, `PermissionRequest`, `PermissionDenied`, `UserPromptSubmit`, `UserPromptExpansion`, `Stop`, `SubagentStop`, `TaskCreated`, `TaskCompleted`, `TeammateIdle` | all five |
+| `SessionEnd`, `Notification`, `MessageDisplay`, `SubagentStart`, `StopFailure`, `PreCompact`, `PostCompact`, `PreModelSwitch`, `PostModelSwitch`, `ConfigChange`, `InstructionsLoaded`, `CwdChanged`, `DirectoryAdded`, `FileChanged`, `WorktreeCreate`, `WorktreeRemove`, `Elicitation`, `ElicitationResult` | `command`, `http`, `mcp_tool` |
+| `SessionStart`, `Setup` | `command`, `mcp_tool` |
+
+`mcp_tool` hooks need the named server already connected. `SessionStart` and `Setup` usually fire before MCP servers finish connecting, so an `mcp_tool` hook there gets a non-blocking "not connected" error on its first run.
 
 ### Hook Handler Fields
 
@@ -108,10 +120,13 @@ All events support all 4 handler types (except `Setup` which only supports `comm
 | `if` | string | Permission rule syntax filter — only runs hook when matching (e.g. `Bash(git *)`) |
 | `async` | boolean | Run in background, `command` type only |
 | `shell` | string | Shell to use: `bash` (default) or `powershell` (Windows, requires `CLAUDE_CODE_USE_POWERSHELL_TOOL=1`) |
-| `timeout` | integer | Per-hook timeout in seconds (defaults: 600 for command, 30 for prompt, 60 for agent) |
+| `timeout` | integer | Per-hook timeout in seconds (defaults: 600 for `command`/`http`/`mcp_tool`, 30 for `prompt`, 60 for `agent`; lowered to 30 on `UserPromptSubmit`, `PreModelSwitch`, `PostModelSwitch` and to 10 on `MessageDisplay`; `SessionEnd` hooks share a 1.5s budget) |
 | `statusMessage` | string | Custom spinner text shown during execution |
 | `model` | string | Model override for `prompt` and `agent` hook types |
 | `url` | string | URL for POST request (`http` type only) |
+| `server` | string | Connected MCP server name (`mcp_tool` type, required). Plugin-bundled servers use `plugin:<plugin-name>:<server-name>` |
+| `tool` | string | Tool to call on that server (`mcp_tool` type, required) |
+| `input` | object | Tool arguments (`mcp_tool` type). String values support `${path}` substitution from the hook input, e.g. `"${tool_input.file_path}"` |
 | `headers` | object | HTTP headers with env var interpolation (`http` type only) |
 | `allowedEnvVars` | array | Env var names allowed in headers (`http` type only) |
 | `once` | boolean | If true, runs only once per session then removed |
@@ -272,7 +287,7 @@ System prompt for the agent...
 |-------|----------|--------------|
 | `name` | Yes | Agent identifier |
 | `description` | Yes | Brief description |
-| `tools` | No | `Agent`, `Artifact`, `AskUserQuestion`, `Bash`, `CronCreate`, `CronDelete`, `CronList`, `Edit`, `EnterPlanMode`, `EnterWorktree`, `ExitPlanMode`, `ExitWorktree`, `Glob`, `Grep`, `ListAgents`, `ListMcpResourcesTool`, `LSP`, `Monitor`, `NotebookEdit`, `PowerShell`, `PushNotification`, `Read`, `ReadMcpResourceTool`, `RemoteTrigger`, `ReportFindings`, `ScheduleWakeup`, `SendMessage`, `SendUserFile`, `ShareOnboardingGuide`, `Skill`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop`, `TaskUpdate`, `TeamCreate`, `TeamDelete`, `TodoWrite`, `ToolSearch`, `WaitForMcpServers`, `WebFetch`, `WebSearch`, `Workflow`, `Write` |
+| `tools` | No | `Agent`, `Artifact`, `AskUserQuestion`, `Bash`, `CronCreate`, `CronDelete`, `CronList`, `Edit`, `EnterPlanMode`, `EnterWorktree`, `ExitPlanMode`, `ExitWorktree`, `Glob`, `Grep`, `ListAgents`, `ListMcpResourcesTool`, `LSP`, `Monitor`, `NotebookEdit`, `PowerShell`, `PushNotification`, `Read`, `ReadMcpResourceTool`, `RemoteTrigger`, `ReportFindings`, `ScheduleWakeup`, `SendFeedback`, `SendMessage`, `SendUserFile`, `ShareOnboardingGuide`, `Skill`, `TaskCreate`, `TaskGet`, `TaskList`, `TaskOutput`, `TaskStop`, `TaskUpdate`, `TeamCreate`, `TeamDelete`, `TodoWrite`, `ToolSearch`, `WaitForMcpServers`, `WebFetch`, `WebSearch`, `Workflow`, `Write` |
 | `model` | No | `opus`, `sonnet`, `haiku`, `inherit`, or full model ID (e.g. `claude-opus-4-6`). Default: `inherit` |
 | `disallowedTools` | No | List of tools the agent cannot use |
 | `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan` |
@@ -292,7 +307,7 @@ The [tools reference](https://code.claude.com/docs/en/tools-reference) lists one
 
 - **`EndConversation`** (v2.1.213+) — ends the session, used only against sustained abusive input or when the user explicitly asks for a demonstration. Subagents never receive it, and background tasks that share the main conversation's tool list can see it but calling it there ends nothing. It never prompts for permission, `PreToolUse` hooks do not run for it, and while any other tool remains it cannot be removed by a `tools` list, by `--disallowedTools`, or by `deny`/`ask` permission rules. A `"*"` deny rule that removes every other tool does remove it, unless an `allow` rule names it explicitly.
 
-Because the tools-reference table lists it alongside ordinary tools, an automated docs diff will report it as "missing from the schema". That is a false positive — leave it out.
+Because the tools-reference table lists it alongside ordinary tools, an automated docs diff will report it as "missing from the schema". That is a false positive — leave it out. The weekly `check-docs-updates` workflow subtracts it through its `IGNORED_DOCS_TOOLS` list; add a name to that list only after recording the reason in this section.
 
 ### Built-in Agents
 
