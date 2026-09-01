@@ -1,0 +1,6 @@
+{
+  "recognition_coverage_min": 0.7,
+  "uncumulated_volume_lines": null,
+  "open_judgements_max": null,
+  "_note": "null = mechanism present but INERT: it will never fire. recognition_coverage_min calibrated from 15 field passes over two repositories: the observed range was 0.90-1.00, so 0.70 fires only on a stack the catalogue genuinely does not describe. The other two stay null: the sample covers one project shape, and a threshold tuned on it would stop declaring itself uncalibrated."
+}

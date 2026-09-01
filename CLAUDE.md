@@ -13,8 +13,9 @@ A multi-plugin repository for Claude Code automation, with Codex marketplace sup
 | **takeaway** | `plugins/takeaway/` | `/takeaway` | `takeaway` skill | Structured feedback extraction — interviews user, identifies patterns, produces agent-ready improvements |
 | **refactor-discovery** | `plugins/refactor-discovery/` | `/refactor-discovery` | `refactor-discovery` skill | Smell-led methodology: surfaces structural leads, promotes mature refactor candidates, produces prioritized discovery document |
 | **qa-architect** *(beta)* | `plugins/qa-architect/` | `/qa-architect` | `qa-architect` skill | Contract-driven QA discovery, design, build, and audit |
+| **review-cycle** *(beta)* | `plugins/review-cycle/` | `/review-cycle`, `/review-cycle-intent`, `/review-cycle-drift`, `/review-cycle-architecture`, `/review-cycle-risk`, `/review-cycle-hygiene` | `review-cycle` skills | Change verification: reconstruct behaviour before intent, route depth by a deterministic risk floor, three orthogonal lenses, deterministic hygiene lane |
 
-The automate plugin is the core of this repo. plan-cycle, takeaway, refactor-discovery, and qa-architect are self-contained plugins in their own directories. `plugins/plan-cycle/`, `plugins/refactor-discovery/`, `plugins/takeaway/`, and `plugins/qa-architect/` are dual-packaged with both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
+The automate plugin is the core of this repo. plan-cycle, takeaway, refactor-discovery, qa-architect, and review-cycle are self-contained plugins in their own directories. `plugins/plan-cycle/`, `plugins/refactor-discovery/`, `plugins/takeaway/`, `plugins/qa-architect/`, and `plugins/review-cycle/` are dual-packaged with both `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`.
 
 ## Architecture
 
@@ -81,16 +82,28 @@ The **transposition rule** is the one that keeps getting re-opened, so it lives 
 
 Maintainer meta-documentation must stay out of `plan-template.md`: `SKILL.md` copies its Operations Guide appendix verbatim into every produced plan, in any repository, where a `docs/plan-cycle/` reference is a dead path.
 
+### review-cycle Internals
+
+`plugins/review-cycle/` splits deterministic bookkeeping from semantic judgement, because several of its rules are only true if code enforces them: the risk floor is deterministic only when a script computes it, and "every outcome declares its consequence" filters nothing unless something checks it.
+
+- `scripts/` — eight bash + `jq` scripts. `rc-lib.sh` (glob matcher, thresholds, area depth), `rc-recognize.sh` (recognition coverage, runs first and costs nothing), `rc-inventory.sh`, `rc-floor.sh` (the floor **and** the `invoke` list), `rc-suites.sh`, `rc-registry.sh`, `rc-guard.sh`, `rc-validate.sh`.
+- `data/signals.json` — two-layer signal catalogue. The base layer is stack-agnostic and answers everywhere; the stack layer adds precision where a manifest is present. `roles.test` is load-bearing: it defines the perimeter the hygiene lane may never touch.
+- `data/thresholds.json` — the three safety thresholds, all `null` until calibrated. A script reading a `null` threshold prints `INERT:` and does not fire, so an uncalibrated mechanism cannot be mistaken for a working one.
+- **No lane conditionals in any prompt.** `rc-floor.sh` emits the ordered list of skills to invoke; the orchestrator runs it without deciding. `STRUCT-RC-21` enforces this.
+- **No `../../` in any `SKILL.md`.** Each skill reaches shared material through nested symlinks (`scripts` → `../../scripts`, `methodology-core.md` → `../../docs/methodology-core.md`) so every path stays inside its own directory. Measured against opencode 1.18.23: a parent-relative path from a symlinked skill leaves the project root and is refused by the `external_directory` permission. `STRUCT-RC-24`/`STRUCT-RC-25` verify reachability *through* `.agents/skills/`, not on the real path — `STRUCT-QA-04` checked the real path and missed exactly this. `STRUCT-RC-26` enforces the prohibition.
+- Design record: `docs/review-cycle/` holds the source conversation, the decisions (separated by provenance), the open questions, and the product spec.
+
 ## Plugin Packaging
 
 Marketplace and plugin manifests are product-specific:
 - **`.claude-plugin/marketplace.json`** (repo root) — Claude Code marketplace registry. Its `plugins[]` entries use `source` paths such as `./plugins/automate` or `./plugins/plan-cycle`.
-- **`.agents/plugins/marketplace.json`** (repo root) — Codex marketplace registry. It exposes `plan-cycle`, `refactor-discovery`, `takeaway`, and beta `qa-architect` from their `plugins/` paths.
+- **`.agents/plugins/marketplace.json`** (repo root) — Codex marketplace registry. It exposes `plan-cycle`, `refactor-discovery`, `takeaway`, and beta `qa-architect` and `review-cycle` from their `plugins/` paths.
 - **`plugins/automate/.claude-plugin/plugin.json`** — Claude Code manifest for `automate`.
 - **`plugins/plan-cycle/.claude-plugin/plugin.json`** — Claude Code manifest for `plan-cycle`.
 - **`plugins/plan-cycle/.codex-plugin/plugin.json`** — Codex manifest for `plan-cycle`.
 - **`plugins/takeaway/.codex-plugin/plugin.json`** — Codex manifest for `takeaway`.
 - **`plugins/qa-architect/.codex-plugin/plugin.json`** — Codex manifest for `qa-architect`.
+- **`plugins/review-cycle/.claude-plugin/plugin.json`** and **`plugins/review-cycle/.codex-plugin/plugin.json`** — the two manifests for `review-cycle`. Its six skills are additionally exposed as directory symlinks under `.agents/skills/`, which is what makes them discoverable to OpenCode from inside this repository. They must be **directory** links, never file links.
 
 ## Version Files (IMPORTANT)
 
@@ -101,6 +114,8 @@ When bumping version, update ALL these files:
 - `.claude-plugin/marketplace.json` — `"version"` field in `plugins[]` array
 
 The marketplace.json version is used by Claude Code's plugin update system. If out of sync, updates won't work.
+
+`review-cycle` and `qa-architect` also carry their own versions and do not touch the root `VERSION`.
 
 For self-contained plugins with their own versions, such as `plan-cycle`, bump the plugin's own manifest version in both product manifests and the matching marketplace entry:
 - `plugins/plan-cycle/.claude-plugin/plugin.json`

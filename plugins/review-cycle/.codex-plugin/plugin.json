@@ -1,0 +1,40 @@
+{
+  "name": "review-cycle",
+  "version": "0.2.0-beta.1",
+  "description": "Beta change-verification workflow: intent drift, architecture and risk lenses at a risk-routed depth, plus a deterministic hygiene lane.",
+  "author": {
+    "name": "elmisi"
+  },
+  "homepage": "https://github.com/elmisi/claude-code-automation",
+  "repository": "https://github.com/elmisi/claude-code-automation",
+  "license": "MIT",
+  "keywords": [
+    "code-review",
+    "change-verification",
+    "intent",
+    "architecture",
+    "risk",
+    "triage",
+    "hygiene"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Review Cycle",
+    "shortDescription": "Verify a change through intent, architecture and risk",
+    "longDescription": "Reconstruct what a change does before reading its declared intent, route review depth by a deterministic risk floor, judge it through three orthogonal lenses, and let a hygiene lane apply the deterministic fixes as local commits.",
+    "developerName": "elmisi",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/elmisi/claude-code-automation",
+    "defaultPrompt": [
+      "Review the changes on this branch",
+      "Reconstruct and validate the intent of this pull request",
+      "Assess the risk of this change before merging"
+    ],
+    "brandColor": "#7C3AED",
+    "screenshots": []
+  }
+}

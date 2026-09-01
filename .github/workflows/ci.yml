@@ -54,3 +54,32 @@ jobs:
           "$SCRIPT" agent-team ./tests/fixtures/agent-team.json
 
           echo "All fixtures validated successfully."
+
+      - name: Validate review-cycle fixtures
+        run: |
+          RC="./plugins/review-cycle/scripts"
+          FX="./tests/fixtures/review-cycle"
+          chmod +x "$RC"/*.sh
+
+          echo "Shape rules accept a well-formed review..."
+          "$RC/rc-validate.sh" "$FX/review-valid.md"
+
+          echo "Shape rules reject an outcome with no declared consequence..."
+          if "$RC/rc-validate.sh" "$FX/review-missing-consequence.md" 2>/dev/null; then
+            echo "rc-validate accepted a finding with no Consequence" >&2; exit 1
+          fi
+
+          echo "Shape rules reject an open question with no alternative..."
+          if "$RC/rc-validate.sh" "$FX/open-question-without-alternative.md" 2>/dev/null; then
+            echo "rc-validate accepted an open question with no Alternative/Cost" >&2; exit 1
+          fi
+
+          echo "Risk floor routes a migration to the strict lane..."
+          [ "$("$RC/rc-floor.sh" "$FX/inventory-sample.json" | jq -r .floor)" = "strict" ]
+
+          echo "Risk floor routes a docs-only change to skip..."
+          [ "$("$RC/rc-floor.sh" "$FX/inventory-docs-only.json" | jq -r .floor)" = "skip" ]
+
+          echo "review-cycle fixtures validated successfully."
+          # rc-guard.sh needs a sandbox repository, so it stays covered by
+          # run-tests.sh e2e, which this workflow already runs.

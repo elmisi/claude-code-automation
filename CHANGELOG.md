@@ -55,6 +55,41 @@ Schema sync with the Claude Code documentation, from the weekly docs check (issu
 ### Not changed
 - The eleven writing rules stay eleven, and `plan-cycle-finalize` keeps checking those. Humanized context is deliberately **not** a twelfth rule: by the time finalize runs, the plan is closed for its owner. Question quality has no automatic re-check either — an unclear question is corrected with an annotation, which is why *unclear question* is now a declared intent.
 
+## [review-cycle 0.2.0-beta.1] - 2026-08-28
+
+Everything here comes from fifteen review passes on real pull requests across two
+repositories, recorded in `docs/review-cycle/context/field-notes.md`. Each item is
+a defect the field produced, not a feature the design wanted.
+
+### Added
+- **Capability signals — the catalogue can now see a change that grants a power.** A path glob can only say which files changed, and the change that most often deserves the strict lane says nothing about paths: it is the one that lets the software do something it could not do before. `signals.json` gains a `layer_base.capability` family matched against the **added** lines of the diff, in three forms — runs text as code, declares a wider privilege, removes a guard. In fifteen field passes the floor never once recognised that class on its own and the lane was raised by hand every time; on the change that produced the rule it now lands in `strict` unaided. Removals never fire, and documentation is excluded: describing `sudo` is not acquiring it.
+- **Perturbation is a declared step, and `review.md` must account for it.** Reading tells you what an artefact claims; perturbing tells you what it does. Three forms depending on what the artefact is: **execute** it, **mutate** it (break what a check claims to protect and confirm it notices), or **contrast** it (run the scenario with and without the mechanism and compare exactly what the check looks at — a fix can move a test from impossible to tautological without anyone seeing it). A mandatory `## Perturbation` section records what was driven, what was broken, and what was not, because a measurement and a plausible inference are indistinguishable in the finding itself. `rc-validate.sh` rejects a review that omits it or leaves it empty.
+- **Corollary: establish the identity of what you are perturbing.** When a change alters an observable default, that default says whether the artefact in front of you is the changed one. A measurement attributed to the wrong version is worse than no measurement.
+
+### Changed
+- **`recognition_coverage_min` calibrated to `0.70`**, from `null`. Fifteen passes over two repositories put the observed range at 0.90–1.00, so 0.70 fires only on a stack the catalogue genuinely does not describe. `uncumulated_volume_lines` and `open_judgements_max` stay `null` on purpose: the sample covers one project shape, and a threshold tuned on it would stop announcing itself as uncalibrated while being exactly that.
+- **Repo metadata is a role, not an unknown.** `.gitignore`, `.gitattributes`, `.editorconfig` and `.dockerignore` join the `config` role — `.gitignore` was the only path the catalogue never recognised in fifteen passes.
+
+### Tests
+- `STRUCT-RC-27` (the capability family exists and is declared as matching added lines), `STRUCT-RC-28` (perturbation is declared in the methodology *and* enforced by the validator — declared alone it is advice, and advice is the first thing a long pass drops), `TEST-RC-09` (a review with no `## Perturbation` is rejected), `TEST-RC-10` (a commit that starts running text as code lands in `strict`). `TEST-RC-06` now pins both halves of the INERT contract: an uncalibrated threshold must declare itself, a calibrated one must stop, or the warning becomes background noise. Every one of them was verified by mutation.
+
+## [review-cycle 0.1.0-beta.1] - 2026-08-27
+
+### Added
+- **`review-cycle`** — new dual-packaged beta plugin that verifies a *change* rather than auditing a diff. Six composable skills (`/review-cycle` plus `-intent`, `-drift`, `-architecture`, `-risk`, `-hygiene`), each invocable on its own, backed by an eight-script bash + `jq` layer under `plugins/review-cycle/scripts/`.
+- **The order is the protocol.** The orchestrator reconstructs what the change does from the diff alone and closes `change-brief.md` *before* any declared intent enters the conversation; `review-cycle-intent` then deduces a candidate intent from commits and the PR description — the author's declarations, not the code — and the user validates or corrects it. Only that attested contract feeds the lenses, which is what makes intent *drift* detectable instead of assumed away.
+- **Deterministic risk floor.** `rc-floor.sh` computes the minimum lane (`skip`/`fast`/`normal`/`strict`) by matching a two-layer signal catalogue against the tree and the diff. The model may raise the lane, in writing; it can never lower it, so "do not review this" is reachable only by rule. The script also emits the ordered `invoke` list of skills, which keeps every prompt free of lane conditionals — enforced by `STRUCT-RC-21`.
+- **Two kinds of outcome.** A *finding* is a defect and carries a severity; an *open question* is a decision and is admissible only if it names a concrete alternative and that alternative's cost. Both must state what happens if ignored. `rc-validate.sh` enforces the shape with a non-zero exit and a line number, so the rule filters rather than merely advising.
+- **Hygiene lane.** Findings labelled `auto-fixable` never become comment threads: they are applied as themed local commits, gated on a green suite before and after, and **never pushed**. The authoritative test command comes from the CI workflow — extracted once by the model, since reading arbitrary YAML is semantic work — while `rc-suites.sh enumerate` still lists suites CI does not cover so `hygiene.md` can declare the blind spots.
+- **Test files are outside the lane's perimeter without exception**, which makes the check a set intersection (`rc-guard.sh`) rather than an interpretation: no parser, no language, no runner, and it holds on stacks the catalogue cannot place. A typo in a test comment is now a human judgement, not an automatic fix.
+- 27 structure assertions (`STRUCT-RC-01..26`) and 8 fixture tests (`TEST-RC-01..08`), plus a CI step over the review-cycle fixtures.
+
+### Notes
+- **Two safety mechanisms ship inert.** The unrecognised-stack block and the accumulated-debt promotion both read thresholds in `data/thresholds.json` that are `null` until calibrated on real passes. Every script reading a `null` threshold prints an `INERT:` line, so an uncalibrated mechanism cannot be mistaken for a working one. Calibration is stage 3 of the roadmap in `docs/review-cycle/docs/product-spec.md`.
+- **Measured against opencode 1.18.23**, extending the `qa-architect 0.1.0-beta.2` finding. Nested symlinks *inside* a skill directory — both directory and file links — resolve correctly through an `.agents/skills/` directory link, so shared `scripts/` and `methodology-core.md` need no duplication. The control case matters more: a `../../` path from a symlinked skill does **not** resolve to the real plugin directory — it leaves the project root and is refused by the `external_directory` permission. `STRUCT-RC-26` therefore forbids parent-relative paths in these prompts, and `STRUCT-RC-24`/`STRUCT-RC-25` verify reachability *through* `.agents/skills/` rather than on the real path, which is the check `STRUCT-QA-04` was missing. `refactor-discovery` and `automate` use `${CLAUDE_SKILL_DIR}/../../` but are not exposed that way and are unaffected.
+- No root `VERSION` bump: the `automate` package that `VERSION` tracks is unaffected.
+- Design record in `docs/review-cycle/` — the source conversation normalized, 20 conversation decisions kept separate from 36 session decisions, 4 declared debts, and the open questions that remain.
+
 ## [qa-architect 0.1.0-beta.2] - 2026-08-13
 
 ### Fixed
