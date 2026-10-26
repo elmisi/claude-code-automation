@@ -106,7 +106,7 @@ INVALID_HOOK_EVENTS=(
 VALID_HOOK_TYPES=("command" "http" "mcp_tool" "prompt" "agent")
 
 # Valid subagent tools
-VALID_TOOLS=("Agent" "Artifact" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronList" "Edit" "EnterPlanMode" "EnterWorktree" "ExitPlanMode" "ExitWorktree" "Glob" "Grep" "ListAgents" "ListMcpResourcesTool" "LSP" "Monitor" "NotebookEdit" "PowerShell" "PushNotification" "Read" "ReadMcpResourceTool" "RemoteTrigger" "ReportFindings" "ScheduleWakeup" "SendFeedback" "SendMessage" "SendUserFile" "ShareOnboardingGuide" "Skill" "TaskCreate" "TaskGet" "TaskList" "TaskOutput" "TaskStop" "TaskUpdate" "TeamCreate" "TeamDelete" "TodoWrite" "ToolSearch" "WaitForMcpServers" "WebFetch" "WebSearch" "Workflow" "Write")
+VALID_TOOLS=("Agent" "Artifact" "AskUserQuestion" "Bash" "CronCreate" "CronDelete" "CronList" "Edit" "EnterPlanMode" "EnterWorktree" "ExitPlanMode" "ExitWorktree" "Glob" "Grep" "ListAgents" "ListMcpResourcesTool" "LSP" "Monitor" "NotebookEdit" "PowerShell" "PushNotification" "Read" "ReadMcpResourceTool" "RemoteTrigger" "ReportFindings" "ScheduleWakeup" "SendFeedback" "SendMessage" "SendUserFile" "ShareOnboardingGuide" "Skill" "SubagentHandback" "TaskCreate" "TaskGet" "TaskList" "TaskOutput" "TaskStop" "TaskUpdate" "TeamCreate" "TeamDelete" "TodoWrite" "ToolSearch" "WaitForMcpServers" "WebFetch" "WebSearch" "Workflow" "Write")
 
 # Valid models
 VALID_MODELS=("opus" "sonnet" "haiku" "inherit")
