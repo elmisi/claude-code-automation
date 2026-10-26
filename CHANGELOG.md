@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.16.0] - 2026-10-26
+
+Schema sync with the Claude Code documentation, from the weekly docs check (issue #31).
+
+### Added
+- **`SubagentHandback` subagent tool** (v2.1.271+) — delivers a subagent's final report to whichever conversation receives that subagent's result. Provided only in auto mode, to subagents that the Agent tool runs locally other than forks; available in the terminal CLI, IDE extensions, cloud sessions, and the Agent SDK. The classifier reviews the report before it's delivered. Recorded in the schema's `notes` as `subagentHandbackTool`, in `validate-config.sh`'s `VALID_TOOLS`, and in the `SKILL.md`, `claude-code-reference.md`, and `CLAUDE.md` inline tool lists.
+- **Structure tests `STRUCT-151`..`STRUCT-153`**: the tool accepted by validation, present in the subagent schema, and documented in the schema's notes.
+- **`SendFeedback` restored to the `SKILL.md` valid-tools list.** The 2.15.0 sync added it to the schema, validator, and reference docs, but the inline list in `plugins/automate/skills/automate/SKILL.md` was missed — it now matches the schema.
+
+### Notes
+- MINOR bump (additive): one new tool value; every previously valid configuration stays valid. `EndConversation` stays out of the schema (settled in 2.14.0 for issue #23, pinned by `STRUCT-139`/`STRUCT-140`/`STRUCT-150`); `TeamCreate`/`TeamDelete` remain in the schema though the tools-reference table does not list them (unchanged from the 2.14.0 note, still under the workflow's report threshold of 2).
+
 ## [2.15.0] - 2026-08-31
 
 Schema sync with the Claude Code documentation, from the weekly docs check (issue #27).

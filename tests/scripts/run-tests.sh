@@ -802,6 +802,21 @@ run_structure_tests() {
         "STRUCT-150: docs-check workflow ignores the EndConversation false positive"
 
     # ============================================
+    # SUBAGENTHANDBACK TOOL (2026-10-26, issue #31)
+    # ============================================
+    log_info "Testing SubagentHandback subagent tool..."
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: SubagentHandback\n---\nContent')" \
+        "STRUCT-151: accept SubagentHandback tool in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"SubagentHandback"' "STRUCT-152: subagent schema includes SubagentHandback tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        'subagentHandbackTool' "STRUCT-153: subagent schema documents the SubagentHandback tool"
+
+    # ============================================
     # SETUP EVENT TESTS (2026-05-01)
     # ============================================
     log_info "Testing Setup hook event..."

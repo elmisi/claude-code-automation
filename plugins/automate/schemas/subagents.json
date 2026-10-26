@@ -27,7 +27,7 @@
           "Edit", "EnterPlanMode", "EnterWorktree", "ExitPlanMode", "ExitWorktree",
           "Glob", "Grep", "ListAgents", "ListMcpResourcesTool", "LSP", "Monitor", "NotebookEdit", "PowerShell",
           "PushNotification", "Read", "ReadMcpResourceTool", "RemoteTrigger", "ReportFindings",
-          "ScheduleWakeup", "SendFeedback", "SendMessage", "SendUserFile", "ShareOnboardingGuide", "Skill", "TaskCreate", "TaskGet",
+          "ScheduleWakeup", "SendFeedback", "SendMessage", "SendUserFile", "ShareOnboardingGuide", "Skill", "SubagentHandback", "TaskCreate", "TaskGet",
           "TaskList", "TaskOutput", "TaskStop", "TaskUpdate", "TeamCreate", "TeamDelete",
           "TodoWrite", "ToolSearch", "WaitForMcpServers", "WebFetch", "WebSearch", "Workflow", "Write"
         ],
@@ -160,6 +160,7 @@
     "sendUserFileTool": "SendUserFile sends a file to the user as a surfaced deliverable (rendered inline or attached) instead of only mentioning its path.",
     "listAgentsTool": "ListAgents lists the agents reachable via SendMessage (session subagents, other local sessions, and — while connected to Remote Control — web and remote sessions). Agent team teammates are excluded; Claude reaches those through the team roster. Requires Claude Code v2.1.224+ and only appears where cross-session messaging is enabled.",
     "endConversationToolExcluded": "EndConversation is deliberately NOT in validValues: the tools reference states that subagents never get the tool, and background tasks sharing the main conversation's tool list can see it but calling it there ends nothing. It also never prompts for permission, PreToolUse hooks do not run for it, and neither a tools list nor --disallowedTools can remove it while any other tool remains. Listing it in a subagent's tools field would validate a configuration that cannot work. Do not add it in response to a docs-diff issue.",
+    "subagentHandbackTool": "SubagentHandback (v2.1.271+) delivers a subagent's final report to whichever conversation receives that subagent's result. Provided only in auto mode, to subagents that the Agent tool runs locally other than forks, and available in the terminal CLI, IDE extensions, cloud sessions, and the Agent SDK; the classifier reviews the report before it's delivered.",
     "disableSubagent": "Deny specific subagents via permissions: Agent(Explore), Agent(my-custom-agent)",
     "pluginSecurity": "Plugin subagents ignore hooks, mcpServers, and permissionMode fields for security.",
     "subagentModelOverride": "CLAUDE_CODE_SUBAGENT_MODEL env var overrides subagent model at the highest priority."
