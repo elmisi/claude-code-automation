@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.17.0] - 2026-11-24
+
+Schema sync with the Claude Code documentation, from the weekly docs check (issue #33).
+
+### Added
+- **Six claude.ai plugin/skill discovery subagent tools** from the [tools reference](https://code.claude.com/docs/en/tools-reference): `ListPlugins` (lists plugins enabled for your claude.ai account), `ListSkills` (lists skills enabled for your claude.ai account), `SearchPlugins` (searches the claude.ai plugin catalog), `SearchSkills` (searches claude.ai skills), `SuggestPluginInstall` (shows a card of suggested plugins you can add), and `SuggestSkills` (shows a card of claude.ai skills you can add). All require a cloud session or the desktop app and are not available on third-party providers. The [sub-agents docs](https://code.claude.com/docs/en/sub-agents) name `ListPlugins`, `ListSkills`, `SearchPlugins`, and `SearchSkills` explicitly among the tools a background subagent keeps; the two `Suggest*` tools are not on that keep-list, but the docs give no subagent-exclusion rationale for them (unlike `EndConversation`), so they are accepted like every other docs-table tool and the caveat is recorded instead. Recorded in the schema's `notes` as `listPluginsTool`, `listSkillsTool`, `searchPluginsTool`, `searchSkillsTool`, `suggestPluginInstallTool`, and `suggestSkillsTool`, in `validate-config.sh`'s `VALID_TOOLS`, and in the `SKILL.md` and `claude-code-reference.md` inline tool lists.
+- **Structure tests `STRUCT-154`..`STRUCT-168`**: each tool accepted by validation, present in the subagent schema, and documented in the schema's notes.
+
+### Notes
+- MINOR bump (additive): six new tool values; every previously valid configuration stays valid. `EndConversation` stays out of the schema (settled in 2.14.0 for issue #23, pinned by `STRUCT-139`/`STRUCT-140`/`STRUCT-150`); `TeamCreate`/`TeamDelete` remain in the schema though the tools-reference table does not list them (unchanged from the 2.14.0 note, still under the workflow's report threshold of 2).
+- The sub-agents docs `KNOWN_FIELDS` check found no new frontmatter field; no hook events changed, so `plugins/automate/schemas/hooks.json` is untouched.
+
 ## [2.16.0] - 2026-10-26
 
 Schema sync with the Claude Code documentation, from the weekly docs check (issue #31).
