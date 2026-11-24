@@ -817,6 +817,60 @@ run_structure_tests() {
         'subagentHandbackTool' "STRUCT-153: subagent schema documents the SubagentHandback tool"
 
     # ============================================
+    # DOCS SYNC 2026-11-24 (issue #33): claude.ai
+    # plugin/skill discovery tools
+    # ============================================
+    log_info "Testing claude.ai plugin/skill discovery tools..."
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: ListPlugins, ListSkills\n---\nContent')" \
+        "STRUCT-154: accept ListPlugins/ListSkills tools in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"ListPlugins"' "STRUCT-155: subagent schema includes ListPlugins tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        'listPluginsTool' "STRUCT-156: subagent schema documents the ListPlugins tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"ListSkills"' "STRUCT-157: subagent schema includes ListSkills tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        'listSkillsTool' "STRUCT-158: subagent schema documents the ListSkills tool"
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: SearchPlugins, SearchSkills\n---\nContent')" \
+        "STRUCT-159: accept SearchPlugins/SearchSkills tools in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"SearchPlugins"' "STRUCT-160: subagent schema includes SearchPlugins tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        'searchPluginsTool' "STRUCT-161: subagent schema documents the SearchPlugins tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"SearchSkills"' "STRUCT-162: subagent schema includes SearchSkills tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        'searchSkillsTool' "STRUCT-163: subagent schema documents the SearchSkills tool"
+
+    assert_validation_passes "$VALIDATE" subagent \
+        "$(printf -- '---\nname: test\ndescription: test\ntools: SuggestPluginInstall, SuggestSkills\n---\nContent')" \
+        "STRUCT-164: accept SuggestPluginInstall/SuggestSkills tools in subagent"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"SuggestPluginInstall"' "STRUCT-165: subagent schema includes SuggestPluginInstall tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        'suggestPluginInstallTool' "STRUCT-166: subagent schema documents the SuggestPluginInstall tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        '"SuggestSkills"' "STRUCT-167: subagent schema includes SuggestSkills tool"
+
+    assert_file_contains "$PROJECT_ROOT/plugins/automate/schemas/subagents.json" \
+        'suggestSkillsTool' "STRUCT-168: subagent schema documents the SuggestSkills tool"
+
+    # ============================================
     # SETUP EVENT TESTS (2026-05-01)
     # ============================================
     log_info "Testing Setup hook event..."
